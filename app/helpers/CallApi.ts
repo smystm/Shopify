@@ -1,4 +1,5 @@
 import axios from "axios";
+import Cookies from "universal-cookie";
 import ValidationError from "@/app/exeptions/ValidationError";
 
 const CallApi = ()=> {
@@ -9,7 +10,8 @@ const CallApi = ()=> {
     axiosInstance.interceptors.request.use(
         (config) => {
             if (typeof window !== "undefined") {
-                const token = localStorage.getItem("token")
+                // Token is stored in the `shopy-token` cookie at login/verify time.
+                const token = new Cookies().get<string>("shopy-token") ?? localStorage.getItem("token")
                 if (token) {
                     config.headers["Authorization"] = `Bearer ${token}`
                 }

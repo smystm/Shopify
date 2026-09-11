@@ -6,7 +6,7 @@ import type { ObjectSchema } from "yup"
 import type { ReactNode } from "react"
 import InputField from "../ui/InputField"
 import Button from "../ui/Button"
-import type { FormValues, AuthMode } from "../contracts/auth/index"
+import type { FormValues, AuthMode } from "../../contracts/auth/index"
 
 export const authInitialValues: FormValues = {
    name: "",
