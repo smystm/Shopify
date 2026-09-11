@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { type AuthMode, type FormValues } from "../contracts/auth/index"
+import { type AuthMode, type FormValues } from "../../contracts/auth/index"
 import FormBase from "./FormBase"
 import Button from "../ui/Button"
 import type { FormikHelpers } from "formik"
@@ -28,7 +28,7 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
 
    // `useCookies` requires <CookiesProvider> (see app/components/Providers.tsx).
    // It only returns the setter here — reading the cookie isn't needed.
-   const [, setCookie, removeCookie] = useCookies(["shopy-token"])
+    const [, setCookie, removeCookie] = useCookies(["shopy-token", "shopy-user"])
 
    // Keep redux mode in sync with the current route
    useEffect(() => {
@@ -40,7 +40,7 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
          // const payload = isSignup ? { name: values.name, email: values.email, password: values.password, phone: values.phone } : { email: values.email, password: values.password }
          const payload = isSignup ? { name: values.name, phone: values.phone } : { phone: values.phone }
          const res = await CallApi().post(isSignup ? "/auth/register" : "/auth/login", payload)
-         console.log(res.data)
+
          if (isSignup) {
             router.push("/login")
             return
@@ -52,19 +52,22 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
             }
          }
          if (res.status === 200) {
-            setCookie("shopy-token", res.data.token, {
+            const loggedInUser = {
+               name: res.data.user?.name ?? values.name,
+               // email: res.data.user?.email ?? values.email,
+               phone: res.data.user?.phone ?? values.phone,
+            }
+            setCookie("shopy-token", res.data?.user?.token, {
                maxAge: 3600 * 24 * 30,
                path: "/",
                sameSite: "lax",
             })
-            dispatch(
-               loginSuccess({
-                  name: res.data.user?.name ?? values.name,
-                  // email: res.data.user?.email ?? values.email,
-                  phone: res.data.user?.phone ?? values.phone,
-               })
-            )
-            router.push("/")
+            setCookie("shopy-user", JSON.stringify(loggedInUser), {
+               maxAge: 3600 * 24 * 30,
+               path: "/",
+               sameSite: "lax",
+            })
+            dispatch(loginSuccess(loggedInUser))
          }
       } catch (err: unknown) {
          if (err instanceof ValidationError) {
@@ -94,6 +97,7 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
     if (user) {
       const handleLogout = () => {
          removeCookie("shopy-token", { path: "/" })
+         removeCookie("shopy-user", { path: "/" })
          dispatch(logout())
       }
       return (

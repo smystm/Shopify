@@ -8,7 +8,8 @@ import Button from "../ui/Button"
 import { FormShell } from "./FormBase"
 import CallApi from "@/app/helpers/CallApi"
 import { useAppDispatch, useAppSelector } from "@/app/lib/store/hooks"
-import { selectPhoneVerifyToken, updatePhoneVerifyToken } from "@/app/lib/store/authSlice"
+import { loginSuccess, selectPhoneVerifyToken, updatePhoneVerifyToken } from "@/app/lib/store/authSlice"
+import { storeLoginToken, storeLoginUser } from "@/app/helpers/auth"
 
 export interface VerifyValues {
    code: string
@@ -59,9 +60,8 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
       dispatch(updatePhoneVerifyToken(undefined))
    }
 
-   console.log("Token from Redux store:", token)
    useEffect(() => {
-      if (token === undefined) router.push("/login")
+      if (token === undefined) router.push("/")
    }, [token, router])
 
    const handleBack = () => {
@@ -79,10 +79,24 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
       const res = await CallApi().post("/auth/login/verify-phone", { code: values.code, token: token })
       if (res.status === 200) {
          //clear the token from the redux store after successful verification
+         console.log(res.data?.user?.token)
          clearPhoneToken()
+
+         const verifiedUser = {
+            name: res.data?.user?.name,
+            email: res.data?.user?.email,
+            phone: res.data?.user?.phone,
+         }
+
+         //Task: Store the token in cookies for future authenticated requests
+         storeLoginToken(res.data?.user?.token)
+         // Persist the user too, so the welcome message survives a page refresh
+         storeLoginUser(verifiedUser)
+
+         dispatch(loginSuccess(verifiedUser))
          router.push("/")
       }
-      console.log("Token from Redux store:", token)
+
       await onVerify?.(values.code)
       helpers.setSubmitting(false)
    }
