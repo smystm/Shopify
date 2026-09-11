@@ -2,61 +2,105 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Formik, Form } from "formik"
-import InputField from "../ui/InputField"
+import { type AuthMode, type FormValues } from "../contracts/auth/index"
+import FormBase from "./FormBase"
 import Button from "../ui/Button"
-import * as Yup from "yup"
+import type { FormikHelpers } from "formik"
 import { useAppDispatch, useAppSelector } from "../../lib/store/hooks"
 import { setMode, loginSuccess, logout } from "../../lib/store/authSlice"
+import CallApi from "@/app/helpers/CallApi"
+import ValidationError from "@/app/exeptions/ValidationError"
+import { useCookies } from "react-cookie"
 
-export type AuthMode = "login" | "signup"
+export type { AuthMode }
 
-interface FormValues {
-   name: string
-   email: string
-   password: string
-   confirmPassword: string
+interface AuthFormProps {
+   mode: AuthMode
+   setToken?: (token: string) => void
 }
 
-const initialValues: FormValues = {
-   name: "",
-   email: "",
-   password: "",
-   confirmPassword: "",
-}
-
-// Yup schemas — shared base + mode-specific rules
-const loginSchema = Yup.object({
-   email: Yup.string().email("Invalid email address").required("Email is required"),
-   password: Yup.string().min(6, "Min 6 characters").required("Password is required"),
-})
-
-const signupSchema = loginSchema.shape({
-   name: Yup.string().min(2, "Min 2 characters").required("Name is required"),
-   password: Yup.string().min(6, "Min 6 characters").matches(/[A-Z]/, "Need at least one uppercase letter").matches(/[0-9]/, "Need at least one number").required("Password is required"),
-   confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password")], "Passwords must match")
-      .required("Please confirm your password"),
-})
-
-export default function AuthForm({ mode }: { mode: AuthMode }) {
+export default function AuthForm({ mode, setToken }: AuthFormProps) {
    const dispatch = useAppDispatch()
    const router = useRouter()
    const user = useAppSelector((s) => s.auth.user)
 
    const isSignup = mode === "signup"
 
+   // `useCookies` requires <CookiesProvider> (see app/components/Providers.tsx).
+   // It only returns the setter here — reading the cookie isn't needed.
+   const [, setCookie, removeCookie] = useCookies(["shopy-token"])
+
    // Keep redux mode in sync with the current route
    useEffect(() => {
       dispatch(setMode(isSignup ? "signup" : "login"))
    }, [dispatch, isSignup])
 
-   if (user) {
+   const handleSubmit = async (values: FormValues, { setSubmitting, setErrors, setFieldError }: FormikHelpers<FormValues>) => {
+      try {
+         // const payload = isSignup ? { name: values.name, email: values.email, password: values.password, phone: values.phone } : { email: values.email, password: values.password }
+         const payload = isSignup ? { name: values.name, phone: values.phone } : { phone: values.phone }
+         const res = await CallApi().post(isSignup ? "/auth/register" : "/auth/login", payload)
+         console.log(res.data)
+         if (isSignup) {
+            router.push("/login")
+            return
+         }else{
+            if(res.status === 200){
+               setToken?.(res.data.token)
+               router.push('/login/verify')
+               return
+            }
+         }
+         if (res.status === 200) {
+            setCookie("shopy-token", res.data.token, {
+               maxAge: 3600 * 24 * 30,
+               path: "/",
+               sameSite: "lax",
+            })
+            dispatch(
+               loginSuccess({
+                  name: res.data.user?.name ?? values.name,
+                  // email: res.data.user?.email ?? values.email,
+                  phone: res.data.user?.phone ?? values.phone,
+               })
+            )
+            router.push("/")
+         }
+      } catch (err: unknown) {
+         if (err instanceof ValidationError) {
+            const errors = err.errors ?? {}
+            const entries = Object.entries(errors)
+            if (entries.length === 0) {
+               // setErrors({ email: "Invalid credentials. Please check your input." })
+               setErrors({ phone: "Invalid credentials. Please check your input." })
+            } else {
+               entries.forEach(([key, value]) => {
+                  // Backend may send `{ email: ["Taken"] }` — Formik needs a string.
+                  setFieldError(key, Array.isArray(value) ? value[0] : String(value))
+               })
+            }
+            console.log("Validation Error in Login Form", errors)
+         } else {
+            console.error("Auth request failed", err)
+            // setErrors({ email: "Something went wrong. Please try again." })
+            setErrors({ phone: "Something went wrong. Please try again." })
+         }
+      } finally {
+         setSubmitting(false)
+      }
+   }
+
+
+    if (user) {
+      const handleLogout = () => {
+         removeCookie("shopy-token", { path: "/" })
+         dispatch(logout())
+      }
       return (
          <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <h2 className="text-xl font-semibold">Welcome, {user.name || user.email}! 🎉</h2>
-            <p className="mt-2 text-sm text-zinc-500">You are logged in as {user.email}</p>
-            <Button onClick={() => dispatch(logout())} className="mt-6">
+            <h2 className="text-xl font-semibold">Welcome, {user.name || user.phone || user.email}! 🎉</h2>
+            <p className="mt-2 text-sm text-zinc-500">You are logged in as {user.phone ?? user.email}</p>
+            <Button onClick={handleLogout} className="mt-6">
                Log out
             </Button>
          </div>
@@ -78,58 +122,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
          <h2 className="text-2xl font-semibold tracking-tight">{isSignup ? "Create your account" : "Welcome back"}</h2>
          <p className="mb-6 mt-1 text-sm text-zinc-500">{isSignup ? "Start shopping in seconds." : "Log in to continue shopping."}</p>
 
-         <Formik
-            key={mode} // reset form when switching modes
-            initialValues={initialValues}
-            validationSchema={isSignup ? signupSchema : loginSchema}
-            onSubmit={(values, { setSubmitting }) => {
-               console.log("Form submitted:", values)
-               // Simulate API call — replace with real fetch/SWR later
-               setTimeout(() => {
-                  dispatch(
-                     loginSuccess({
-                        email: values.email,
-                        name: isSignup ? values.name : undefined,
-                     })
-                  )
-                  setSubmitting(false)
-               }, 800)
-            }}
-         >
-            {({ isSubmitting, touched, errors }) => (
-               <Form className="flex flex-col gap-4" noValidate>
-                  {isSignup && <InputField name="name" label="Name" type="text" placeholder="John Doe" touched={touched.name} error={errors.name} autoComplete="name" />}
-
-                  <InputField name="email" label="Email" type="email" placeholder="you@example.com" touched={touched.email} error={errors.email} autoComplete="email" />
-
-                  <InputField
-                     name="password"
-                     label="Password"
-                     type="password"
-                     placeholder="••••••••"
-                     touched={touched.password}
-                     error={errors.password}
-                     autoComplete={isSignup ? "new-password" : "current-password"}
-                  />
-
-                  {isSignup && (
-                     <InputField
-                        name="confirmPassword"
-                        label="Confirm password"
-                        type="password"
-                        placeholder="••••••••"
-                        touched={touched.confirmPassword}
-                        error={errors.confirmPassword}
-                        autoComplete="new-password"
-                     />
-                  )}
-
-                  <Button type="submit" disabled={isSubmitting} className="mt-2">
-                     {isSubmitting ? "Please wait..." : isSignup ? "Create account" : "Log in"}
-                  </Button>
-               </Form>
-            )}
-         </Formik>
+         <FormBase key={mode} mode={mode} onSubmit={handleSubmit} />
       </div>
    )
 }
