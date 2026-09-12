@@ -61,7 +61,7 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
    }
 
    useEffect(() => {
-      if (token === undefined) router.push("/")
+      if (token === undefined) router.push("/panel")
    }, [token, router])
 
    const handleBack = () => {
