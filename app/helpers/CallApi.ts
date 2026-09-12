@@ -11,9 +11,12 @@ const CallApi = ()=> {
         (config) => {
             if (typeof window !== "undefined") {
                 // Token is stored in the `shopy-token` cookie at login/verify time.
+                // Backend auth middleware expects the RAW JWT in the
+                // `Authorization` header (no `Bearer ` prefix) — it calls
+                // jwt.verify() on the header value directly.
                 const token = new Cookies().get<string>("shopy-token") ?? localStorage.getItem("token")
                 if (token) {
-                    config.headers["Authorization"] = `Bearer ${token}`
+                    config.headers["Authorization"] = token
                 }
             }
             return config
