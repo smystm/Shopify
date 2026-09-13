@@ -1,5 +1,5 @@
 import Yokoso from "@/app/components/auth/Yokoso"
-import AuthForm from "../../components/auth/AuthForm"
+import AuthForm from "@/app/components/auth/AuthForm"
 
 export const metadata = {
    title: "Create account — Shopify",

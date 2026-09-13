@@ -92,7 +92,7 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
          storeLoginToken(res.data?.user?.token)
          // Persist the user too, so the welcome message survives a page refresh
          storeLoginUser(verifiedUser)
-
+         
          dispatch(loginSuccess(verifiedUser))
          router.push("/")
       }

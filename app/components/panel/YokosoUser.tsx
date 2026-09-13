@@ -2,8 +2,8 @@
 
 import { useDispatch, useSelector } from "react-redux"
 import { useCookies } from "react-cookie"
-import { logout } from "../../lib/store/authSlice"
-import { removeLoginAuth } from "../../helpers/auth"
+import { logout } from "@/app/lib/store/authSlice"
+import { removeLoginAuth } from "@/app/helpers/auth"
 import { useRouter } from "next/navigation"
 
 export default function YokosoUser() {
@@ -11,10 +11,10 @@ export default function YokosoUser() {
    const dispatch = useDispatch()
    const [, , removeCookie] = useCookies(["shopy-token", "shopy-user"])
    const router = useRouter()
-   const handleLogout = () => {
+   const handleLogout = async () => {
       removeCookie("shopy-token", { path: "/" })
       removeCookie("shopy-user", { path: "/" })
-      removeLoginAuth()
+      await removeLoginAuth()
       dispatch(logout())
       router.push("/")
    }

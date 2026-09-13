@@ -6,9 +6,15 @@ const USER_KEY = "shopy-user"
 
 const getCookies = () => new Cookies()
 
-const storeLoginToken = (token: string, day: number = 10) => {
+const storeLoginToken = async (token: string, day: number = 10) => {
    // day: number of days until the cookie expires. Default is 10 days.
    if (!token) return
+   const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+   })
+   if (!res.ok) throw new Error("login cookie failed")
    getCookies().set(TOKEN_KEY, token, { path: "/", maxAge: 3600 * 24 * day, sameSite: "lax" })
 }
 
@@ -33,10 +39,14 @@ const getLoginUser = (): AuthUser | null => {
    }
 }
 
-const removeLoginAuth = () => {
+const removeLoginAuth = async () => {
    const cookies = getCookies()
    cookies.remove(TOKEN_KEY, { path: "/" })
    cookies.remove(USER_KEY, { path: "/" })
+   const res = await fetch("/api/logout", {
+      method: "POST",
+   })
+   if (!res.ok) throw new Error("logout cookie failed")
 }
 
 const storeRemoveToken = () => {
@@ -44,5 +54,3 @@ const storeRemoveToken = () => {
 }
 
 export { storeLoginToken, getLoginToken, storeLoginUser, getLoginUser, removeLoginAuth, storeRemoveToken }
-
-
