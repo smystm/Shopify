@@ -5,11 +5,12 @@ import CallApi from "../../helpers/CallApi"
 const useAuth = () => {
    const cookies = new Cookies()
    const { data, error } = useSWR("user_me", () => {
-      return CallApi().get("/user", {
-         headers: {
-            Authorization: cookies.get("shopy-token"),
-         },
-      })
+      return CallApi().get("/user")
+      // ("/user" , {
+      //    headers: {
+      //       Authorization: cookies.get("shopy-token"),
+      //    },
+      // })
    })
    console.log(data, error)
    return { user: data?.data?.user, error, loading: !data && !error }

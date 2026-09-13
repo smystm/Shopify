@@ -1,7 +1,6 @@
 import React from "react"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import YokosoUser from "../components/auth/YokosoUser"
 
 interface PanelLayoutProps {
    children: React.ReactNode

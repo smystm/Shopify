@@ -9,6 +9,7 @@ const CallApi = ()=> {
 
     axiosInstance.interceptors.request.use(
         (config) => {
+            config.withCredentials = true
             if (typeof window !== "undefined") {
                 // Token is stored in the `shopy-token` cookie at login/verify time.
                 // Backend auth middleware expects the RAW JWT in the

@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { useAppSelector } from "./lib/store/hooks"
-import YokosoUser from "./components/auth/YokosoUser"
+import { useAppSelector } from "@/app/lib/store/hooks"
+import YokosoUser from "@/app/components/panel/YokosoUser"
 import Loading from "./loading"
 
 export default function Home() {
