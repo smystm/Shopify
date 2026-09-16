@@ -9,6 +9,7 @@ const TOKEN_KEY = "shopy-token"
 const GUEST_ONLY = ["/login", "/register", "/login/verify"]
 
 const PROTECTED_PREFIX = "/panel"
+const ADMIN_PREFIX = "/admin"
 
 export function proxy(request: NextRequest) {
    const token = request.cookies.get(TOKEN_KEY)?.value
@@ -16,14 +17,15 @@ export function proxy(request: NextRequest) {
 
    const isGuestOnly = GUEST_ONLY.includes(pathname)
    const isProtected = pathname === PROTECTED_PREFIX || pathname.startsWith(`${PROTECTED_PREFIX}/`)
+   const isAdmin = pathname === ADMIN_PREFIX || pathname.startsWith(`${ADMIN_PREFIX}/`)
 
    // Logged in but trying to visit login/register/verify -> dashboard
    if (isGuestOnly && token) {
       return NextResponse.redirect(new URL("/panel", request.url))
    }
 
-   // Guest trying to visit panel -> login
-   if (isProtected && !token) {
+   // Guest trying to visit panel or admin -> login
+   if ((isProtected || isAdmin) && !token) {
       return NextResponse.redirect(new URL("/login", request.url))
    }
 
