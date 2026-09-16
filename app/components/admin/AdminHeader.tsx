@@ -43,7 +43,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
 
          <div aria-hidden="true" className="h-6 w-px bg-zinc-200 lg:hidden dark:bg-zinc-800" />
 
-         <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+         <div className="flex justify-end flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <form action="#" method="GET" className="relative hidden flex-1 sm:flex">
                <label htmlFor="admin-search" className="sr-only">
                   Search
