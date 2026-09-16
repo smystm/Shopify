@@ -17,7 +17,7 @@ const auth = (req, res, next) => {
                 return;
             }
 
-            if(user.token != token) {
+            if (!user || user.token != token) {
                 return res.status(403).json({ status: 'fail' , message : 'unauthorized'})
             }
 

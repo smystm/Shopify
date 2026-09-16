@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../../app/db/createDatabase');
 
 const auth = (req, res, next) => {
-    const token = req.headers?.authorization || req.cookies?.shopy-token;
+    const token = req.headers?.authorization || req.cookies?.["shopy-token"];
 
     if(! token ) {
         return res.status(403).json({ status: 'fail' , message : 'unauthorized'})
@@ -18,12 +18,12 @@ const auth = (req, res, next) => {
                 return;
             }
 
-            if(user.token != token) {
+            if (!user || user.token != token) {
                 return res.status(403).json({ status: 'fail' , message : 'unauthenticated'})
             }
 
-            const { id , name , email } = user;
-            req.user = { id , name , email }
+            const { id , name , phone } = user;
+            req.user = { id , name , phone }
             next()
         });
     } catch(err) {

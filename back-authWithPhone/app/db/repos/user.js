@@ -27,6 +27,19 @@ class User {
         });
     }
 
+    all() {
+        return new Promise((resolve , reject) => {
+
+            // Only safe columns: never expose token.
+            db.all(`SELECT id, name, phone, created_at FROM users ORDER BY created_at DESC`, function(err , rows) {
+                if(err) return reject(err);
+    
+                resolve(rows);
+            });
+    
+        });
+    }
+
     update(id , data) {
         let fieldMustUpdate = Object.keys(data).map(item => `${item}=$${item}` ).join(',');
         let fieldData = {};
