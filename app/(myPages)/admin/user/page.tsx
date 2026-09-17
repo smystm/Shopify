@@ -1,5 +1,5 @@
 import { cookies } from "next/headers"
-import UsersTable, { type AdminUser } from "@/app/components/admin/UsersTable"
+import UsersTable, { type AdminUser } from "@/app/components/admin/user/UsersTable"
 
 // Same backend as CallApi (app/helpers/CallApi.ts). Override with
 // BACKEND_API_URL in `.env.local`, e.g. BACKEND_API_URL=http://localhost:5000/api
