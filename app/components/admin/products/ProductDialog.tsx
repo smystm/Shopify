@@ -16,9 +16,15 @@ interface ProductDialogProps {
    suggestedNumber: string
    onClose: () => void
    onSave: (values: ProductFormValues) => void
+   isFullPage?: boolean
 }
 
-export default function ProductDialog({ open, initial, suggestedNumber, onClose, onSave }: ProductDialogProps) {
+export default function ProductDialog({ open, initial, suggestedNumber, onClose, onSave, isFullPage = false }: ProductDialogProps) {
+   // When rendered as a full page (direct URL visit), skip the Dialog wrapper
+   if (isFullPage) {
+      return <ProductForm initial={initial} suggestedNumber={suggestedNumber} onClose={onClose} onSave={onSave} isFullPage={true} />
+   }
+
    return (
       <Dialog open={open} onClose={onClose} className="relative z-50">
          <DialogBackdrop
@@ -47,12 +53,21 @@ export default function ProductDialog({ open, initial, suggestedNumber, onClose,
    )
 }
 
+interface ProductFormProps {
+   initial: AdminProduct | null
+   suggestedNumber: string
+   onClose: () => void
+   onSave: (values: ProductFormValues) => void
+   isFullPage?: boolean
+}
+
 function ProductForm({
    initial,
    suggestedNumber,
    onClose,
    onSave,
-}: Omit<ProductDialogProps, "open">) {
+   isFullPage = false,
+}: ProductFormProps) {
    const [productNumber, setProductNumber] = useState(initial?.productNumber ?? suggestedNumber)
    const [title, setTitle] = useState(initial?.title ?? "")
    const [error, setError] = useState<string | null>(null)
@@ -69,19 +84,25 @@ function ProductForm({
       onSave({ productNumber: productNumber.trim() || suggestedNumber, title: title.trim() })
    }
 
-   return (
-      <>
-         <div className="flex items-start justify-between gap-4">
-            <div>
-               <DialogTitle className="text-base font-semibold text-zinc-950 dark:text-white">
-                  {isEditing ? "Edit product" : "Add product"}
-               </DialogTitle>
-               <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                  {isEditing
-                     ? "Update the product details below."
-                     : "Products are kept in memory only for now — nothing is sent to the backend."}
-               </p>
-            </div>
+return (
+       <>
+          <div className="flex items-start justify-between gap-4">
+             <div>
+                {isFullPage ? (
+                   <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
+                      {isEditing ? "Edit product" : "Add product"}
+                   </h1>
+                ) : (
+                   <DialogTitle className="text-base font-semibold text-zinc-950 dark:text-white">
+                      {isEditing ? "Edit product" : "Add product"}
+                   </DialogTitle>
+                )}
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                   {isEditing
+                      ? "Update the product details below."
+                      : "Products are kept in memory only for now — nothing is sent to the backend."}
+                </p>
+             </div>
             <button
                type="button"
                onClick={onClose}

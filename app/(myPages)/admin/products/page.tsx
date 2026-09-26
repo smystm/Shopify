@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { PlusIcon } from "@heroicons/react/24/outline"
 import ProductDialog, { type ProductFormValues } from "@/app/components/admin/products/ProductDialog"
 import ProductsPagination from "@/app/components/admin/products/ProductsPagination"
@@ -12,10 +13,15 @@ import {
 } from "@/app/components/admin/products/productTypes"
 
 export default function AdminProductsPage() {
+   const router = useRouter()
+   const searchParams = useSearchParams()
    const [products, setProducts] = useState<AdminProduct[]>([])
    const [page, setPage] = useState(1)
-   const [dialogOpen, setDialogOpen] = useState(false)
-   const [editing, setEditing] = useState<AdminProduct | null>(null)
+
+   // Read modal state from URL query params
+   const createModal = searchParams.get("create") === "true"
+   const editId = searchParams.get("edit")
+   const editing = editId ? products.find((p) => p.id === editId) ?? null : null
 
    const totalPages = Math.max(1, Math.ceil(products.length / PRODUCTS_PAGE_SIZE))
    const safePage = Math.min(Math.max(1, page), totalPages)
@@ -25,14 +31,15 @@ export default function AdminProductsPage() {
       [products, safePage],
    )
 
+   // Sync dialog open state with URL
+   const dialogOpen = createModal || !!editing
+
    const openAddDialog = () => {
-      setEditing(null)
-      setDialogOpen(true)
+      router.push("/admin/products?create=true", { scroll: false })
    }
 
    const openEditDialog = (product: AdminProduct) => {
-      setEditing(product)
-      setDialogOpen(true)
+      router.push(`/admin/products?edit=${product.id}`, { scroll: false })
    }
 
    const handleSave = (values: ProductFormValues) => {
@@ -47,8 +54,11 @@ export default function AdminProductsPage() {
          setProducts((prev) => [...prev, newProduct])
          setPage(Math.max(1, Math.ceil((products.length + 1) / PRODUCTS_PAGE_SIZE)))
       }
-      setDialogOpen(false)
-      setEditing(null)
+      closeDialog()
+   }
+
+   const closeDialog = () => {
+      router.push("/admin/products", { scroll: false })
    }
 
    const handleDelete = (id: string) => {
@@ -96,16 +106,15 @@ export default function AdminProductsPage() {
             onPageChange={setPage}
          />
 
-         <ProductDialog
-            open={dialogOpen}
-            initial={editing}
-            suggestedNumber={suggestProductNumber(products.length)}
-            onClose={() => {
-               setDialogOpen(false)
-               setEditing(null)
-            }}
-            onSave={handleSave}
-         />
+         {dialogOpen && (
+            <ProductDialog
+               open={true}
+               initial={editing}
+               suggestedNumber={suggestProductNumber(products.length)}
+               onClose={closeDialog}
+               onSave={handleSave}
+            />
+         )}
       </>
    )
 }
