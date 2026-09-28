@@ -1,10 +1,10 @@
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline"
-import type { AdminProduct } from "./productTypes"
+import type { AdminProduct } from "@/app/contracts/products"
 
 interface ProductsTableProps {
    products: AdminProduct[]
    onEdit: (product: AdminProduct) => void
-   onDelete: (id: string) => void
+   onDelete: (id: number) => void
 }
 
 export default function ProductsTable({ products, onEdit, onDelete }: ProductsTableProps) {
@@ -13,7 +13,7 @@ export default function ProductsTable({ products, onEdit, onDelete }: ProductsTa
          <div className="rounded-xl border border-dashed border-zinc-300 bg-white px-6 py-14 text-center dark:border-zinc-700 dark:bg-zinc-950">
             <p className="text-sm font-semibold text-zinc-950 dark:text-white">No products yet</p>
             <p className="mx-auto mt-1 max-w-sm text-sm text-zinc-500 dark:text-zinc-400">
-               Use Add Product to create your first product. Added products are kept in memory only for now.
+               Use Add Product to create your first product. Products are stored in the backend.
             </p>
          </div>
       )
