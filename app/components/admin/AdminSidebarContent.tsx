@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { adminNavigation, isNavItemActive } from "./adminNavigation"
+import { adminNavigation, isNavItemActive } from "@/app/lib/adminNavigation"
 
 function classNames(...classes: Array<string | false | null | undefined>): string {
    return classes.filter(Boolean).join(" ")

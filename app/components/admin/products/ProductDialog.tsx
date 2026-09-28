@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react"
 import { XMarkIcon } from "@heroicons/react/24/outline"
-import type { AdminProduct } from "./productTypes"
+import type { AdminProduct } from "@/app/contracts/products"
 
 export interface ProductFormValues {
    productNumber: string
@@ -17,12 +17,14 @@ interface ProductDialogProps {
    onClose: () => void
    onSave: (values: ProductFormValues) => void
    isFullPage?: boolean
+   saving?: boolean
+   saveError?: string | null
 }
 
-export default function ProductDialog({ open, initial, suggestedNumber, onClose, onSave, isFullPage = false }: ProductDialogProps) {
+export default function ProductDialog({ open, initial, suggestedNumber, onClose, onSave, isFullPage = false, saving = false, saveError }: ProductDialogProps) {
    // When rendered as a full page (direct URL visit), skip the Dialog wrapper
    if (isFullPage) {
-      return <ProductForm initial={initial} suggestedNumber={suggestedNumber} onClose={onClose} onSave={onSave} isFullPage={true} />
+      return <ProductForm initial={initial} suggestedNumber={suggestedNumber} onClose={onClose} onSave={onSave} isFullPage={true} saving={saving} saveError={saveError} />
    }
 
    return (
@@ -44,6 +46,8 @@ export default function ProductDialog({ open, initial, suggestedNumber, onClose,
                         suggestedNumber={suggestedNumber}
                         onClose={onClose}
                         onSave={onSave}
+                        saving={saving}
+                        saveError={saveError}
                      />
                   ) : null}
                </DialogPanel>
@@ -59,6 +63,8 @@ interface ProductFormProps {
    onClose: () => void
    onSave: (values: ProductFormValues) => void
    isFullPage?: boolean
+   saving?: boolean
+   saveError?: string | null
 }
 
 function ProductForm({
@@ -67,6 +73,8 @@ function ProductForm({
    onClose,
    onSave,
    isFullPage = false,
+   saving = false,
+   saveError,
 }: ProductFormProps) {
    const [productNumber, setProductNumber] = useState(initial?.productNumber ?? suggestedNumber)
    const [title, setTitle] = useState(initial?.title ?? "")
@@ -74,14 +82,13 @@ function ProductForm({
 
    const isEditing = initial !== null
 
-   const handleSubmit = (e: React.FormEvent) => {
+   const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
       if (!title.trim()) {
          setError("Title is required.")
          return
       }
-      // TODO(backend): replace local-only save with POST/PUT once the API contract is decided.
-      onSave({ productNumber: productNumber.trim() || suggestedNumber, title: title.trim() })
+      await onSave({ productNumber: productNumber.trim() || suggestedNumber, title: title.trim() })
    }
 
 return (
@@ -143,7 +150,8 @@ return (
                   placeholder="e.g. Classic White T-Shirt"
                   className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
                />
-               {error ? <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+                {error ? <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+                {saveError ? <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{saveError}</p> : null}
             </div>
 
             <div className="flex justify-end gap-2 pt-1">
@@ -156,9 +164,10 @@ return (
                </button>
                <button
                   type="submit"
-                  className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                  disabled={saving}
+                  className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                >
-                  {isEditing ? "Save changes" : "Add product"}
+                  {saving ? "Saving..." : isEditing ? "Save changes" : "Add product"}
                </button>
             </div>
          </form>

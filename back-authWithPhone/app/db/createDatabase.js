@@ -41,6 +41,19 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                     // Table just created, creating some rows
                 }
             })
+
+        db.run(`CREATE TABLE products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                productNumber text,
+                title text,
+                created_at TIMESTAMP
+            )`, (err) => {
+                if (err) {
+                    // Table already created
+                } else{
+                    // Table just created, creating some rows
+                }
+            })
     }
 });
 
