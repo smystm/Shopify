@@ -57,12 +57,18 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 const updated = await updateProduct(editing.id, {
                     productNumber: values.productNumber,
                     title: values.title,
+                    desc: values.desc,
+                    category: values.category,
+                    price: values.price,
                 })
                 setProducts((prev) => prev.map((p) => (p.id === editing.id ? updated : p)))
             } else {
                 const created = await createProduct({
                     productNumber: values.productNumber,
                     title: values.title,
+                    desc: values.desc,
+                    category: values.category,
+                    price: values.price,
                 })
                 setProducts((prev) => [created, ...prev])
                 setPage(1)

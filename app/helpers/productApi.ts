@@ -1,4 +1,12 @@
-import type { AdminProduct } from "@/app/contracts/products"
+import type { AdminProduct, Category } from "@/app/contracts/products"
+
+interface ProductPayload {
+    productNumber: string
+    title: string
+    desc: string
+    category: Category
+    price: string
+}
 
 const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
 
@@ -23,7 +31,7 @@ async function getProducts(token?: string): Promise<AdminProduct[]> {
    return []
 }
 
-async function createProduct(data: { productNumber: string; title: string }): Promise<AdminProduct> {
+async function createProduct(data: ProductPayload): Promise<AdminProduct> {
    const res = await fetch(`${API_BASE}/products`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,7 +49,7 @@ async function createProduct(data: { productNumber: string; title: string }): Pr
    throw new Error("Unexpected response from POST /products")
 }
 
-async function updateProduct(id: number, data: { productNumber: string; title: string }): Promise<AdminProduct> {
+async function updateProduct(id: number, data: ProductPayload): Promise<AdminProduct> {
    const res = await fetch(`${API_BASE}/products/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
