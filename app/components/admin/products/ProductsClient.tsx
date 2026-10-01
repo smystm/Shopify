@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { PlusIcon } from "@heroicons/react/24/outline"
 import ProductDialog, { type ProductFormValues } from "./ProductDialog"
 import ProductsPagination from "./ProductsPagination"
+import ProductsSkeleton from "./ProductsSkeleton"
 import ProductsTable from "./ProductsTable"
 import type { AdminProduct } from "@/app/contracts/products"
 import { PRODUCTS_PAGE_SIZE, suggestProductNumber } from "@/app/lib/products"
@@ -21,6 +22,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
     const [page, setPage] = useState(1)
     const [saving, setSaving] = useState(false)
     const [saveError, setSaveError] = useState<string | null>(null)
+    const [deletingId, setDeletingId] = useState<number | null>(null)
 
     const createModal = searchParams.get("create") === "true"
     const editId = searchParams.get("edit")
@@ -87,6 +89,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
         if (!target) return
         if (!window.confirm(`Delete "${target.title}"? This will permanently remove it.`)) return
 
+        setDeletingId(id)
         try {
             await deleteProduct(id)
             const remaining = products.filter((p) => p.id !== id)
@@ -95,6 +98,8 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
         } catch (err) {
             const reason = err instanceof Error ? err.message : String(err)
             window.alert(`Failed to delete product: ${reason}`)
+        } finally {
+            setDeletingId(null)
         }
     }
 
@@ -123,7 +128,11 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
             </div>
 
             <div className="mt-6">
-                <ProductsTable products={visibleProducts} onEdit={openEditDialog} onDelete={handleDelete} />
+                {saving || deletingId !== null ? (
+                    <ProductsSkeleton />
+                ) : (
+                    <ProductsTable products={visibleProducts} onEdit={openEditDialog} onDelete={handleDelete} />
+                )}
             </div>
 
             <ProductsPagination
