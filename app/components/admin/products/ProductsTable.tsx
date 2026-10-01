@@ -8,18 +8,7 @@ interface ProductsTableProps {
 }
 
 export default function ProductsTable({ products, onEdit, onDelete }: ProductsTableProps) {
-   if (products.length === 0) {
-      return (
-         <div className="rounded-xl border border-dashed border-zinc-300 bg-white px-6 py-14 text-center dark:border-zinc-700 dark:bg-zinc-950">
-            <p className="text-sm font-semibold text-zinc-950 dark:text-white">No products yet</p>
-            <p className="mx-auto mt-1 max-w-sm text-sm text-zinc-500 dark:text-zinc-400">
-               Use Add Product to create your first product. Products are stored in the backend.
-            </p>
-         </div>
-      )
-   }
-
-   return (
+    return (
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-950">
          <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
