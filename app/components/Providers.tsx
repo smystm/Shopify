@@ -2,16 +2,28 @@
 
 import { Provider } from "react-redux"
 import { CookiesProvider } from "react-cookie"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 import { store } from "../lib/store/store"
 import AuthHydrator from "./auth/AuthHydrator"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-   return (
+    return (
       <Provider store={store}>
-         <CookiesProvider>
+          <CookiesProvider>
             <AuthHydrator />
             {children}
-         </CookiesProvider>
+            <ToastContainer
+               position="bottom-right"
+               autoClose={2000}
+               hideProgressBar={false}
+               newestOnTop
+               closeOnClick
+               pauseOnHover
+               draggable
+               theme="dark"
+            />
+          </CookiesProvider>
       </Provider>
-   )
+    )
 }

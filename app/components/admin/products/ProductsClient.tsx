@@ -3,10 +3,12 @@
 import { useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { PlusIcon } from "@heroicons/react/24/outline"
+import { toast } from "react-toastify"
 import ProductDialog, { type ProductFormValues } from "./ProductDialog"
-import ProductsPagination from "./ProductsPagination"
+import AdminPagination from "@/app/components/admin/AdminPagination"
 import ProductsSkeleton from "./ProductsSkeleton"
 import ProductsTable from "./ProductsTable"
+import ProductsEmptyState from "./ProductsEmptyState"
 import type { AdminProduct } from "@/app/contracts/products"
 import { PRODUCTS_PAGE_SIZE, suggestProductNumber } from "@/app/lib/products"
 import { createProduct, updateProduct, deleteProduct } from "@/app/helpers/productApi"
@@ -19,22 +21,31 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
     const router = useRouter()
     const searchParams = useSearchParams()
     const [products, setProducts] = useState<AdminProduct[]>(initialProducts)
-    const [page, setPage] = useState(1)
     const [saving, setSaving] = useState(false)
     const [saveError, setSaveError] = useState<string | null>(null)
     const [deletingId, setDeletingId] = useState<number | null>(null)
+
+    const pageParam = searchParams.get("page")
+    const rawPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1)
 
     const createModal = searchParams.get("create") === "true"
     const editId = searchParams.get("edit")
     const editing = editId ? products.find((p) => p.id === Number(editId)) ?? null : null
 
     const totalPages = Math.max(1, Math.ceil(products.length / PRODUCTS_PAGE_SIZE))
-    const safePage = Math.min(Math.max(1, page), totalPages)
+    const isOutOfRange = rawPage > totalPages
+    const safePage = Math.min(rawPage, totalPages)
 
     const visibleProducts = useMemo(
         () => products.slice((safePage - 1) * PRODUCTS_PAGE_SIZE, safePage * PRODUCTS_PAGE_SIZE),
         [products, safePage],
     )
+
+    const handlePageChange = (newPage: number) => {
+        const params = new URLSearchParams(searchParams.toString())
+        params.set("page", String(newPage))
+        router.push(`?${params.toString()}`, { scroll: false })
+    }
 
     const dialogOpen = createModal || !!editing
 
@@ -64,6 +75,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                     price: values.price,
                 })
                 setProducts((prev) => prev.map((p) => (p.id === editing.id ? updated : p)))
+                toast.success("Product updated successfully")
             } else {
                 const created = await createProduct({
                     productNumber: values.productNumber,
@@ -73,12 +85,14 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                     price: values.price,
                 })
                 setProducts((prev) => [created, ...prev])
-                setPage(1)
+                handlePageChange(1)
+                toast.success("Product added successfully")
             }
             closeDialog()
         } catch (err) {
             const reason = err instanceof Error ? err.message : String(err)
             setSaveError(`Failed to save product: ${reason}`)
+            toast.error(`Failed to save product: ${reason}`)
         } finally {
             setSaving(false)
         }
@@ -94,10 +108,12 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
             await deleteProduct(id)
             const remaining = products.filter((p) => p.id !== id)
             setProducts(remaining)
-            setPage((prev) => Math.min(prev, Math.max(1, Math.ceil(remaining.length / PRODUCTS_PAGE_SIZE))))
+            const newTotalPages = Math.max(1, Math.ceil(remaining.length / PRODUCTS_PAGE_SIZE))
+            handlePageChange(Math.min(rawPage, newTotalPages))
+            toast.success("Product deleted successfully")
         } catch (err) {
             const reason = err instanceof Error ? err.message : String(err)
-            window.alert(`Failed to delete product: ${reason}`)
+            toast.error(`Failed to delete product: ${reason}`)
         } finally {
             setDeletingId(null)
         }
@@ -130,17 +146,21 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
             <div className="mt-6">
                 {saving || deletingId !== null ? (
                     <ProductsSkeleton />
+                ) : isOutOfRange ? (
+                    <ProductsEmptyState variant="page-out-of-range" onGoToFirstPage={() => handlePageChange(1)} />
+                ) : visibleProducts.length === 0 ? (
+                    <ProductsEmptyState variant="no-products" />
                 ) : (
                     <ProductsTable products={visibleProducts} onEdit={openEditDialog} onDelete={handleDelete} />
                 )}
             </div>
 
-            <ProductsPagination
-                page={safePage}
+            <AdminPagination
+                page={rawPage}
                 totalPages={totalPages}
                 total={products.length}
                 pageSize={PRODUCTS_PAGE_SIZE}
-                onPageChange={setPage}
+                onPageChange={handlePageChange}
             />
 
             {dialogOpen && (

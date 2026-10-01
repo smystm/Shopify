@@ -18,7 +18,9 @@
     "react": "19.2.8",
     "react-cookie": "^8.1.2",
     "react-dom": "19.2.8",
+    "react-paginate": "^8.3.0",
     "react-redux": "^9.3.0",
+    "react-toastify": "^11.1.0",
     "swr": "^2.5.1",
     "universal-cookie": "^8.1.2",
     "yup": "^1.7.1"
