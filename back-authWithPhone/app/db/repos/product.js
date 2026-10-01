@@ -33,7 +33,7 @@ class Product {
 
     all() {
         return new Promise((resolve, reject) => {
-            db.all(`SELECT id, productNumber, title, desc, category, price, created_at FROM products ORDER BY created_at DESC`, function (err, rows) {
+            db.all(`SELECT id, productNumber, title, desc, category, price, created_at FROM products ORDER BY created_at ASC`, function (err, rows) {
                 if (err) return reject(err);
 
                 const parsed = rows.map(row => ({
