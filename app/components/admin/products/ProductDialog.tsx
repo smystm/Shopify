@@ -3,11 +3,19 @@
 import { useState } from "react"
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react"
 import { XMarkIcon } from "@heroicons/react/24/outline"
-import type { AdminProduct } from "@/app/contracts/products"
+import type { AdminProduct, Category } from "@/app/contracts/products"
+
+const CATEGORY_OPTIONS = [
+   { value: "test1", label: "Test 1" },
+   { value: "test2", label: "Test 2" },
+]
 
 export interface ProductFormValues {
-   productNumber: string
-   title: string
+    productNumber: string
+    title: string
+    desc: string
+    category: Category
+    price: string
 }
 
 interface ProductDialogProps {
@@ -76,20 +84,33 @@ function ProductForm({
    saving = false,
    saveError,
 }: ProductFormProps) {
-   const [productNumber, setProductNumber] = useState(initial?.productNumber ?? suggestedNumber)
-   const [title, setTitle] = useState(initial?.title ?? "")
-   const [error, setError] = useState<string | null>(null)
+    const [productNumber, setProductNumber] = useState(initial?.productNumber ?? suggestedNumber)
+    const [title, setTitle] = useState(initial?.title ?? "")
+    const [desc, setDesc] = useState(initial?.desc ?? "")
+    const [categoryValue, setCategoryValue] = useState(initial?.category?.value ?? "")
+    const [price, setPrice] = useState(initial?.price ?? "")
+    const [error, setError] = useState<string | null>(null)
 
-   const isEditing = initial !== null
+    const isEditing = initial !== null
 
-   const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault()
-      if (!title.trim()) {
-         setError("Title is required.")
-         return
-      }
-      await onSave({ productNumber: productNumber.trim() || suggestedNumber, title: title.trim() })
-   }
+    const handleSubmit = async (e: React.FormEvent) => {
+       e.preventDefault()
+       if (!title.trim()) {
+          setError("Title is required.")
+          return
+       }
+       const category: Category = {
+          id: CATEGORY_OPTIONS.findIndex((o) => o.value === categoryValue) + 1,
+          value: categoryValue,
+       }
+       await onSave({
+          productNumber: productNumber.trim() || suggestedNumber,
+          title: title.trim(),
+          desc: desc.trim(),
+          category,
+          price: price.trim(),
+       })
+    }
 
 return (
        <>
@@ -137,22 +158,73 @@ return (
                   className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
                />
             </div>
-            <div>
-               <label htmlFor="product-title" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-                  Title
-               </label>
-               <input
-                  id="product-title"
-                  type="text"
-                  autoFocus
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Classic White T-Shirt"
-                  className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
-               />
+             <div>
+                <label htmlFor="product-title" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                   Title
+                </label>
+                <input
+                   id="product-title"
+                   type="text"
+                   autoFocus
+                   value={title}
+                   onChange={(e) => setTitle(e.target.value)}
+                   placeholder="e.g. Classic White T-Shirt"
+                   className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                />
                 {error ? <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
                 {saveError ? <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{saveError}</p> : null}
-            </div>
+             </div>
+
+             <div>
+                <label htmlFor="product-desc" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                   Description
+                </label>
+                <textarea
+                   id="product-desc"
+                   value={desc}
+                   onChange={(e) => setDesc(e.target.value)}
+                   placeholder="Describe the product..."
+                   rows={3}
+                   maxLength={200}
+                   className="mt-1.5 block w-full resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                />
+                <p className="mt-1 text-xs text-zinc-400">{desc.length}/200</p>
+             </div>
+
+             <div>
+                <label htmlFor="product-category" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                   Category
+                </label>
+                <select
+                   id="product-category"
+                   value={categoryValue}
+                   onChange={(e) => setCategoryValue(e.target.value)}
+                   className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                >
+                   <option value="" disabled>
+                      Select a category
+                   </option>
+                   {CATEGORY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                         {opt.label}
+                      </option>
+                   ))}
+                </select>
+             </div>
+
+             <div>
+                <label htmlFor="product-price" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                   Price
+                </label>
+                <input
+                   id="product-price"
+                   type="text"
+                   value={price}
+                   onChange={(e) => setPrice(e.target.value)}
+                   placeholder="e.g. 29.99"
+                   className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                />
+             </div>
 
             <div className="flex justify-end gap-2 pt-1">
                <button

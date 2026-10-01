@@ -31,18 +31,30 @@ export default function ProductsTable({ products, onEdit, onDelete }: ProductsTa
                      >
                         Product Number
                      </th>
-                     <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
-                     >
-                        Title
-                     </th>
-                     <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
-                     >
-                        Edit
-                     </th>
+                   <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
+                   >
+                      Title
+                   </th>
+                   <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
+                   >
+                      Description
+                   </th>
+                   <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
+                   >
+                      Category
+                   </th>
+                   <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
+                   >
+                      Edit
+                   </th>
                      <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
@@ -59,6 +71,12 @@ export default function ProductsTable({ products, onEdit, onDelete }: ProductsTa
                         </td>
                         <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-600 dark:text-zinc-300">
                            {product.title}
+                        </td>
+                        <td className="max-w-xs px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">
+                           <span className="line-clamp-2">{product.desc}</span>
+                        </td>
+                        <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-600 dark:text-zinc-300">
+                           {product.category?.value ?? "—"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                            <button

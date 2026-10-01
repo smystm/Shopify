@@ -4,9 +4,10 @@ class Product {
 
     create(data) {
         return new Promise((resolve, reject) => {
-            let sql = 'INSERT INTO products (productNumber, title, created_at) VALUES (?,?,?)'
+            let sql = 'INSERT INTO products (productNumber, title, desc, category, price, created_at) VALUES (?,?,?,?,?,?)'
 
-            db.run(sql, [data.productNumber, data.title, Date.now()], function (err) {
+            const category = typeof data.category === 'object' ? JSON.stringify(data.category) : data.category;
+            db.run(sql, [data.productNumber, data.title, data.desc, category, data.price, Date.now()], function (err) {
                 if (err) return reject(err);
 
                 resolve({ id: this.lastID });
@@ -19,6 +20,12 @@ class Product {
             db.get(`SELECT * FROM products WHERE ${field} = ?`, value, function (err, product) {
                 if (err) return reject(err);
 
+                if (product && product.category) {
+                    try {
+                        product.category = JSON.parse(product.category);
+                    } catch (e) {
+                    }
+                }
                 resolve(product);
             });
         });
@@ -26,10 +33,14 @@ class Product {
 
     all() {
         return new Promise((resolve, reject) => {
-            db.all(`SELECT id, productNumber, title, created_at FROM products ORDER BY created_at DESC`, function (err, rows) {
+            db.all(`SELECT id, productNumber, title, desc, category, price, created_at FROM products ORDER BY created_at DESC`, function (err, rows) {
                 if (err) return reject(err);
 
-                resolve(rows);
+                const parsed = rows.map(row => ({
+                    ...row,
+                    category: row.category ? JSON.parse(row.category) : null,
+                }));
+                resolve(parsed);
             });
         });
     }
@@ -37,7 +48,11 @@ class Product {
     update(id, data) {
         let fieldMustUpdate = Object.keys(data).map(item => `${item}=$${item}`).join(',');
         let fieldData = {};
-        Object.keys(data).forEach(item => fieldData[`$${item}`] = data[item])
+        Object.keys(data).forEach(item => {
+            fieldData[`$${item}`] = item === 'category' && typeof data[item] === 'object'
+                ? JSON.stringify(data[item])
+                : data[item];
+        })
 
         return new Promise((resolve, reject) => {
             db.run(`UPDATE products SET ${fieldMustUpdate} WHERE id = $id`, { $id: id, ...fieldData }, function (err) {

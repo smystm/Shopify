@@ -14,13 +14,13 @@ router.get('/', authMiddleware, async (req, res, next) => {
 
 router.post('/', authMiddleware, async (req, res, next) => {
   try {
-    const { productNumber, title } = req.body;
+    const { productNumber, title, desc, category, price } = req.body;
 
     if (!productNumber || !title) {
       return res.status(400).json({ status: 'fail', message: 'productNumber and title are required' });
     }
 
-    const result = await productRepo.create({ productNumber, title });
+    const result = await productRepo.create({ productNumber, title, desc, category, price });
     const product = await productRepo.findBy('id', result.id);
 
     res.status(201).json({ status: 'success', product });
@@ -32,7 +32,7 @@ router.post('/', authMiddleware, async (req, res, next) => {
 router.put('/:id', authMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { productNumber, title } = req.body;
+    const { productNumber, title, desc, category, price } = req.body;
 
     if (!productNumber || !title) {
       return res.status(400).json({ status: 'fail', message: 'productNumber and title are required' });
@@ -43,7 +43,7 @@ router.put('/:id', authMiddleware, async (req, res, next) => {
       return res.status(404).json({ status: 'fail', message: 'Product not found' });
     }
 
-    await productRepo.update(id, { productNumber, title });
+    await productRepo.update(id, { productNumber, title, desc, category, price });
     const product = await productRepo.findBy('id', id);
 
     res.json({ status: 'success', product });

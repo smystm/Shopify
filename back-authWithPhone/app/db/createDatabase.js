@@ -42,18 +42,31 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 }
             })
 
-        db.run(`CREATE TABLE products (
+        db.run(`CREATE TABLE IF NOT EXISTS products (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 productNumber text,
                 title text,
+                desc text,
+                category text,
+                price text,
                 created_at TIMESTAMP
-            )`, (err) => {
+             )`, (err) => {
                 if (err) {
                     // Table already created
                 } else{
                     // Table just created, creating some rows
                 }
             })
+
+        db.all(`PRAGMA table_info(products)`, (err, columns) => {
+            if (err) return;
+            const colNames = columns.map(c => c.name);
+            const alterations = [];
+            if (!colNames.includes('desc')) alterations.push('ALTER TABLE products ADD COLUMN desc text');
+            if (!colNames.includes('category')) alterations.push('ALTER TABLE products ADD COLUMN category text');
+            if (!colNames.includes('price')) alterations.push('ALTER TABLE products ADD COLUMN price text');
+            alterations.forEach(sql => db.run(sql, () => {}));
+        })
     }
 });
 
