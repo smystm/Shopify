@@ -5,9 +5,12 @@ interface ProductsTableProps {
    products: AdminProduct[]
    onEdit: (product: AdminProduct) => void
    onDelete: (id: number) => void
+   // Callbacks decide whether the current user can edit/delete each row.
+   canEdit?: (product: AdminProduct) => boolean
+   canDelete?: (product: AdminProduct) => boolean
 }
 
-export default function ProductsTable({ products, onEdit, onDelete }: ProductsTableProps) {
+export default function ProductsTable({ products, onEdit, onDelete, canEdit, canDelete }: ProductsTableProps) {
     return (
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-950">
          <div className="overflow-x-auto">
@@ -67,26 +70,30 @@ export default function ProductsTable({ products, onEdit, onDelete }: ProductsTa
                         <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-600 dark:text-zinc-300">
                            {product.category?.value ?? "—"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <button
-                              type="button"
-                              onClick={() => onEdit(product)}
-                              aria-label={`Edit ${product.title}`}
-                              className="inline-flex items-center rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                           >
-                              <PencilSquareIcon aria-hidden="true" className="h-5 w-5" />
-                           </button>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <button
-                              type="button"
-                              onClick={() => onDelete(product.id)}
-                              aria-label={`Delete ${product.title}`}
-                              className="inline-flex items-center rounded-md p-1.5 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
-                           >
-                              <TrashIcon aria-hidden="true" className="h-5 w-5" />
-                           </button>
-                        </td>
+                         <td className="px-6 py-4 whitespace-nowrap">
+                            {canEdit?.(product) && (
+                               <button
+                                  type="button"
+                                  onClick={() => onEdit(product)}
+                                  aria-label={`Edit ${product.title}`}
+                                  className="inline-flex items-center rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                               >
+                                  <PencilSquareIcon aria-hidden="true" className="h-5 w-5" />
+                               </button>
+                            )}
+                         </td>
+                         <td className="px-6 py-4 whitespace-nowrap">
+                            {canDelete?.(product) && (
+                               <button
+                                  type="button"
+                                  onClick={() => onDelete(product.id)}
+                                  aria-label={`Delete ${product.title}`}
+                                  className="inline-flex items-center rounded-md p-1.5 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                               >
+                                  <TrashIcon aria-hidden="true" className="h-5 w-5" />
+                               </button>
+                            )}
+                         </td>
                      </tr>
                   ))}
                </tbody>

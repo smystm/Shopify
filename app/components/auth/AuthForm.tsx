@@ -51,12 +51,15 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
                return
             }
          }
-         if (res.status === 200) {
-            const loggedInUser = {
-               name: res.data.user?.name ?? values.name,
-               // email: res.data.user?.email ?? values.email,
-               phone: res.data.user?.phone ?? values.phone,
-            }
+          if (res.status === 200) {
+             const loggedInUser = {
+                id: res.data.user?.id,
+                name: res.data.user?.name ?? values.name,
+                // email: res.data.user?.email ?? values.email,
+                phone: res.data.user?.phone ?? values.phone,
+                // Keep the permission from the backend so the admin UI can gate actions.
+                permission: res.data.user?.permission,
+             }
             setCookie("shopy-token", res.data?.user?.token, {
                maxAge: 3600 * 24 * 30,
                path: "/",

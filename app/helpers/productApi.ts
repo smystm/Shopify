@@ -1,4 +1,5 @@
 import type { AdminProduct, Category } from "@/app/contracts/products"
+import { getLoginToken } from "./auth"
 
 interface ProductPayload {
     productNumber: string
@@ -10,16 +11,19 @@ interface ProductPayload {
 
 const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
 
+// Always send the raw JWT header expected by the backend when available.
+function authHeaders(token?: string): Record<string, string> {
+    const resolvedToken = token ?? getLoginToken()
+    return resolvedToken ? { Authorization: resolvedToken } : {}
+}
+
 async function getProducts(token?: string): Promise<AdminProduct[]> {
-   const headers: Record<string, string> = {}
-   if (token) {
-      headers["Authorization"] = token
-   }
-   const res = await fetch(`${API_BASE}/products`, {
-      headers,
-      credentials: "include",
-      cache: "no-store",
-   })
+    const headers = authHeaders(token)
+    const res = await fetch(`${API_BASE}/products`, {
+       headers,
+       credentials: "include",
+       cache: "no-store",
+    })
    if (!res.ok) {
       const detail = await res.text().catch(() => "")
       throw new Error(`GET /products failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
@@ -32,12 +36,12 @@ async function getProducts(token?: string): Promise<AdminProduct[]> {
 }
 
 async function createProduct(data: ProductPayload): Promise<AdminProduct> {
-   const res = await fetch(`${API_BASE}/products`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(data),
-   })
+    const res = await fetch(`${API_BASE}/products`, {
+       method: "POST",
+       headers: { "Content-Type": "application/json", ...authHeaders() },
+       credentials: "include",
+       body: JSON.stringify(data),
+    })
    if (!res.ok) {
       const detail = await res.text().catch(() => "")
       throw new Error(`POST /products failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
@@ -50,12 +54,12 @@ async function createProduct(data: ProductPayload): Promise<AdminProduct> {
 }
 
 async function updateProduct(id: number, data: ProductPayload): Promise<AdminProduct> {
-   const res = await fetch(`${API_BASE}/products/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(data),
-   })
+    const res = await fetch(`${API_BASE}/products/${id}`, {
+       method: "PUT",
+       headers: { "Content-Type": "application/json", ...authHeaders() },
+       credentials: "include",
+       body: JSON.stringify(data),
+    })
    if (!res.ok) {
       const detail = await res.text().catch(() => "")
       throw new Error(`PUT /products/${id} failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
@@ -68,10 +72,11 @@ async function updateProduct(id: number, data: ProductPayload): Promise<AdminPro
 }
 
 async function deleteProduct(id: number): Promise<void> {
-   const res = await fetch(`${API_BASE}/products/${id}`, {
-      method: "DELETE",
-      credentials: "include",
-   })
+    const res = await fetch(`${API_BASE}/products/${id}`, {
+       method: "DELETE",
+       headers: authHeaders(),
+       credentials: "include",
+    })
    if (!res.ok) {
       const detail = await res.text().catch(() => "")
       throw new Error(`DELETE /products/${id} failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)

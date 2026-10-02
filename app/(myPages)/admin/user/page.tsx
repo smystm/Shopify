@@ -1,6 +1,10 @@
 import { cookies } from "next/headers"
 import UsersClient from "@/app/components/admin/user/UsersClient"
+import AccessDenied from "@/app/components/admin/AccessDenied"
 import type { AdminUser } from "@/app/components/admin/user/UsersTable"
+import { getCurrentUser } from "@/app/helpers/getCurrentUser"
+import { canViewAdmin } from "@/app/lib/permissions"
+import type { AuthUser } from "@/app/lib/store/authSlice"
 
 const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
 
@@ -26,8 +30,13 @@ export default async function AdminUsersPage() {
 
    let users: AdminUser[] = []
    let loadError: string | null = null
+   let currentUser: AuthUser | null = null
    try {
-      users = await getUsers(token)
+      // Check the user's permission before loading admin data.
+      currentUser = await getCurrentUser(token)
+      if (currentUser && canViewAdmin(currentUser.permission)) {
+         users = await getUsers(token)
+      }
    } catch (err) {
       const reason = err instanceof Error ? err.message : String(err)
       loadError = `Could not load users from the API (${reason}). Make sure the phone-auth backend (back-authWithPhone) is running on :5000 with the protected GET /api/users endpoint, and that you are logged in with a fresh phone-verified token.`
@@ -40,6 +49,10 @@ export default async function AdminUsersPage() {
             <p className="mx-auto mt-1 max-w-md text-sm text-red-600/90 dark:text-red-400/90">{loadError}</p>
          </div>
       )
+   }
+
+   if (!currentUser || !canViewAdmin(currentUser.permission)) {
+      return <AccessDenied />
    }
 
    return <UsersClient initialUsers={users} />
