@@ -4,9 +4,9 @@ class User {
 
     create(data) {
         return new Promise((reslove , reject) => {
-            let sql ='INSERT INTO users (name, phone, created_at) VALUES (?,?,?)'
+            let sql ='INSERT INTO users (name, phone, permission, created_at) VALUES (?,?,?,?)'
     
-            db.run(sql, [ data.name, data.phone, Date.now() ], function (err, innerResult) {
+            db.run(sql, [ data.name, data.phone, data.permission ?? 'NoAccess', Date.now() ], function (err, innerResult) {
                 if (err) return reject(err);
         
                 reslove();
@@ -31,7 +31,7 @@ class User {
         return new Promise((resolve , reject) => {
 
             // Only safe columns: never expose token.
-            db.all(`SELECT id, name, phone, created_at FROM users ORDER BY created_at DESC`, function(err , rows) {
+            db.all(`SELECT id, name, phone, permission, created_at FROM users ORDER BY created_at DESC`, function(err , rows) {
                 if(err) return reject(err);
     
                 resolve(rows);

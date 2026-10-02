@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { removeLoginAuth } from "@/app/helpers/auth"
 import { logout } from "@/app/lib/store/authSlice"
 import type { RootState } from "@/app/lib/store/store"
+import useAuth from "@/app/lib/store/useAuth"
 
 interface AdminHeaderProps {
    onMenuClick: () => void
@@ -18,6 +19,8 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
    const dispatch = useDispatch()
    const user = useSelector((state: RootState) => state.auth.user)
    const [, , removeCookie] = useCookies(["shopy-token", "shopy-user"])
+   // Refresh the Redux user/permission from the backend while the admin shell is open.
+   useAuth()
 
    const displayName: string = user?.name || user?.email || user?.phone || "Admin"
    const displayDetail: string = user?.email || user?.phone || "Administrator"

@@ -1,9 +1,12 @@
+import type { Permission } from "@/app/lib/permissions"
+
 export interface AdminUser {
    id: number
    name?: string | null
    email?: string | null
    phone?: string | null
    created_at?: number | string | null
+   permission?: Permission | null
 }
 
 interface UsersTableProps {
@@ -36,13 +39,19 @@ export default function UsersTable({ users }: UsersTableProps) {
                      >
                         Contact
                      </th>
-                     <th
-                        scope="col"
-                        className="hidden px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase sm:table-cell dark:text-zinc-400"
-                     >
-                        Joined
-                     </th>
-                  </tr>
+                      <th
+                         scope="col"
+                         className="hidden px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase sm:table-cell dark:text-zinc-400"
+                      >
+                         Joined
+                      </th>
+                      <th
+                         scope="col"
+                         className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
+                      >
+                         Permission
+                      </th>
+                   </tr>
                </thead>
                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                   {users.map((user) => {
@@ -66,10 +75,13 @@ export default function UsersTable({ users }: UsersTableProps) {
                            <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-600 dark:text-zinc-300">
                               {contact}
                            </td>
-                           <td className="hidden px-6 py-4 text-sm whitespace-nowrap text-zinc-500 sm:table-cell dark:text-zinc-400">
-                              {formatJoined(user.created_at)}
-                           </td>
-                        </tr>
+                            <td className="hidden px-6 py-4 text-sm whitespace-nowrap text-zinc-500 sm:table-cell dark:text-zinc-400">
+                               {formatJoined(user.created_at)}
+                            </td>
+                            <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-600 dark:text-zinc-300">
+                               {user.permission ?? "NoAccess"}
+                            </td>
+                         </tr>
                      )
                   })}
                </tbody>

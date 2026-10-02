@@ -22,8 +22,9 @@ const auth = (req, res, next) => {
                 return res.status(403).json({ status: 'fail' , message : 'unauthenticated'})
             }
 
-            const { id , name , phone } = user;
-            req.user = { id , name , phone }
+            const { id , name , phone, permission } = user;
+            // Permission comes from the database, not the token, so admin changes apply immediately.
+            req.user = { id , name , phone, permission }
             next()
         });
     } catch(err) {

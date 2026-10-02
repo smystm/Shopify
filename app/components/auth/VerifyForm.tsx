@@ -82,11 +82,14 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
          console.log(res.data?.user?.token)
          clearPhoneToken()
 
-         const verifiedUser = {
-            name: res.data?.user?.name,
-            email: res.data?.user?.email,
-            phone: res.data?.user?.phone,
-         }
+          const verifiedUser = {
+             id: res.data?.user?.id,
+             name: res.data?.user?.name,
+             email: res.data?.user?.email,
+             phone: res.data?.user?.phone,
+             // Keep the permission from the backend so the admin UI can gate actions.
+             permission: res.data?.user?.permission,
+          }
 
          //Task: Store the token in cookies for future authenticated requests
          storeLoginToken(res.data?.user?.token)

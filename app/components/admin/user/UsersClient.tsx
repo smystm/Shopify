@@ -5,8 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation"
 import AdminPagination from "@/app/components/admin/AdminPagination"
 import UsersTable from "./UsersTable"
 import UsersEmptyState from "./UsersEmptyState"
+import AccessDenied from "@/app/components/admin/AccessDenied"
 import type { AdminUser } from "./UsersTable"
 import { USERS_PAGE_SIZE } from "@/app/lib/users"
+import { useAppSelector } from "@/app/lib/store/hooks"
+import { selectPermission } from "@/app/lib/store/authSlice"
 
 interface UsersClientProps {
     initialUsers: AdminUser[]
@@ -16,6 +19,8 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [users] = useState<AdminUser[]>(initialUsers)
+    // Use the permission stored in Redux; useAuth refreshes it from /user.
+    const permission = useAppSelector(selectPermission)
 
     const pageParam = searchParams.get("page")
     const rawPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1)
@@ -37,7 +42,11 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
 
     return (
       <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          {permission === "NoAccess" ? (
+            <AccessDenied />
+          ) : (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-3">
              <div>
                 <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">Users</h1>
                 <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Everyone registered on your store.</p>
@@ -57,18 +66,20 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
              )}
           </div>
 
-          {
-             totalPages > 1 && (
-                <AdminPagination
-                   page={rawPage}
-                   totalPages={totalPages}
-                   total={users.length}
-                   pageSize={USERS_PAGE_SIZE}
-                   onPageChange={handlePageChange}
-                />
-             )
-          }
+              {
+                 totalPages > 1 && (
+                    <AdminPagination
+                       page={rawPage}
+                       totalPages={totalPages}
+                       total={users.length}
+                       pageSize={USERS_PAGE_SIZE}
+                       onPageChange={handlePageChange}
+                    />
+                 )
+              }
+            </>
+          )}
 
       </>
     )
-}
+ }
