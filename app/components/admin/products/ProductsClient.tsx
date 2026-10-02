@@ -3,15 +3,14 @@
 import { useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { PlusIcon } from "@heroicons/react/24/outline"
-import { toast } from "react-toastify"
-import ProductDialog, { type ProductFormValues } from "./ProductDialog"
+import ProductCreateDialog from "./ProductCreateDialog"
+import ProductEditDialog from "./ProductEditDialog"
+import ProductDeleteDialog from "./ProductDeleteDialog"
 import AdminPagination from "@/app/components/admin/AdminPagination"
-import ProductsSkeleton from "./ProductsSkeleton"
 import ProductsTable from "./ProductsTable"
 import ProductsEmptyState from "./ProductsEmptyState"
 import type { AdminProduct } from "@/app/contracts/products"
 import { PRODUCTS_PAGE_SIZE, suggestProductNumber } from "@/app/lib/products"
-import { createProduct, updateProduct, deleteProduct } from "@/app/helpers/productApi"
 
 interface ProductsClientProps {
     initialProducts: AdminProduct[]
@@ -21,9 +20,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
     const router = useRouter()
     const searchParams = useSearchParams()
     const [products, setProducts] = useState<AdminProduct[]>(initialProducts)
-    const [saving, setSaving] = useState(false)
-    const [saveError, setSaveError] = useState<string | null>(null)
-    const [deletingId, setDeletingId] = useState<number | null>(null)
+    const [pendingDelete, setPendingDelete] = useState<AdminProduct | null>(null)
 
     const pageParam = searchParams.get("page")
     const rawPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1)
@@ -47,76 +44,24 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
         router.push(`?${params.toString()}`, { scroll: false })
     }
 
-    const dialogOpen = createModal || !!editing
-
-    const openAddDialog = () => {
-        router.push("/admin/products?create=true", { scroll: false })
-    }
-
-    const openEditDialog = (product: AdminProduct) => {
-        router.push(`/admin/products?edit=${product.id}`, { scroll: false })
-    }
-
     const closeDialog = () => {
         router.push("/admin/products", { scroll: false })
     }
 
-    const handleSave = async (values: ProductFormValues) => {
-        setSaving(true)
-        setSaveError(null)
-
-        try {
-            if (editing) {
-                const updated = await updateProduct(editing.id, {
-                    productNumber: values.productNumber,
-                    title: values.title,
-                    desc: values.desc,
-                    category: values.category,
-                    price: values.price,
-                })
-                setProducts((prev) => prev.map((p) => (p.id === editing.id ? updated : p)))
-                toast.success("Product updated successfully")
-            } else {
-                const created = await createProduct({
-                    productNumber: values.productNumber,
-                    title: values.title,
-                    desc: values.desc,
-                    category: values.category,
-                    price: values.price,
-                })
-                setProducts((prev) => [created, ...prev])
-                handlePageChange(1)
-                toast.success("Product added successfully")
-            }
-            closeDialog()
-        } catch (err) {
-            const reason = err instanceof Error ? err.message : String(err)
-            setSaveError(`Failed to save product: ${reason}`)
-            toast.error(`Failed to save product: ${reason}`)
-        } finally {
-            setSaving(false)
-        }
+    const handleCreated = (product: AdminProduct) => {
+        setProducts((prev) => [product, ...prev])
+        handlePageChange(1)
     }
 
-    const handleDelete = async (id: number) => {
-        const target = products.find((p) => p.id === id)
-        if (!target) return
-        if (!window.confirm(`Delete "${target.title}"? This will permanently remove it.`)) return
+    const handleUpdated = (product: AdminProduct) => {
+        setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)))
+    }
 
-        setDeletingId(id)
-        try {
-            await deleteProduct(id)
-            const remaining = products.filter((p) => p.id !== id)
-            setProducts(remaining)
-            const newTotalPages = Math.max(1, Math.ceil(remaining.length / PRODUCTS_PAGE_SIZE))
-            handlePageChange(Math.min(rawPage, newTotalPages))
-            toast.success("Product deleted successfully")
-        } catch (err) {
-            const reason = err instanceof Error ? err.message : String(err)
-            toast.error(`Failed to delete product: ${reason}`)
-        } finally {
-            setDeletingId(null)
-        }
+    const handleDeleted = (id: number) => {
+        const remaining = products.filter((p) => p.id !== id)
+        setProducts(remaining)
+        const newTotalPages = Math.max(1, Math.ceil(remaining.length / PRODUCTS_PAGE_SIZE))
+        handlePageChange(Math.min(rawPage, newTotalPages))
     }
 
     return (
@@ -134,7 +79,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                     </span>
                     <button
                         type="button"
-                        onClick={openAddDialog}
+                        onClick={() => router.push("/admin/products?create=true", { scroll: false })}
                         className="inline-flex items-center gap-x-1.5 rounded-md bg-zinc-950 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                     >
                         <PlusIcon aria-hidden="true" className="h-5 w-5" />
@@ -144,14 +89,19 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
             </div>
 
             <div className="mt-6">
-                {saving || deletingId !== null ? (
-                    <ProductsSkeleton />
-                ) : isOutOfRange ? (
+                {isOutOfRange ? (
                     <ProductsEmptyState variant="page-out-of-range" onGoToFirstPage={() => handlePageChange(1)} />
                 ) : visibleProducts.length === 0 ? (
                     <ProductsEmptyState variant="no-products" />
                 ) : (
-                    <ProductsTable products={visibleProducts} onEdit={openEditDialog} onDelete={handleDelete} />
+                    <ProductsTable
+                        products={visibleProducts}
+                        onEdit={(p) => router.push(`/admin/products?edit=${p.id}`, { scroll: false })}
+                        onDelete={(id) => {
+                            const target = products.find((p) => p.id === id)
+                            if (target) setPendingDelete(target)
+                        }}
+                    />
                 )}
             </div>
 
@@ -163,17 +113,26 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 onPageChange={handlePageChange}
             />
 
-            {dialogOpen && (
-                <ProductDialog
-                    open={true}
-                    initial={editing}
-                    suggestedNumber={suggestProductNumber(products.length)}
+            <ProductCreateDialog
+                open={createModal}
+                suggestedNumber={suggestProductNumber(products.length)}
+                onClose={closeDialog}
+                onCreated={handleCreated}
+            />
+
+            {editing && (
+                <ProductEditDialog
+                    product={editing}
                     onClose={closeDialog}
-                    onSave={handleSave}
-                    saving={saving}
-                    saveError={saveError}
+                    onUpdated={handleUpdated}
                 />
             )}
+
+            <ProductDeleteDialog
+                product={pendingDelete}
+                onClose={() => setPendingDelete(null)}
+                onDeleted={handleDeleted}
+            />
         </>
     )
 }
