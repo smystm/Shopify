@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import UsersClient from "@/app/components/admin/user/UsersClient"
 import AccessDenied from "@/app/components/admin/AccessDenied"
@@ -5,6 +6,11 @@ import type { AdminUser } from "@/app/components/admin/user/UsersTable"
 import { getCurrentUser } from "@/app/helpers/getCurrentUser"
 import { canViewAdmin } from "@/app/lib/permissions"
 import type { AuthUser } from "@/app/lib/store/authSlice"
+
+export const metadata: Metadata = {
+   title: "Users — Shopify Admin",
+   description: "Manage users — view, edit, and control user accounts.",
+}
 
 const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
 

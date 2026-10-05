@@ -24,7 +24,8 @@ export default function Home() {
 
    return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 py-12 font-sans dark:bg-black">
-         <h1 className="mb-2 text-3xl font-bold tracking-tight">🛍️ Shopify</h1>
+         {/* <h1 className="mb-2 text-3xl font-bold tracking-tight">🛍️ Shopify</h1> */}
+         <h3 className="mb-1 text-3xl font-medium tracking-tight font-vazirmatn">شاپیفای - دمو🛍️</h3>
          <p className="mb-8 text-sm text-zinc-500">Your e-commerce starter</p>
          <div className="flex gap-3">
             <Link

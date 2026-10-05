@@ -1,7 +1,8 @@
+import type { Metadata } from "next"
 import Yokoso from "@/app/components/auth/Yokoso"
 import LoginClient from "./LoginClient"
 
-export const metadata = {
+export const metadata: Metadata = {
    title: "Log in — Shopify",
    description: "Log in to continue shopping.",
 }

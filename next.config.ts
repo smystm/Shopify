@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     globalNotFound: true
+  },
+  images:{
+    domains: [""] // use it for a external images 
   }
 };
 

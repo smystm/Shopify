@@ -1,3 +1,10 @@
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+   title: "Dashboard — Shopify Admin",
+   description: "Admin dashboard — manage your store, products, and users.",
+}
+
 export default function page() {
    return (
       <div>
