@@ -4,13 +4,13 @@ var authMiddleware = require('./middlewares/auth');
 var productRepo = require('../app/db/repos/product');
 const { canViewProducts, canCreateProducts, canModifyProduct } = require('../app/services/permissions');
 
-router.get('/', authMiddleware, async (req, res, next) => {
+// comment code : Only users with some product access can list products.
+//router.get('/', authMiddleware, async (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
-    // Only users with some product access can list products.
-    if (!canViewProducts(req.user.permission)) {
-      return res.status(403).json({ status: 'fail', message: 'You do not have permission to view products' });
-    }
-
+    // if (!canViewProducts(req.user.permission)) {
+    //   return res.status(403).json({ status: 'fail', message: 'You do not have permission to view products' });
+    // }
     const products = await productRepo.all();
     res.json({ status: 'success', products });
   } catch (err) {

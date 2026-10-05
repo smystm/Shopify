@@ -1,7 +1,8 @@
+import type { Metadata } from "next"
 import Yokoso from "@/app/components/auth/Yokoso"
 import AuthForm from "@/app/components/auth/AuthForm"
 
-export const metadata = {
+export const metadata: Metadata = {
    title: "Create account — Shopify",
    description: "Create your Shopify account.",
 }

@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import ProductsClient from "@/app/components/admin/products/ProductsClient"
 import AccessDenied from "@/app/components/admin/AccessDenied"
@@ -6,6 +7,11 @@ import { getCurrentUser } from "@/app/helpers/getCurrentUser"
 import { canViewAdmin } from "@/app/lib/permissions"
 import type { AuthUser } from "@/app/lib/store/authSlice"
 import type { AdminProduct } from "@/app/contracts/products"
+
+export const metadata: Metadata = {
+   title: "Products — Shopify Admin",
+   description: "Manage products — add, edit, and organize your store inventory.",
+}
 
 export default async function AdminProductsPage() {
    const token = (await cookies()).get("shopy-token")?.value

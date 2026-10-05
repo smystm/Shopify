@@ -1,7 +1,8 @@
+import type { Metadata } from "next"
 import Yokoso from "@/app/components/auth/Yokoso"
 import VerifyForm from "@/app/components/auth/VerifyForm"
 
-export const metadata = {
+export const metadata: Metadata = {
    title: "Verify phone — Shopify",
    description: "Enter the verification code sent to your phone.",
 }
