@@ -19,20 +19,29 @@ function authHeaders(token?: string): Record<string, string> {
 
 async function getProducts(token?: string): Promise<AdminProduct[]> {
     const headers = authHeaders(token)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
     const res = await fetch(`${API_BASE}/products`, {
-       headers,
-       credentials: "include",
-       cache: "no-store",
+        headers,
+        credentials: "include",
+        cache: "no-store",
+        signal: controller.signal,
     })
-   if (!res.ok) {
-      const detail = await res.text().catch(() => "")
-      throw new Error(`GET /products failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
-   }
-   const body: unknown = await res.json()
-   if (typeof body === "object" && body !== null && Array.isArray((body as { products?: unknown }).products)) {
-      return (body as { products: AdminProduct[] }).products
-   }
-   return []
+    clearTimeout(timeout)
+    if (!res.ok) {
+        const detail = await res.text().catch(() => "")
+        throw new Error(`GET /products failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
+    }
+    const body: unknown = await res.json()
+    if (typeof body === "object" && body !== null && Array.isArray((body as { products?: unknown }).products)) {
+        return (body as { products: AdminProduct[] }).products
+    }
+    return []
+}
+
+async function getSingleProduct(id: number, token?: string): Promise<AdminProduct | null> {
+    const products = await getProducts(token)
+    return products.find((p) => p.id === id) ?? null
 }
 
 async function createProduct(data: ProductPayload): Promise<AdminProduct> {
@@ -83,4 +92,4 @@ async function deleteProduct(id: number): Promise<void> {
    }
 }
 
-export { getProducts, createProduct, updateProduct, deleteProduct }
+export { getProducts, getSingleProduct, createProduct, updateProduct, deleteProduct }

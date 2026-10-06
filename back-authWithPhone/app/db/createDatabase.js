@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose()
 const DBSOURCE = "usersdb.sqlite";
 const bcrypt = require('bcryptjs');
+const { productImageForTitle } = require('../services/productImages');
 
 let db = new sqlite3.Database(DBSOURCE, (err) => {
     if (err) {
@@ -63,6 +64,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 desc text,
                 category text,
                 price text,
+                image text,
                 created_by INTEGER,
                 created_at TIMESTAMP
              )`, (err) => {
@@ -80,9 +82,18 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             if (!colNames.includes('desc')) alterations.push('ALTER TABLE products ADD COLUMN desc text');
             if (!colNames.includes('category')) alterations.push('ALTER TABLE products ADD COLUMN category text');
             if (!colNames.includes('price')) alterations.push('ALTER TABLE products ADD COLUMN price text');
+            if (!colNames.includes('image')) alterations.push('ALTER TABLE products ADD COLUMN image text');
             // created_by links products to the user who added them.
             if (!colNames.includes('created_by')) alterations.push('ALTER TABLE products ADD COLUMN created_by INTEGER');
             alterations.forEach(sql => db.run(sql, () => {}));
+
+            // Keep existing products in sync with the title-based weapon image mapping.
+            db.all(`SELECT id, title FROM products`, (productsErr, products) => {
+                if (productsErr) return;
+                products.forEach(product => {
+                    db.run(`UPDATE products SET image = ? WHERE id = ?`, [productImageForTitle(product.title), product.id]);
+                });
+            });
         })
     }
 });

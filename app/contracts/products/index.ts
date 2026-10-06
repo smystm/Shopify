@@ -11,6 +11,7 @@ export interface AdminProduct {
     desc: string
     category: Category
     created_at?: number | string | null
+    image: string | null
     // User ID of the user who created this product.
     created_by?: number | null
 }

@@ -4,10 +4,10 @@ class Product {
 
     create(data) {
         return new Promise((resolve, reject) => {
-            let sql = 'INSERT INTO products (productNumber, title, desc, category, price, created_by, created_at) VALUES (?,?,?,?,?,?,?)'
+            let sql = 'INSERT INTO products (productNumber, title, desc, category, price, image, created_by, created_at) VALUES (?,?,?,?,?,?,?,?)'
 
             const category = typeof data.category === 'object' ? JSON.stringify(data.category) : data.category;
-            db.run(sql, [data.productNumber, data.title, data.desc, category, data.price, data.created_by ?? null, Date.now()], function (err) {
+            db.run(sql, [data.productNumber, data.title, data.desc, category, data.price, data.image ?? null, data.created_by ?? null, Date.now()], function (err) {
                 if (err) return reject(err);
 
                 resolve({ id: this.lastID });
@@ -33,7 +33,7 @@ class Product {
 
     all() {
         return new Promise((resolve, reject) => {
-            db.all(`SELECT id, productNumber, title, desc, category, price, created_by, created_at FROM products ORDER BY created_at ASC`, function (err, rows) {
+            db.all(`SELECT id, productNumber, title, desc, category, price, image, created_by, created_at FROM products ORDER BY created_at ASC`, function (err, rows) {
                 if (err) return reject(err);
 
                 const parsed = rows.map(row => ({
