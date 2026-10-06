@@ -7,7 +7,7 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
     return (
         <div className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950">
-            <div className="relative aspect-square w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+            <div className="relative h-75 w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
                 <span className="absolute right-2 top-2 rounded-full bg-black/20 px-2 py-0.5 text-xs font-medium text-zinc-200 dark:text-zinc-300">
                     {product.category?.value ?? "General"}
                 </span>
