@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Bars3Icon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { useAppSelector } from "@/app/lib/store/hooks"
@@ -16,9 +16,14 @@ const futureLinks = [
 
 export default function SiteHeader() {
    const [mobileOpen, setMobileOpen] = useState(false)
+   const [mounted, setMounted] = useState(false)
    const user = useAppSelector((s) => s.auth.user)
    const hydrated = useAppSelector((s) => s.auth.hydrated)
    const showAdmin = user && canViewAdmin(user.permission)
+
+   useEffect(() => {
+      setMounted(true)
+   }, [])
 
    return (
       <>
@@ -62,7 +67,7 @@ export default function SiteHeader() {
                </nav>
 
                <div className="flex flex-1 justify-end items-center gap-x-3">
-                  {hydrated && user ? (
+                  {!mounted ? null : hydrated && user ? (
                      <UserMenu />
                   ) : !hydrated ? null : (
                      <>
