@@ -12,7 +12,16 @@ router.get('/', async (req, res, next) => {
     // if (!canViewProducts(req.user.permission)) {
     //   return res.status(403).json({ status: 'fail', message: 'You do not have permission to view products' });
     // }
-    const products = await productRepo.all();
+    const { category, minPrice, maxPrice } = req.query;
+    const categories = Array.isArray(category)
+        ? category
+        : category
+            ? [category]
+            : [];
+    const hasFilters = categories.length > 0 || minPrice || maxPrice;
+    const products = hasFilters
+        ? await productRepo.allFiltered({ categories, minPrice, maxPrice })
+        : await productRepo.all();
     res.json({ status: 'success', products });
   } catch (err) {
     next(err);

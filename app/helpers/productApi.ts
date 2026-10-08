@@ -1,74 +1,91 @@
 import type { AdminProduct, Category } from "@/app/contracts/products"
 import { getLoginToken } from "./auth"
 
+const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
+
+// getCategories — fetch the list of all categories.
 async function getCategories(): Promise<Category[]> {
-    const res = await fetch(`${API_BASE}/categories`, {
-        headers: authHeaders(),
-        credentials: "include",
-        cache: "no-store",
-    })
-    if (!res.ok) {
-        const detail = await res.text().catch(() => "")
-        throw new Error(`GET /categories failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
-    }
-    const body: unknown = await res.json()
-    if (typeof body === "object" && body !== null && Array.isArray((body as { categories?: unknown }).categories)) {
-        return (body as { categories: Category[] }).categories
-    }
-    return []
+   const res = await fetch(`${API_BASE}/categories`, {
+      headers: authHeaders(),
+      credentials: "include",
+      cache: "no-store",
+   })
+   if (!res.ok) {
+      const detail = await res.text().catch(() => "")
+      throw new Error(`GET /categories failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
+   }
+   const body: unknown = await res.json()
+   if (typeof body === "object" && body !== null && Array.isArray((body as { categories?: unknown }).categories)) {
+      return (body as { categories: Category[] }).categories
+   }
+   return []
 }
 
 interface ProductPayload {
-    productNumber: string
-    title: string
-    desc: string
-    category: Category
-    price: string
-    image: string
+   productNumber: string
+   title: string
+   desc: string
+   category: Category
+   price: string
+   image: string
 }
-
-const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
 
 // Always send the raw JWT header expected by the backend when available.
 function authHeaders(token?: string): Record<string, string> {
-    const resolvedToken = token ?? getLoginToken()
-    return resolvedToken ? { Authorization: resolvedToken } : {}
+   const resolvedToken = token ?? getLoginToken()
+   return resolvedToken ? { Authorization: resolvedToken } : {}
 }
 
-async function getProducts(token?: string): Promise<AdminProduct[]> {
-    const headers = authHeaders(token)
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 5000)
-    const res = await fetch(`${API_BASE}/products`, {
-        headers,
-        credentials: "include",
-        cache: "no-store",
-        signal: controller.signal,
-    })
-    clearTimeout(timeout)
-    if (!res.ok) {
-        const detail = await res.text().catch(() => "")
-        throw new Error(`GET /products failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
-    }
-    const body: unknown = await res.json()
-    if (typeof body === "object" && body !== null && Array.isArray((body as { products?: unknown }).products)) {
-        return (body as { products: AdminProduct[] }).products
-    }
-    return []
+interface ProductFilters {
+   categories?: string[]
+   minPrice?: string
+   maxPrice?: string
 }
 
+// getProducts — fetch all products, optionally filtered by category and price range.
+async function getProducts(options?: { token?: string; filters?: ProductFilters }): Promise<AdminProduct[]> {
+   const headers = authHeaders(options?.token)
+   const params = new URLSearchParams()
+   if (options?.filters?.categories) {
+      options.filters.categories.forEach((c) => params.append("category", c))
+   }
+   if (options?.filters?.minPrice) params.set("minPrice", options.filters.minPrice)
+   if (options?.filters?.maxPrice) params.set("maxPrice", options.filters.maxPrice)
+   const query = params.toString() ? `?${params.toString()}` : ""
+   const controller = new AbortController()
+   const timeout = setTimeout(() => controller.abort(), 5000)
+   const res = await fetch(`${API_BASE}/products${query}`, {
+      headers,
+      credentials: "include",
+      cache: "no-store",
+      signal: controller.signal,
+   })
+   clearTimeout(timeout)
+   if (!res.ok) {
+      const detail = await res.text().catch(() => "")
+      throw new Error(`GET /products failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
+   }
+   const body: unknown = await res.json()
+   if (typeof body === "object" && body !== null && Array.isArray((body as { products?: unknown }).products)) {
+      return (body as { products: AdminProduct[] }).products
+   }
+   return []
+}
+
+// getSingleProduct — fetch one product by ID.
 async function getSingleProduct(id: number, token?: string): Promise<AdminProduct | null> {
-    const products = await getProducts(token)
-    return products.find((p) => p.id === id) ?? null
+   const products = await getProducts({ token })
+   return products.find((p) => p.id === id) ?? null
 }
 
+// createProduct — create a new product.
 async function createProduct(data: ProductPayload): Promise<AdminProduct> {
-    const res = await fetch(`${API_BASE}/products`, {
-       method: "POST",
-       headers: { "Content-Type": "application/json", ...authHeaders() },
-       credentials: "include",
-       body: JSON.stringify(data),
-    })
+   const res = await fetch(`${API_BASE}/products`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      credentials: "include",
+      body: JSON.stringify(data),
+   })
    if (!res.ok) {
       const detail = await res.text().catch(() => "")
       throw new Error(`POST /products failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
@@ -80,13 +97,14 @@ async function createProduct(data: ProductPayload): Promise<AdminProduct> {
    throw new Error("Unexpected response from POST /products")
 }
 
+// updateProduct — update an existing product by ID.
 async function updateProduct(id: number, data: ProductPayload): Promise<AdminProduct> {
-    const res = await fetch(`${API_BASE}/products/${id}`, {
-       method: "PUT",
-       headers: { "Content-Type": "application/json", ...authHeaders() },
-       credentials: "include",
-       body: JSON.stringify(data),
-    })
+   const res = await fetch(`${API_BASE}/products/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      credentials: "include",
+      body: JSON.stringify(data),
+   })
    if (!res.ok) {
       const detail = await res.text().catch(() => "")
       throw new Error(`PUT /products/${id} failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
@@ -98,12 +116,13 @@ async function updateProduct(id: number, data: ProductPayload): Promise<AdminPro
    throw new Error("Unexpected response from PUT /products")
 }
 
+// deleteProduct — delete a product by ID.
 async function deleteProduct(id: number): Promise<void> {
-    const res = await fetch(`${API_BASE}/products/${id}`, {
-       method: "DELETE",
-       headers: authHeaders(),
-       credentials: "include",
-    })
+   const res = await fetch(`${API_BASE}/products/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+      credentials: "include",
+   })
    if (!res.ok) {
       const detail = await res.text().catch(() => "")
       throw new Error(`DELETE /products/${id} failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)

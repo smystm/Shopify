@@ -45,6 +45,39 @@ class Product {
         });
     }
 
+    allFiltered({ categories = [], minPrice, maxPrice } = {}) {
+        return new Promise((resolve, reject) => {
+            db.all(`SELECT id, productNumber, title, desc, category, price, image, created_by, created_at FROM products ORDER BY created_at ASC`, function (err, rows) {
+                if (err) return reject(err);
+
+                let parsed = rows.map(row => ({
+                    ...row,
+                    category: row.category ? JSON.parse(row.category) : null,
+                }));
+
+                if (Array.isArray(categories) && categories.length > 0) {
+                    parsed = parsed.filter(p => p.category && categories.includes(p.category.value));
+                }
+
+                if (minPrice !== undefined && minPrice !== null && minPrice !== '') {
+                    const min = Number(minPrice);
+                    if (!Number.isNaN(min)) {
+                        parsed = parsed.filter(p => Number(p.price) >= min);
+                    }
+                }
+
+                if (maxPrice !== undefined && maxPrice !== null && maxPrice !== '') {
+                    const max = Number(maxPrice);
+                    if (!Number.isNaN(max)) {
+                        parsed = parsed.filter(p => Number(p.price) <= max);
+                    }
+                }
+
+                resolve(parsed);
+            });
+        });
+    }
+
     update(id, data) {
         let fieldMustUpdate = Object.keys(data).map(item => `${item}=$${item}`).join(',');
         let fieldData = {};

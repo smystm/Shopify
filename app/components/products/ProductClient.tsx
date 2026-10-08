@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { getProducts } from "@/app/helpers/productApi"
-import type { AdminProduct } from "@/app/contracts/products"
+import { getProducts, getCategories } from "@/app/helpers/productApi"
+import type { AdminProduct, Category } from "@/app/contracts/products"
 import ProductCard from "@/app/components/products/ProductCard"
 import ProductPagination from "@/app/components/products/ProductPagination"
+import ProductFilter from "@/app/components/ui/ProductFilter"
 import { PRODUCTS_PAGE_SIZE } from "@/app/lib/products"
 
 export default function ProductClient() {
@@ -14,15 +15,26 @@ export default function ProductClient() {
    const pageParam = searchParams.get("page")
    const rawPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1)
 
+   const selectedCategoryParam = searchParams.get("category") ?? ""
+   const minPriceParam = searchParams.get("minPrice") ?? ""
+   const maxPriceParam = searchParams.get("maxPrice") ?? ""
+
    const [products, setProducts] = useState<AdminProduct[]>([])
+   const [categories, setCategories] = useState<Category[]>([])
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {
       let cancelled = false
       async function load() {
          try {
-            const data = await getProducts()
-            if (!cancelled) setProducts(data)
+            const [data, cats] = await Promise.all([
+               getProducts({ filters: { categories: selectedCategoryParam ? [selectedCategoryParam] : [], minPrice: minPriceParam, maxPrice: maxPriceParam } }),
+               getCategories(),
+            ])
+            if (!cancelled) {
+               setProducts(data)
+               setCategories(cats)
+            }
          } catch (err) {
             console.error("Failed to fetch products:", err)
          } finally {
@@ -33,7 +45,7 @@ export default function ProductClient() {
       return () => {
          cancelled = true
       }
-   }, [])
+   }, [searchParams.toString()])
 
    const totalPages = Math.max(1, Math.ceil(products.length / PRODUCTS_PAGE_SIZE))
    const currentPage = Math.min(rawPage, totalPages)
@@ -43,6 +55,15 @@ export default function ProductClient() {
    const handlePageChange = (page: number) => {
       const params = new URLSearchParams(searchParams.toString())
       params.set("page", String(page))
+      router.push(`/products?${params.toString()}`)
+   }
+
+   const handleFilterChange = (next: { selectedCategory: string; minPrice: string; maxPrice: string }) => {
+      const params = new URLSearchParams()
+      if (next.selectedCategory) params.set("category", next.selectedCategory)
+      if (next.minPrice) params.set("minPrice", next.minPrice)
+      if (next.maxPrice) params.set("maxPrice", next.maxPrice)
+      params.set("page", "1")
       router.push(`/products?${params.toString()}`)
    }
 
@@ -60,11 +81,33 @@ export default function ProductClient() {
    }
 
    if (products.length === 0) {
-      return <p className="text-zinc-500">No products found.</p>
+      return (
+         <>
+            <div className="mb-6">
+               <ProductFilter
+                  categories={categories}
+                  selectedCategory={selectedCategoryParam}
+                  minPrice={minPriceParam}
+                  maxPrice={maxPriceParam}
+                  onChange={handleFilterChange}
+               />
+            </div>
+            <p className="text-zinc-500">No products found.</p>
+         </>
+      )
    }
 
    return (
       <>
+         <div className="mb-6">
+            <ProductFilter
+               categories={categories}
+                selectedCategory={selectedCategoryParam}
+               minPrice={minPriceParam}
+               maxPrice={maxPriceParam}
+               onChange={handleFilterChange}
+            />
+         </div>
          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {visible.map((product) => (
                <ProductCard key={product.id} product={product} />
