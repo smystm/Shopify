@@ -9,6 +9,7 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+/public/images/weapons-real/skins
 
 # testing
 /coverage

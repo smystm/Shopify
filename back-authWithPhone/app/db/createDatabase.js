@@ -2,6 +2,7 @@ const sqlite3 = require('sqlite3').verbose()
 const DBSOURCE = "usersdb.sqlite";
 const bcrypt = require('bcryptjs');
 const { productImageForTitle } = require('../services/productImages');
+const { getCategories, categoryForTitle } = require('../services/categories');
 
 let db = new sqlite3.Database(DBSOURCE, (err) => {
     if (err) {
@@ -87,11 +88,18 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             if (!colNames.includes('created_by')) alterations.push('ALTER TABLE products ADD COLUMN created_by INTEGER');
             alterations.forEach(sql => db.run(sql, () => {}));
 
-            // Keep existing products in sync with the title-based weapon image mapping.
-            db.all(`SELECT id, title FROM products`, (productsErr, products) => {
+            // Migrate existing products to the skins directory structure.
+            // Each folder in skins/ represents a category; update image and category accordingly.
+            db.all(`SELECT id, title, category FROM products`, (productsErr, products) => {
                 if (productsErr) return;
+                const categories = getCategories();
                 products.forEach(product => {
-                    db.run(`UPDATE products SET image = ? WHERE id = ?`, [productImageForTitle(product.title), product.id]);
+                    const matchedCategory = categoryForTitle(product.title);
+                    if (matchedCategory) {
+                        const newImage = productImageForTitle(product.title);
+                        const categoryJson = JSON.stringify(matchedCategory);
+                        db.run(`UPDATE products SET image = ?, category = ? WHERE id = ?`, [newImage, categoryJson, product.id]);
+                    }
                 });
             });
         })

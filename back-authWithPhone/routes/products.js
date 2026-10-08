@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var authMiddleware = require('./middlewares/auth');
 var productRepo = require('../app/db/repos/product');
-var { productImageForTitle } = require('../app/services/productImages');
+var { productImageForTitle, productImageForCategory } = require('../app/services/productImages');
 const { canViewProducts, canCreateProducts, canModifyProduct } = require('../app/services/permissions');
 
 // comment code : Only users with some product access can list products.
@@ -32,8 +32,10 @@ router.post('/', authMiddleware, async (req, res, next) => {
       return res.status(400).json({ status: 'fail', message: 'productNumber and title are required' });
     }
 
+    const image = category ? productImageForCategory(category.value) : productImageForTitle(title);
+
     // Store the creator so self-add users can edit/delete their own products later.
-    const result = await productRepo.create({ productNumber, title, desc, category, price, image: productImageForTitle(title), created_by: req.user.id });
+    const result = await productRepo.create({ productNumber, title, desc, category, price, image, created_by: req.user.id });
     const product = await productRepo.findBy('id', result.id);
 
     res.status(201).json({ status: 'success', product });
@@ -60,7 +62,8 @@ router.put('/:id', authMiddleware, async (req, res, next) => {
       return res.status(403).json({ status: 'fail', message: 'You do not have permission to edit this product' });
     }
 
-    await productRepo.update(id, { productNumber, title, desc, category, price, image: productImageForTitle(title) });
+    const image = category ? productImageForCategory(category.value) : productImageForTitle(title);
+    await productRepo.update(id, { productNumber, title, desc, category, price, image });
     const product = await productRepo.findBy('id', id);
 
     res.json({ status: 'success', product });

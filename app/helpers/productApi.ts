@@ -1,12 +1,30 @@
 import type { AdminProduct, Category } from "@/app/contracts/products"
 import { getLoginToken } from "./auth"
 
+async function getCategories(): Promise<Category[]> {
+    const res = await fetch(`${API_BASE}/categories`, {
+        headers: authHeaders(),
+        credentials: "include",
+        cache: "no-store",
+    })
+    if (!res.ok) {
+        const detail = await res.text().catch(() => "")
+        throw new Error(`GET /categories failed with ${res.status}${detail ? ` — ${detail.slice(0, 200)}` : ""}`)
+    }
+    const body: unknown = await res.json()
+    if (typeof body === "object" && body !== null && Array.isArray((body as { categories?: unknown }).categories)) {
+        return (body as { categories: Category[] }).categories
+    }
+    return []
+}
+
 interface ProductPayload {
     productNumber: string
     title: string
     desc: string
     category: Category
     price: string
+    image: string
 }
 
 const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
@@ -92,4 +110,4 @@ async function deleteProduct(id: number): Promise<void> {
    }
 }
 
-export { getProducts, getSingleProduct, createProduct, updateProduct, deleteProduct }
+export { getProducts, getSingleProduct, createProduct, updateProduct, deleteProduct, getCategories }
