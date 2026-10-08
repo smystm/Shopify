@@ -28,6 +28,7 @@ export default function ProductCreateDialog({ open, suggestedNumber, onClose, on
                 desc: values.desc,
                 category: values.category,
                 price: values.price,
+                image: values.image,
             })
             onCreated(created)
             toast.success("Product added successfully")
