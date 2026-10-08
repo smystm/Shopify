@@ -76,7 +76,7 @@ export default function ProductsTable({ products, onEdit, onDelete, canEdit, can
                          <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-600 dark:text-zinc-300">
                             {product.category?.value ?? "—"}
                          </td>
-                         <td className="max-w-[12rem] px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">
+                         <td className="max-w-48 px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">
                             {product.image ? (
                                <span className="block truncate" title={product.image}>
                                   {product.image}

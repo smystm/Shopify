@@ -23,7 +23,7 @@ export default async function AdminProductsPage() {
       // Check the user's permission before loading admin data.
       currentUser = await getCurrentUser(token ?? "")
       if (currentUser && canViewAdmin(currentUser.permission)) {
-         products = await getProducts(token)
+          products = await getProducts({ token })
       }
    } catch (err) {
       const reason = err instanceof Error ? err.message : String(err)
