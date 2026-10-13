@@ -9,6 +9,7 @@ import { removeLoginAuth } from "@/app/helpers/auth"
 import { logout } from "@/app/lib/store/authSlice"
 import type { RootState } from "@/app/lib/store/store"
 import useAuth from "@/app/lib/store/useAuth"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface AdminHeaderProps {
    onMenuClick: () => void
@@ -22,8 +23,8 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
    // Refresh the Redux user/permission from the backend while the admin shell is open.
    useAuth()
 
-   const displayName: string = user?.name || user?.email || user?.phone || "Admin"
-   const displayDetail: string = user?.email || user?.phone || "Administrator"
+   const displayName: string = user?.name || user?.email || user?.phone || fa.admin.header.fallbackName
+   const displayDetail: string = user?.email || user?.phone || fa.admin.header.fallbackRole
 
    const handleLogout = async () => {
       removeCookie("shopy-token", { path: "/" })
@@ -40,7 +41,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
             onClick={onMenuClick}
             className="-m-2.5 p-2.5 text-zinc-600 lg:hidden dark:text-zinc-300"
          >
-            <span className="sr-only">Open sidebar</span>
+            <span className="sr-only">{fa.admin.header.openSidebar}</span>
             <Bars3Icon aria-hidden="true" className="h-6 w-6" />
          </button>
 
@@ -53,14 +54,14 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                </label>
                <MagnifyingGlassIcon
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-zinc-400"
+                  className="pointer-events-none absolute inset-y-0 start-0 h-full w-5 text-zinc-400"
                />
                <input
                   id="admin-search"
                   name="search"
                   type="search"
-                  placeholder="Search…"
-                  className="block h-full w-full border-0 bg-transparent py-0 pr-0 pl-8 text-sm text-zinc-950 outline-none placeholder:text-zinc-400 focus:ring-0 dark:text-white dark:placeholder:text-zinc-500"
+                  placeholder={fa.admin.header.searchPlaceholder}
+                  className="block h-full w-full border-0 bg-transparent py-0 pe-0 ps-8 text-sm text-zinc-950 outline-none placeholder:text-zinc-400 focus:ring-0 dark:text-white dark:placeholder:text-zinc-500"
                />
             </form>
             <div className="flex items-center gap-x-4 lg:gap-x-6">
@@ -68,7 +69,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                   type="button"
                   className="-m-2.5 p-2.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                >
-                  <span className="sr-only">View notifications</span>
+                  <span className="sr-only">{fa.admin.header.notifications}</span>
                   <BellIcon aria-hidden="true" className="h-6 w-6" />
                </button>
 
@@ -76,37 +77,37 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
 
                <Menu as="div" className="relative">
                   <MenuButton className="-m-1.5 flex items-center p-1.5">
-                     <span className="sr-only">Open user menu</span>
+                     <span className="sr-only">{fa.admin.header.openUserMenu}</span>
                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-950 text-xs font-bold text-white uppercase dark:bg-white dark:text-zinc-950">
                         {displayName.slice(0, 1)}
                      </span>
                      <span className="hidden lg:flex lg:items-center">
-                        <span aria-hidden="true" className="ml-4 text-left text-sm">
+                        <span aria-hidden="true" className="ms-4 text-start text-sm">
                            <span className="block font-semibold text-zinc-950 dark:text-white">{displayName}</span>
                            <span className="block text-xs text-zinc-500 dark:text-zinc-400">{displayDetail}</span>
                         </span>
-                        <ChevronDownIcon aria-hidden="true" className="ml-2 h-5 w-5 text-zinc-400" />
+                        <ChevronDownIcon aria-hidden="true" className="ms-2 h-5 w-5 text-zinc-400" />
                      </span>
                   </MenuButton>
                   <MenuItems
                      transition
-                     className="absolute right-0 z-10 mt-2.5 w-48 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-zinc-900/5 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in dark:bg-zinc-900 dark:ring-white/10"
+                     className="absolute end-0 z-10 mt-2.5 w-48 origin-top-right rtl:origin-top-left rounded-md bg-white py-2 shadow-lg ring-1 ring-zinc-900/5 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in dark:bg-zinc-900 dark:ring-white/10"
                   >
                      <MenuItem>
                         <button
                            type="button"
-                           className="block w-full px-3 py-1 text-left text-sm text-zinc-700 data-focus:bg-zinc-100 data-focus:outline-hidden dark:text-zinc-200 dark:data-focus:bg-zinc-800"
+                           className="block w-full px-3 py-1 text-start text-sm text-zinc-700 data-focus:bg-zinc-100 data-focus:outline-hidden dark:text-zinc-200 dark:data-focus:bg-zinc-800"
                         >
-                           Your profile
+                           {fa.admin.header.yourProfile}
                         </button>
                      </MenuItem>
                      <MenuItem>
                         <button
                            type="button"
                            onClick={handleLogout}
-                           className="block w-full px-3 py-1 text-left text-sm text-zinc-700 data-focus:bg-zinc-100 data-focus:outline-hidden dark:text-zinc-200 dark:data-focus:bg-zinc-800"
+                           className="block w-full px-3 py-1 text-start text-sm text-zinc-700 data-focus:bg-zinc-100 data-focus:outline-hidden dark:text-zinc-200 dark:data-focus:bg-zinc-800"
                         >
-                           Sign out
+                           {fa.admin.header.signOut}
                         </button>
                      </MenuItem>
                   </MenuItems>

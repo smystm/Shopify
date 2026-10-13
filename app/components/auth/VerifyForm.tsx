@@ -10,6 +10,7 @@ import CallApi from "@/app/helpers/CallApi"
 import { useAppDispatch, useAppSelector } from "@/app/lib/store/hooks"
 import { loginSuccess, selectPhoneVerifyToken, updatePhoneVerifyToken } from "@/app/lib/store/authSlice"
 import { storeLoginToken, storeLoginUser } from "@/app/helpers/auth"
+import { fa } from "@/app/lib/i18n/fa"
 
 export interface VerifyValues {
    code: string
@@ -23,9 +24,9 @@ export const verifyInitialValues: VerifyValues = {
 
 export const verifySchema = Yup.object({
    code: Yup.string()
-      .required("Verification code is required")
-      .length(6, "Code must be 6 digits")
-      .matches(/^\d{6}$/, "Code must contain only digits"),
+      .required(fa.authPages.codeRequired)
+      .length(6, fa.authPages.codeLength)
+      .matches(/^\d{6}$/, fa.authPages.codeDigits),
 })
 
 interface VerifyFormProps {
@@ -34,7 +35,7 @@ interface VerifyFormProps {
    initialValues?: VerifyValues
    /** TODO: wire up in the next step — called with the 6-digit code on submit. */
    onVerify?: (code: string) => void | Promise<void>
-   /** TODO: wire up in the next step — called when "Resend" is clicked. */
+   /** TODO: wire up in the next step — called when "Resend code" is clicked. */
    onResend?: () => void
    /** TODO: wire up in the next step — loading states for the buttons. */
    isVerifying?: boolean
@@ -75,10 +76,8 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
    }
 
    const handleSubmit = async (values: VerifyValues, helpers: FormikHelpers<VerifyValues>) => {
-      // TODO: phone verification logic goes here (API call, OTP validation).
       const res = await CallApi().post("/auth/login/verify-phone", { code: values.code, token: token })
       if (res.status === 200) {
-         //clear the token from the redux store after successful verification
          console.log(res.data?.user?.token)
          clearPhoneToken()
 
@@ -91,9 +90,7 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
              permission: res.data?.user?.permission,
           }
 
-         //Task: Store the token in cookies for future authenticated requests
          storeLoginToken(res.data?.user?.token)
-         // Persist the user too, so the welcome message survives a page refresh
          storeLoginUser(verifiedUser)
          
          dispatch(loginSuccess(verifiedUser))
@@ -112,14 +109,12 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
 
    return (
       <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-         <h2 className="text-2xl font-semibold tracking-tight">Verify your phone</h2>
+         <h2 className="text-2xl font-semibold tracking-tight">{fa.authPages.verifyHeading}</h2>
          <p className="mb-6 mt-1 text-sm text-zinc-500">
             {phone ? (
-               <>
-                  We sent a verification code to <span className="font-medium text-zinc-700 dark:text-zinc-300">{phone}</span>.
-               </>
+               fa.authPages.verifySentTo.replace("{phone}", phone)
             ) : (
-               "Enter the verification code we sent to your phone."
+               fa.authPages.verifySentHint
             )}
          </p>
 
@@ -170,7 +165,7 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
                                  inputMode="numeric"
                                  autoComplete={i === 0 ? "one-time-code" : "off"}
                                  maxLength={1}
-                                 aria-label={`Digit ${i + 1}`}
+                                 aria-label={fa.authPages.digitLabel.replace("{index}", String(i + 1))}
                                  aria-invalid={hasError}
                                  className={`${otpInputClass} ${hasError ? "border-red-500" : ""}`}
                               />
@@ -181,7 +176,7 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
                      </div>
 
                      <Button type="submit" disabled={!isComplete || busy} className="mt-2">
-                        {busy ? "Verifying..." : "Verify"}
+                        {busy ? fa.authPages.verifying : fa.authPages.verifySubmit}
                      </Button>
                   </>
                )
@@ -189,19 +184,19 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
          </FormShell>
 
          <div className="mt-6 flex items-center justify-between text-sm">
-            <span className="text-zinc-500">Didn&apos;t get the code?</span>
+            <span className="text-zinc-500">{fa.authPages.resendPrompt}</span>
             <button
                type="button"
                onClick={handleResend}
                disabled={isResending}
                className="font-medium text-black transition hover:underline disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
             >
-               {isResending ? "Sending..." : "Resend code"}
+               {isResending ? fa.authPages.sending : fa.authPages.resend}
             </button>
          </div>
 
          <button type="button" onClick={handleBack} className="mt-4 text-sm text-zinc-500 transition hover:text-zinc-800 dark:hover:text-zinc-200">
-            ← Back to login
+            {fa.authPages.backToLogin}
          </button>
       </div>
    )

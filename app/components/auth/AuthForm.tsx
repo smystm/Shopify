@@ -11,6 +11,7 @@ import { setMode, loginSuccess, logout } from "../../lib/store/authSlice"
 import CallApi from "@/app/helpers/CallApi"
 import ValidationError from "@/app/exeptions/ValidationError"
 import { useCookies } from "react-cookie"
+import { fa } from "@/app/lib/i18n/fa"
 
 export type { AuthMode }
 
@@ -27,10 +28,9 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
    const isSignup = mode === "signup"
 
    // `useCookies` requires <CookiesProvider> (see app/components/Providers.tsx).
-   // It only returns the setter here — reading the cookie isn't needed.
-    const [, setCookie, removeCookie] = useCookies(["shopy-token", "shopy-user"])
+   // Only the setter is needed here — reading the cookie is not.
+   const [, setCookie, removeCookie] = useCookies(["shopy-token", "shopy-user"])
 
-   // Keep redux mode in sync with the current route
    useEffect(() => {
       dispatch(setMode(isSignup ? "signup" : "login"))
    }, [dispatch, isSignup])
@@ -77,19 +77,17 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
             const errors = err.errors ?? {}
             const entries = Object.entries(errors)
             if (entries.length === 0) {
-               // setErrors({ email: "Invalid credentials. Please check your input." })
-               setErrors({ phone: "Invalid credentials. Please check your input." })
+               setErrors({ phone: fa.authPages.invalidCredentials })
             } else {
                entries.forEach(([key, value]) => {
                   // Backend may send `{ email: ["Taken"] }` — Formik needs a string.
                   setFieldError(key, Array.isArray(value) ? value[0] : String(value))
                })
             }
-            console.log("Validation Error in Login Form", errors)
+            console.log("خطای اعتبارسنجی در فرم ورود", errors)
          } else {
-            console.error("Auth request failed", err)
-            // setErrors({ email: "Something went wrong. Please try again." })
-            setErrors({ phone: "Something went wrong. Please try again." })
+            console.error("درخواست ناموفق بود", err)
+            setErrors({ phone: fa.authPages.genericError })
          }
       } finally {
          setSubmitting(false)
@@ -105,10 +103,10 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
       }
       return (
          <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <h2 className="text-xl font-semibold">Welcome, {user.name || user.phone || user.email}! 🎉</h2>
-            <p className="mt-2 text-sm text-zinc-500">You are logged in as {user.phone ?? user.email}</p>
+            <h2 className="text-xl font-semibold">{fa.authPages.welcomeUser.replace("{name}", user.name || user.phone || user.email || fa.header.fallbackUserName)}</h2>
+            <p className="mt-2 text-sm text-zinc-500">{fa.authPages.loggedInAs.replace("{phone}", user.phone ?? user.email ?? "")}</p>
             <Button onClick={handleLogout} className="mt-6">
-               Log out
+               {fa.authPages.logout}
             </Button>
          </div>
       )
@@ -119,15 +117,15 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
          {/* Mode toggle — navigates between routes */}
          <div className="mb-6 grid grid-cols-2 rounded-full bg-zinc-100 p-1 dark:bg-zinc-900">
             <Button variant="toggle" isActive={!isSignup} onClick={() => router.push("/login")}>
-               Log in
+               {fa.authPages.submitLogin}
             </Button>
             <Button variant="toggle" isActive={isSignup} onClick={() => router.push("/register")}>
-               Sign up
+               {fa.authPages.submitSignup}
             </Button>
          </div>
 
-         <h2 className="text-2xl font-semibold tracking-tight">{isSignup ? "Create your account" : "Welcome back"}</h2>
-         <p className="mb-6 mt-1 text-sm text-zinc-500">{isSignup ? "Start shopping in seconds." : "Log in to continue shopping."}</p>
+         <h2 className="text-2xl font-semibold tracking-tight">{isSignup ? fa.authPages.signupHeading : fa.authPages.loginHeading}</h2>
+         <p className="mb-6 mt-1 text-sm text-zinc-500">{isSignup ? fa.authPages.signupSubtitle : fa.authPages.loginSubtitle}</p>
 
          <FormBase key={mode} mode={mode} onSubmit={handleSubmit} />
       </div>

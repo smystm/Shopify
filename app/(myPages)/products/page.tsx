@@ -1,15 +1,16 @@
 import { Suspense } from "react"
 import ProductClient from "@/app/components/products/ProductClient"
+import { fa } from "@/app/lib/i18n/fa"
 
 export const metadata = {
-   title: "Products",
-   description: "Browse our product catalog.",
+   title: fa.products.metaTitle,
+   description: fa.products.metaDescription,
 }
 
 export default function ProductsPage() {
    return (
       <div>
-         <h1 className="mb-6 text-2xl font-bold">Products</h1>
+         <h1 className="mb-6 text-2xl font-bold">{fa.products.heading}</h1>
          <Suspense
             fallback={
                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

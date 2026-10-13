@@ -3,6 +3,7 @@
 import { useState } from "react"
 import ReactPaginate from "react-paginate"
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface AdminPaginationProps {
     page: number
@@ -40,16 +41,18 @@ export default function AdminPagination({
 
    return (
       <nav
-         aria-label="Pagination"
+         aria-label={fa.products.pagination.ariaLabel}
          className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-xs dark:border-zinc-800 dark:bg-zinc-950"
       >
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-             Showing <span className="font-semibold text-zinc-700 dark:text-zinc-200">{start}–{end}</span> of{" "}
-             <span className="font-semibold text-zinc-700 dark:text-zinc-200">{total}</span> items
+             {fa.products.pagination.showing
+                .replace("{start}", String(start))
+                .replace("{end}", String(end))
+                .replace("{total}", String(total))}
           </p>
           <form onSubmit={handleJumpSubmit} className="flex items-center gap-2">
              <label htmlFor="jump-to-page" className="text-sm text-zinc-500 dark:text-zinc-400">
-                Go to page
+                {fa.products.pagination.goToPage}
              </label>
              <input
                 id="jump-to-page"
@@ -64,7 +67,7 @@ export default function AdminPagination({
                 type="submit"
                 className="rounded-md bg-zinc-950 px-3 py-1 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
              >
-                Go
+                {fa.products.pagination.go}
              </button>
           </form>
           <ReactPaginate
@@ -82,7 +85,8 @@ export default function AdminPagination({
                         : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
                   )}
                >
-                  <ChevronLeftIcon aria-hidden="true" className="h-5 w-5" />
+                  <ChevronLeftIcon aria-hidden="true" className="h-5 w-5 rtl:hidden" />
+                  <ChevronRightIcon aria-hidden="true" className="hidden h-5 w-5 rtl:block" />
                </span>
             }
             nextLabel={
@@ -94,7 +98,8 @@ export default function AdminPagination({
                         : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
                   )}
                >
-                  <ChevronRightIcon aria-hidden="true" className="h-5 w-5" />
+                  <ChevronRightIcon aria-hidden="true" className="h-5 w-5 rtl:hidden" />
+                  <ChevronLeftIcon aria-hidden="true" className="hidden h-5 w-5 rtl:block" />
                </span>
             }
             pageLabelBuilder={(page) => (

@@ -15,7 +15,7 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
    }
 
    return (
-      <main className="min-h-screen w-full flex flex-col">
+      <main dir="rtl" lang="fa" className="min-h-screen w-full flex flex-col font-vazirmatn">
          {/* you can add some common layout elements here, like a header or footer, if needed */}
          {children}
       </main>

@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { adminNavigation, isNavItemActive } from "@/app/lib/adminNavigation"
+import { fa, faAdminNavLabel } from "@/app/lib/i18n/fa"
 
 function classNames(...classes: Array<string | false | null | undefined>): string {
    return classes.filter(Boolean).join(" ")
@@ -19,7 +20,7 @@ export default function AdminSidebarContent({ currentPath, onNavigate }: AdminSi
                   S
                </span>
                <span className="text-base font-semibold tracking-tight text-zinc-950 dark:text-white">
-                  Shopify Admin
+                  {fa.admin.shellTitle}
                </span>
             </Link>
          </div>
@@ -50,7 +51,7 @@ export default function AdminSidebarContent({ currentPath, onNavigate }: AdminSi
                                        "h-6 w-6 shrink-0",
                                     )}
                                  />
-                                 {item.name}
+                                 {faAdminNavLabel(item.href, item.name)}
                               </Link>
                            </li>
                         )
@@ -59,8 +60,8 @@ export default function AdminSidebarContent({ currentPath, onNavigate }: AdminSi
                </li>
                <li className="mt-auto">
                   <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-400">
-                     <p className="font-semibold text-zinc-700 dark:text-zinc-200">Admin workspace</p>
-                     <p className="mt-1">Manage your store, team and reports from one place.</p>
+                     <p className="font-semibold text-zinc-700 dark:text-zinc-200">{fa.admin.sidebar.workspaceTitle}</p>
+                     <p className="mt-1">{fa.admin.sidebar.workspaceBody}</p>
                   </div>
                </li>
             </ul>

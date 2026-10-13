@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react"
-import { MinusIcon, PlusIcon, ShoppingCartIcon, TruckIcon, ShieldCheckIcon, ArrowLeftIcon } from "@heroicons/react/24/outline"
+import { MinusIcon, PlusIcon, ShoppingCartIcon, TruckIcon, ShieldCheckIcon, ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import Image from "next/image"
 import type { AdminProduct } from "@/app/contracts/products"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface ProductDetailProps {
     product: AdminProduct
@@ -25,7 +26,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     }
 
     const formatDate = (date: number | string | null | undefined): string => {
-        if (!date) return "N/A"
+        if (!date) return fa.products.noDate
         const d = new Date(date)
         return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
     }
@@ -36,8 +37,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 href="/products"
                 className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
             >
-                <ArrowLeftIcon className="h-4 w-4" />
-                Back to Products
+                <ArrowLeftIcon className="h-4 w-4 rtl:hidden" />
+                <ArrowRightIcon className="hidden h-4 w-4 rtl:block" />
+                {fa.products.backToProducts}
             </Link>
 
             <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-2">
@@ -51,8 +53,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                             className="object-contain p-10"
                         />
                     ) : null}
-                    <span className="absolute right-4 top-4 rounded-full bg-black/20 px-3 py-1 text-xs font-medium text-zinc-200 dark:text-zinc-300">
-                        {product.category?.value ?? "General"}
+                    <span className="absolute end-4 top-4 rounded-full bg-black/20 px-3 py-1 text-xs font-medium text-zinc-200 dark:text-zinc-300">
+                        {product.category?.value ?? fa.products.generalCategory}
                     </span>
                 </div>
 
@@ -75,7 +77,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
                     <div className="mt-8">
                         <label htmlFor="quantity" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
-                            Quantity
+                            {fa.products.quantity}
                         </label>
                         <div className="mt-2 flex items-center gap-3">
                             <button
@@ -115,18 +117,18 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                             )}
                         >
                             <ShoppingCartIcon className="h-5 w-5" />
-                            {added ? "Added to Cart!" : "Add to Cart"}
+                            {added ? fa.products.addedToCart : fa.products.addToCart}
                         </button>
                     </div>
 
                     <div className="mt-8 space-y-3">
                         <div className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-300">
                             <TruckIcon className="h-5 w-5 text-zinc-400" />
-                            Free shipping on orders over $50
+                            {fa.products.freeShipping}
                         </div>
                         <div className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-300">
                             <ShieldCheckIcon className="h-5 w-5 text-zinc-400" />
-                            30-day return policy
+                            {fa.products.returnPolicy}
                         </div>
                     </div>
                 </div>
@@ -135,7 +137,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <div className="mt-16">
                 <TabGroup>
                     <TabList className="flex gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-900">
-                        {["Description", "Details", "Shipping"].map((tab) => (
+                        {[fa.products.tabs.description, fa.products.tabs.details, fa.products.tabs.shipping].map((tab) => (
                             <Tab
                                 key={tab}
                                 className={({ selected }) =>
@@ -157,25 +159,25 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                                 {product.desc}
                             </p>
                             <p className="mt-4 text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
-                                This product is part of our premium collection. Crafted with quality materials and designed for everyday use.
+                                {fa.products.descriptionBlurb}
                             </p>
                         </TabPanel>
                         <TabPanel className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
                             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-900">
-                                    <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Product Number</dt>
+                                    <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{fa.products.detailsLabels.productNumber}</dt>
                                     <dd className="mt-1 text-sm font-semibold text-zinc-950 dark:text-white">{product.productNumber}</dd>
                                 </div>
                                 <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-900">
-                                    <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Category</dt>
-                                    <dd className="mt-1 text-sm font-semibold text-zinc-950 dark:text-white">{product.category?.value ?? "General"}</dd>
+                                    <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{fa.products.detailsLabels.category}</dt>
+                                    <dd className="mt-1 text-sm font-semibold text-zinc-950 dark:text-white">{product.category?.value ?? fa.products.generalCategory}</dd>
                                 </div>
                                 <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-900">
-                                    <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Price</dt>
+                                    <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{fa.products.detailsLabels.price}</dt>
                                     <dd className="mt-1 text-sm font-semibold text-zinc-950 dark:text-white">${product.price}</dd>
                                 </div>
                                 <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-900">
-                                    <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Created</dt>
+                                    <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{fa.products.detailsLabels.created}</dt>
                                     <dd className="mt-1 text-sm font-semibold text-zinc-950 dark:text-white">{formatDate(product.created_at)}</dd>
                                 </div>
                             </dl>
@@ -183,21 +185,21 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                         <TabPanel className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
                             <div className="space-y-4">
                                 <div>
-                                    <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">Shipping Information</h3>
+                                    <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">{fa.products.shipping.infoTitle}</h3>
                                     <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-                                        Free standard shipping on all orders over $50. Orders are processed within 1-2 business days.
+                                        {fa.products.shipping.infoBody}
                                     </p>
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">Estimated Delivery</h3>
+                                    <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">{fa.products.shipping.estimateTitle}</h3>
                                     <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-                                        5-7 business days for standard shipping. Express shipping available at checkout.
+                                        {fa.products.shipping.estimateBody}
                                     </p>
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">Returns</h3>
+                                    <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">{fa.products.shipping.returnsTitle}</h3>
                                     <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
-                                        30-day return policy. Items must be in original condition with tags attached.
+                                        {fa.products.shipping.returnsBody}
                                     </p>
                                 </div>
                             </div>

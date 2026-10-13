@@ -8,6 +8,9 @@ import ProductCard from "@/app/components/products/ProductCard"
 import ProductPagination from "@/app/components/products/ProductPagination"
 import ProductFilter from "@/app/components/ui/ProductFilter"
 import { PRODUCTS_PAGE_SIZE } from "@/app/lib/products"
+import { fa } from "@/app/lib/i18n/fa"
+
+const filterLabels = fa.products.filter
 
 export default function ProductClient() {
    const router = useRouter()
@@ -89,10 +92,11 @@ export default function ProductClient() {
                   selectedCategory={selectedCategoryParam}
                   minPrice={minPriceParam}
                   maxPrice={maxPriceParam}
+                  labels={filterLabels}
                   onChange={handleFilterChange}
                />
             </div>
-            <p className="text-zinc-500">No products found.</p>
+            <p className="text-zinc-500">{fa.products.noProductsFound}</p>
          </>
       )
    }
@@ -105,6 +109,7 @@ export default function ProductClient() {
                 selectedCategory={selectedCategoryParam}
                minPrice={minPriceParam}
                maxPrice={maxPriceParam}
+               labels={filterLabels}
                onChange={handleFilterChange}
             />
          </div>

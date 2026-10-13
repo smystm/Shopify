@@ -1,6 +1,7 @@
 import Link from "next/link"
 import type { AdminProduct } from "@/app/contracts/products"
 import Image from "next/image"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface ProductCardProps {
     product: AdminProduct;
@@ -22,8 +23,8 @@ export default function ProductCard({ product }: ProductCardProps) {
                         className="object-contain p-6"
                     />
                 ) : null}
-                <span className="absolute right-2 top-2 rounded-full bg-black/20 px-2 py-0.5 text-xs font-medium text-zinc-200 dark:text-zinc-300">
-                    {product.category?.value ?? "General"}
+                <span className="absolute end-2 top-2 rounded-full bg-black/20 px-2 py-0.5 text-xs font-medium text-zinc-200 dark:text-zinc-300">
+                    {product.category?.value ?? fa.products.generalCategory}
                 </span>
             </div>
             <div className="p-4">
@@ -34,7 +35,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <div className="mt-3 flex items-center justify-between">
                     <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">${product.price}</span>
                     <span className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition group-hover:bg-zinc-800 dark:bg-white dark:text-black dark:group-hover:bg-zinc-200">
-                        View
+                        {fa.products.view}
                     </span>
                 </div>
             </div>

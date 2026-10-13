@@ -7,10 +7,11 @@ import { getCurrentUser } from "@/app/helpers/getCurrentUser"
 import { canViewAdmin } from "@/app/lib/permissions"
 import type { AuthUser } from "@/app/lib/store/authSlice"
 import type { AdminProduct } from "@/app/contracts/products"
+import { fa } from "@/app/lib/i18n/fa"
 
 export const metadata: Metadata = {
-   title: "Products — Shopify Admin",
-   description: "Manage products — add, edit, and organize your store inventory.",
+   title: fa.admin.products.metaTitle,
+   description: fa.admin.products.metaDescription,
 }
 
 export default async function AdminProductsPage() {
@@ -33,7 +34,7 @@ export default async function AdminProductsPage() {
    if (loadError) {
       return (
          <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-8 text-center dark:border-red-900/50 dark:bg-red-950/30">
-            <p className="text-sm font-semibold text-red-700 dark:text-red-300">Couldn&apos;t load products</p>
+            <p className="text-sm font-semibold text-red-700 dark:text-red-300">{fa.admin.productsLoadError.title}</p>
             <p className="mx-auto mt-1 max-w-md text-sm text-red-600/90 dark:text-red-400/90">{loadError}</p>
          </div>
       )

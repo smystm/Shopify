@@ -5,6 +5,7 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/re
 import { XMarkIcon } from "@heroicons/react/24/outline"
 import type { AdminProduct, Category } from "@/app/contracts/products"
 import { getCategories } from "@/app/helpers/productApi"
+import { fa } from "@/app/lib/i18n/fa"
 
 export interface ProductFormValues {
     productNumber: string
@@ -101,7 +102,7 @@ function ProductForm({
     const handleSubmit = async (e: React.FormEvent) => {
        e.preventDefault()
        if (!title.trim()) {
-          setError("Title is required.")
+          setError(fa.admin.dialog.titleRequired)
           return
        }
         const selectedCategory = categories.find((c) => c.value === categoryValue)
@@ -125,23 +126,21 @@ return (
              <div>
                 {isFullPage ? (
                    <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
-                      {isEditing ? "Edit product" : "Add product"}
+                      {isEditing ? fa.admin.dialog.editTitle : fa.admin.dialog.addTitle}
                    </h1>
                 ) : (
                    <DialogTitle className="text-base font-semibold text-zinc-950 dark:text-white">
-                      {isEditing ? "Edit product" : "Add product"}
+                      {isEditing ? fa.admin.dialog.editTitle : fa.admin.dialog.addTitle}
                    </DialogTitle>
                 )}
                 <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                   {isEditing
-                      ? "Update the product details below."
-                      : "Products are kept in memory only for now — nothing is sent to the backend."}
+                   {isEditing ? fa.admin.dialog.editSubtitle : fa.admin.dialog.addSubtitle}
                 </p>
              </div>
             <button
                type="button"
                onClick={onClose}
-               aria-label="Close dialog"
+               aria-label={fa.admin.dialog.close}
                className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
             >
                <XMarkIcon aria-hidden="true" className="h-5 w-5" />
@@ -154,7 +153,7 @@ return (
                   htmlFor="product-number"
                   className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200"
                >
-                  Product Number
+                  {fa.admin.dialog.labels.productNumber}
                </label>
                <input
                   id="product-number"
@@ -167,7 +166,7 @@ return (
             </div>
              <div>
                 <label htmlFor="product-title" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-                   Title
+                   {fa.admin.dialog.labels.title}
                 </label>
                 <input
                    id="product-title"
@@ -175,7 +174,7 @@ return (
                    autoFocus
                    value={title}
                    onChange={(e) => setTitle(e.target.value)}
-                   placeholder="e.g. Classic White T-Shirt"
+                   placeholder={fa.admin.dialog.placeholders.title}
                    className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
                 />
                 {error ? <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
@@ -184,23 +183,23 @@ return (
 
              <div>
                 <label htmlFor="product-desc" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-                   Description
+                   {fa.admin.dialog.labels.description}
                 </label>
                 <textarea
                    id="product-desc"
                    value={desc}
                    onChange={(e) => setDesc(e.target.value)}
-                   placeholder="Describe the product..."
+                   placeholder={fa.admin.dialog.placeholders.description}
                    rows={3}
                    maxLength={200}
                    className="mt-1.5 block w-full resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
                 />
-                <p className="mt-1 text-xs text-zinc-400">{desc.length}/200</p>
+                <p className="mt-1 text-xs text-zinc-400">{fa.admin.dialog.charCount.replace("{count}", String(desc.length))}</p>
              </div>
 
              <div>
                 <label htmlFor="product-category" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-                   Category
+                   {fa.admin.dialog.labels.category}
                 </label>
                 <select
                    id="product-category"
@@ -209,7 +208,7 @@ return (
                    className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
                 >
                    <option value="" disabled>
-                      Select a category
+                      {fa.admin.dialog.placeholders.category}
                    </option>
                     {categories.map((cat) => (
                        <option key={cat.value} value={cat.value}>
@@ -221,28 +220,28 @@ return (
 
              <div>
                  <label htmlFor="product-price" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-                    Price
+                    {fa.admin.dialog.labels.price}
                  </label>
                  <input
                     id="product-price"
                     type="text"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    placeholder="e.g. 29.99"
+                    placeholder={fa.admin.dialog.placeholders.price}
                     className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
                  />
               </div>
 
               <div>
                  <label htmlFor="product-image" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
-                    Image URL
+                    {fa.admin.dialog.labels.imageUrl}
                  </label>
                  <input
                     id="product-image"
                     type="text"
                     value={image}
                     onChange={(e) => setImage(e.target.value)}
-                    placeholder="https://example.com/image.jpg"
+                    placeholder={fa.admin.dialog.placeholders.imageUrl}
                     className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
                  />
               </div>
@@ -253,14 +252,14 @@ return (
                   onClick={onClose}
                   className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
                >
-                  Cancel
+                  {fa.admin.dialog.cancel}
                </button>
                <button
                   type="submit"
                   disabled={saving}
                   className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                >
-                  {saving ? "Saving..." : isEditing ? "Save changes" : "Add product"}
+                  {saving ? fa.admin.dialog.saving : isEditing ? fa.admin.dialog.save : fa.admin.dialog.submitAdd}
                </button>
             </div>
          </form>

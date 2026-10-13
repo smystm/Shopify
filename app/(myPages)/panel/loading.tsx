@@ -1,6 +1,8 @@
+import { fa } from "@/app/lib/i18n/fa"
+
 export default function Loading() {
    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 py-12 font-sans dark:bg-black">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 py-12 font-vazirmatn dark:bg-black">
          <div className="flex w-full max-w-md flex-col items-center rounded-2xl border border-zinc-200 bg-white p-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
             {/* Rotating ring with shopping-bag icon in the center */}
             <div className="relative flex h-20 w-20 items-center justify-center">
@@ -20,10 +22,10 @@ export default function Loading() {
                </svg>
             </div>
 
-            <h2 className="mt-6 text-lg font-semibold tracking-tight">Loading your panel</h2>
+            <h2 className="mt-6 text-lg font-semibold tracking-tight">{fa.panel.loadingTitle}</h2>
             <p className="mt-1 text-sm text-zinc-500">
-               Just a moment
-               <span className="ml-0.5 inline-flex">
+               {fa.panel.loadingHint}
+               <span className="ms-0.5 inline-flex">
                   <span className="animate-bounce">.</span>
                   <span className="animate-bounce [animation-delay:150ms]">.</span>
                   <span className="animate-bounce [animation-delay:300ms]">.</span>

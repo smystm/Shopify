@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 const vazirmatn = Vazirmatn({
    variable: "--font-vazirmatn",
-   subsets: ["latin"],
+   // "arabic" is required — "latin" alone never loads Persian glyphs.
+   subsets: ["arabic", "latin"],
 })
 
 export const metadata: Metadata = {

@@ -1,9 +1,9 @@
 import React from "react"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface YokosoProps {
-  // Add any props if needed in the future
-  paraKoso?: string,
-  headKoso: string
+   paraKoso?: string,
+   headKoso: string
 }
 
 export default function Yokoso({ paraKoso, headKoso }: YokosoProps) {
@@ -16,7 +16,7 @@ export default function Yokoso({ paraKoso, headKoso }: YokosoProps) {
                <path d="M5 8h14l1 13H4L5 8Z" stroke="#7C3AED" strokeWidth="1.5" strokeLinejoin="round" />
                <path d="M7 12h10v5H7z" fill="#A78BFA" opacity=".35" />
             </svg>
-            {headKoso ? headKoso : "Shopify"}
+            {headKoso ? headKoso : fa.header.brand}
          </h1>
          <p className="mb-8 text-sm text-zinc-500">{paraKoso}</p>
       </>

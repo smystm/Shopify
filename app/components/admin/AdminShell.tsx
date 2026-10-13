@@ -7,6 +7,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline"
 import type { ReactNode } from "react"
 import AdminHeader from "./AdminHeader"
 import AdminSidebarContent from "./AdminSidebarContent"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface AdminShellProps {
    children: ReactNode
@@ -17,7 +18,7 @@ export default function AdminShell({ children }: AdminShellProps) {
    const pathname = usePathname() ?? "/admin"
 
    return (
-      <div className="min-h-full bg-zinc-50 dark:bg-black">
+      <div dir="rtl" lang="fa" className="min-h-full bg-zinc-50 font-vazirmatn dark:bg-black">
          <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 lg:hidden">
             <DialogBackdrop
                transition
@@ -26,15 +27,17 @@ export default function AdminShell({ children }: AdminShellProps) {
             <div className="fixed inset-0 flex">
                <DialogPanel
                   transition
-                  className="relative mr-16 flex w-full max-w-72 flex-1 transition duration-300 ease-in-out data-closed:-translate-x-full"
+                  dir="rtl"
+                  lang="fa"
+                  className="relative me-16 flex w-full max-w-72 flex-1 transition duration-300 ease-in-out data-closed:-translate-x-full rtl:data-closed:translate-x-full"
                >
-                  <div className="absolute top-0 left-full flex w-16 justify-center pt-5">
+                  <div className="absolute top-0 end-full flex w-16 justify-center pt-5">
                      <button
                         type="button"
                         onClick={() => setSidebarOpen(false)}
                         className="-m-2.5 p-2.5 text-white"
                      >
-                        <span className="sr-only">Close sidebar</span>
+                        <span className="sr-only">{fa.admin.header.closeSidebar}</span>
                         <XMarkIcon aria-hidden="true" className="h-6 w-6" />
                      </button>
                   </div>
@@ -47,7 +50,7 @@ export default function AdminShell({ children }: AdminShellProps) {
             <AdminSidebarContent currentPath={pathname} />
          </div>
 
-         <div className="lg:pl-72">
+         <div className="lg:ps-72">
             <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
             <main className="py-10">
                <div className="px-4 text-base sm:px-6 lg:px-8">{children}</div>

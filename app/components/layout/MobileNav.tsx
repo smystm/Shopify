@@ -3,99 +3,128 @@
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
 import { XMarkIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
+import { motion, useReducedMotion } from "motion/react"
 import { useSelector } from "react-redux"
 import type { RootState } from "@/app/lib/store/store"
 import { canViewAdmin } from "@/app/lib/permissions"
 import HeaderNavLink from "./HeaderNavLink"
+import BrandMark from "./BrandMark"
+import { fa, faNavLinks } from "@/app/lib/i18n/fa"
 
 interface MobileNavProps {
    open: boolean
    onClose: () => void
 }
 
-const futureLinks = [
-   { name: "Orders", href: "/orders" },
-   { name: "Cart", href: "/cart" },
-]
-
 export default function MobileNav({ open, onClose }: MobileNavProps) {
    const user = useSelector((state: RootState) => state.auth.user)
    const showAdmin = user && canViewAdmin(user.permission)
+   const prefersReduced = useReducedMotion()
+
+   // Direction-neutral (opacity + small Y) so it behaves the same in RTL and LTR.
+   const list = {
+      hidden: {},
+      show: { transition: { staggerChildren: 0.05, delayChildren: 0.08 } },
+   }
+   const row = {
+      hidden: { opacity: 0, y: prefersReduced ? 0 : 12 },
+      show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const } },
+   }
 
    return (
       <Dialog open={open} onClose={onClose} className="relative z-50 lg:hidden">
          <DialogBackdrop
             transition
-            className="fixed inset-0 bg-zinc-950/80 transition-opacity duration-300 ease-linear data-closed:opacity-0"
+            className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm transition-opacity duration-300 ease-linear data-closed:opacity-0"
          />
+
          <div className="fixed inset-0 flex">
             <DialogPanel
                transition
-               className="relative flex w-full max-w-72 flex-1 flex-col bg-white transition duration-300 ease-in-out data-closed:-translate-x-full dark:bg-zinc-950"
+               dir="rtl"
+               lang="fa"
+               className="relative flex w-full max-w-80 flex-1 flex-col border-s border-navy-200/60 bg-white font-vazirmatn transition duration-300 ease-in-out data-closed:-translate-x-full rtl:data-closed:translate-x-full dark:border-navy-800/60 dark:bg-navy-950"
             >
-               <div className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 px-4 dark:border-zinc-800">
-                  <Link href="/" onClick={onClose} className="flex items-center gap-x-2.5">
-                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 dark:bg-white">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                           <path d="M5 8h14l1 13H4L5 8Z" fill="white" className="dark:fill-zinc-950" />
-                           <path d="M8 9V6a4 4 0 0 1 8 0v3" stroke="white" strokeWidth="2" strokeLinecap="round" className="dark:stroke-zinc-950" />
-                        </svg>
-                     </span>
-                     <span className="text-base font-semibold tracking-tight text-zinc-950 dark:text-white">
-                        Shopify
-                     </span>
-                  </Link>
+               {/* Brand wash at the top of the drawer */}
+               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/10 to-transparent dark:from-brand-400/10" />
+
+               <div className="relative flex h-16 shrink-0 items-center justify-between border-b border-navy-200/60 px-4 dark:border-navy-800/60">
+                  <BrandMark onClick={onClose} />
                   <button
                      type="button"
                      onClick={onClose}
-                     className="-m-2.5 p-2.5 text-zinc-600 dark:text-zinc-300"
+                     className="-m-2.5 rounded-xl p-2.5 text-navy-600 transition-colors hover:bg-navy-100 hover:text-brand-700 dark:text-navy-300 dark:hover:bg-navy-800 dark:hover:text-brand-300"
                   >
-                     <span className="sr-only">Close menu</span>
+                     <span className="sr-only">{fa.header.closeMenu}</span>
                      <XMarkIcon aria-hidden="true" className="h-6 w-6" />
                   </button>
                </div>
-               <nav className="flex flex-1 flex-col gap-y-1 overflow-y-auto px-4 py-4">
-                  <HeaderNavLink href="/" onClick={onClose}>
-                     Home
-                  </HeaderNavLink>
-                  <HeaderNavLink href="/products" onClick={onClose}>
-                     Products
-                  </HeaderNavLink>
+
+               <motion.nav
+                  variants={list}
+                  initial="hidden"
+                  animate={open ? "show" : "hidden"}
+                  className="relative flex flex-1 flex-col gap-y-1 overflow-y-auto px-4 py-4"
+               >
+                  <motion.div variants={row}>
+                     <HeaderNavLink href="/" variant="drawer" onClick={onClose}>
+                        {fa.nav.home}
+                     </HeaderNavLink>
+                  </motion.div>
+                  <motion.div variants={row}>
+                     <HeaderNavLink href="/products" variant="drawer" onClick={onClose}>
+                        {fa.nav.products}
+                     </HeaderNavLink>
+                  </motion.div>
+
                   {user && (
                      <>
-                        <HeaderNavLink href="/panel" onClick={onClose}>
-                           My Panel
-                        </HeaderNavLink>
-                        {showAdmin && (
-                           <HeaderNavLink href="/admin" onClick={onClose}>
-                              Admin
+                        <motion.div variants={row}>
+                           <HeaderNavLink href="/panel" variant="drawer" onClick={onClose}>
+                              {fa.nav.myPanel}
                            </HeaderNavLink>
+                        </motion.div>
+                        {showAdmin && (
+                           <motion.div variants={row}>
+                              <HeaderNavLink href="/admin" variant="drawer" onClick={onClose}>
+                                 {fa.nav.admin}
+                              </HeaderNavLink>
+                           </motion.div>
                         )}
                      </>
                   )}
-                  <div className="my-2 border-t border-zinc-100 dark:border-zinc-800" />
-                  {futureLinks.map((item) => (
-                     <HeaderNavLink key={item.name} href={item.href} onClick={onClose}>
-                        {item.name}
-                     </HeaderNavLink>
+
+                  <motion.div variants={row} className="my-2 border-t border-navy-100 dark:border-navy-800" />
+
+                  {faNavLinks.map((item) => (
+                     <motion.div key={item.name} variants={row}>
+                        <HeaderNavLink href={item.href} variant="drawer" onClick={onClose}>
+                           {item.name}
+                        </HeaderNavLink>
+                     </motion.div>
                   ))}
-               </nav>
+               </motion.nav>
+
                {!user && (
-                  <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-                     <div className="flex flex-col gap-2">
+                  <div className="relative border-t border-navy-200/60 p-4 dark:border-navy-800/60">
+                     <div className="flex flex-col gap-2.5">
                         <Link
                            href="/login"
                            onClick={onClose}
-                           className="rounded-full border border-zinc-300 px-6 py-2.5 text-center text-sm font-medium transition hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                           className="rounded-full border border-navy-300 px-6 py-2.5 text-center text-sm font-semibold text-navy-700 transition-all duration-300 hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-navy-600 dark:text-navy-200 dark:hover:border-brand-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
                         >
-                           Log in
+                           {fa.auth.login}
                         </Link>
                         <Link
                            href="/register"
                            onClick={onClose}
-                           className="rounded-full bg-black px-6 py-2.5 text-center text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                           className="group relative overflow-hidden rounded-full bg-gradient-to-l from-brand-600 to-brand-500 px-6 py-2.5 text-center text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition-all duration-300 hover:shadow-xl hover:shadow-brand-600/40"
                         >
-                           Sign up
+                           <span
+                              aria-hidden="true"
+                              className="absolute inset-0 -translate-x-full bg-gradient-to-l from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full"
+                           />
+                           <span className="relative">{fa.auth.signup}</span>
                         </Link>
                      </div>
                   </div>

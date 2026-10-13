@@ -1,5 +1,9 @@
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline"
 import type { AdminProduct } from "@/app/contracts/products"
+import { fa } from "@/app/lib/i18n/fa"
+
+const thClass =
+   "px-6 py-3 text-start text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
 
 interface ProductsTableProps {
    products: AdminProduct[]
@@ -17,48 +21,27 @@ export default function ProductsTable({ products, onEdit, onDelete, canEdit, can
             <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
                <thead className="bg-zinc-50 dark:bg-zinc-900/60">
                   <tr>
-                     <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
-                     >
-                        Product Number
-                     </th>
-                   <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
-                   >
-                      Title
-                   </th>
-                   <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
-                   >
-                      Description
-                   </th>
-                    <th
-                       scope="col"
-                       className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
-                    >
-                       Category
-                    </th>
-                    <th
-                       scope="col"
-                       className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
-                    >
-                       Image
-                    </th>
-                    <th
-                         scope="col"
-                         className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
-                      >
-                         Edit
+                     <th scope="col" className={thClass}>
+                         {fa.admin.products.headers.productNumber}
                       </th>
-                     <th
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
-                     >
-                        Delete
-                     </th>
+                      <th scope="col" className={thClass}>
+                         {fa.admin.products.headers.title}
+                      </th>
+                      <th scope="col" className={thClass}>
+                         {fa.admin.products.headers.description}
+                      </th>
+                      <th scope="col" className={thClass}>
+                         {fa.admin.products.headers.category}
+                      </th>
+                      <th scope="col" className={thClass}>
+                         {fa.admin.products.headers.image}
+                      </th>
+                      <th scope="col" className={thClass}>
+                         {fa.admin.products.headers.edit}
+                      </th>
+                      <th scope="col" className={thClass}>
+                         {fa.admin.products.headers.delete}
+                      </th>
                   </tr>
                </thead>
                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
@@ -90,7 +73,7 @@ export default function ProductsTable({ products, onEdit, onDelete, canEdit, can
                                <button
                                   type="button"
                                   onClick={() => onEdit(product)}
-                                  aria-label={`Edit ${product.title}`}
+                                  aria-label={fa.admin.products.editAria.replace("{title}", product.title)}
                                   className="inline-flex items-center rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                                >
                                   <PencilSquareIcon aria-hidden="true" className="h-5 w-5" />
@@ -102,7 +85,7 @@ export default function ProductsTable({ products, onEdit, onDelete, canEdit, can
                                <button
                                   type="button"
                                   onClick={() => onDelete(product.id)}
-                                  aria-label={`Delete ${product.title}`}
+                                  aria-label={fa.admin.products.deleteAria.replace("{title}", product.title)}
                                   className="inline-flex items-center rounded-md p-1.5 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                                >
                                   <TrashIcon aria-hidden="true" className="h-5 w-5" />

@@ -1,4 +1,5 @@
 import type { Permission } from "@/app/lib/permissions"
+import { fa } from "@/app/lib/i18n/fa"
 
 export interface AdminUser {
    id: number
@@ -29,33 +30,33 @@ export default function UsersTable({ users }: UsersTableProps) {
                   <tr>
                      <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
+                        className="px-6 py-3 text-start text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
                      >
-                        User
+                        {fa.admin.users.headers.user}
                      </th>
                      <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
+                        className="px-6 py-3 text-start text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
                      >
-                        Contact
+                        {fa.admin.users.headers.contact}
                      </th>
                       <th
                          scope="col"
-                         className="hidden px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase sm:table-cell dark:text-zinc-400"
+                         className="hidden px-6 py-3 text-start text-xs font-semibold tracking-wide text-zinc-500 uppercase sm:table-cell dark:text-zinc-400"
                       >
-                         Joined
+                         {fa.admin.users.headers.joined}
                       </th>
                       <th
                          scope="col"
-                         className="px-6 py-3 text-left text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
+                         className="px-6 py-3 text-start text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400"
                       >
-                         Permission
+                         {fa.admin.users.headers.permission}
                       </th>
                    </tr>
                </thead>
                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                   {users.map((user) => {
-                     const displayName = user.name || user.email || user.phone || `User #${user.id}`
+                     const displayName = user.name || user.email || user.phone || `${fa.header.fallbackUserName} #${user.id}`
                      const contact = user.email || user.phone || "—"
                      return (
                         <tr key={user.id} className="hover:bg-zinc-50/70 dark:hover:bg-zinc-900/40">
@@ -68,7 +69,7 @@ export default function UsersTable({ users }: UsersTableProps) {
                                     <p className="truncate text-sm font-semibold text-zinc-950 dark:text-white">
                                        {displayName}
                                     </p>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">ID: {user.id}</p>
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{fa.admin.users.idLabel}: {user.id}</p>
                                  </div>
                               </div>
                            </td>

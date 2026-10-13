@@ -6,10 +6,11 @@ import type { AdminUser } from "@/app/components/admin/user/UsersTable"
 import { getCurrentUser } from "@/app/helpers/getCurrentUser"
 import { canViewAdmin } from "@/app/lib/permissions"
 import type { AuthUser } from "@/app/lib/store/authSlice"
+import { fa } from "@/app/lib/i18n/fa"
 
 export const metadata: Metadata = {
-   title: "Users — Shopify Admin",
-   description: "Manage users — view, edit, and control user accounts.",
+   title: fa.admin.users.metaTitle,
+   description: fa.admin.users.metaDescription,
 }
 
 const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
@@ -51,7 +52,7 @@ export default async function AdminUsersPage() {
    if (loadError) {
       return (
          <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-8 text-center dark:border-red-900/50 dark:bg-red-950/30">
-            <p className="text-sm font-semibold text-red-700 dark:text-red-300">Couldn&apos;t load users</p>
+            <p className="text-sm font-semibold text-red-700 dark:text-red-300">{fa.admin.usersLoadError.title}</p>
             <p className="mx-auto mt-1 max-w-md text-sm text-red-600/90 dark:text-red-400/90">{loadError}</p>
          </div>
       )

@@ -5,6 +5,7 @@ import { toast } from "react-toastify"
 import ProductDialog, { type ProductFormValues } from "./ProductDialog"
 import type { AdminProduct } from "@/app/contracts/products"
 import { createProduct } from "@/app/helpers/productApi"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface ProductCreateDialogProps {
     open: boolean
@@ -31,12 +32,13 @@ export default function ProductCreateDialog({ open, suggestedNumber, onClose, on
                 image: values.image,
             })
             onCreated(created)
-            toast.success("Product added successfully")
+            toast.success(fa.admin.toast.added)
             onClose()
         } catch (err) {
             const reason = err instanceof Error ? err.message : String(err)
-            setSaveError(`Failed to save product: ${reason}`)
-            toast.error(`Failed to save product: ${reason}`)
+            const message = fa.admin.toast.saveFailed.replace("{reason}", reason)
+            setSaveError(message)
+            toast.error(message)
         } finally {
             setSaving(false)
         }

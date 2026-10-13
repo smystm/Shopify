@@ -8,6 +8,8 @@ interface SelectBoxProps {
    label: string;
    options: SelectOption[];
    placeholder?: string;
+   /** Label for the "no selection" option. */
+   allLabel?: string;
    value?: string;
    onChange?: (value: string) => void;
    onBlur?: () => void;
@@ -25,6 +27,7 @@ export default function SelectBox({
    label,
    options,
    placeholder,
+   allLabel = "All",
    value,
    onChange,
    onBlur,
@@ -54,7 +57,7 @@ export default function SelectBox({
                   {placeholder}
                </option>
             )}
-            <option value="">All</option>
+            <option value="">{allLabel}</option>
             {options.map((option) => (
                <option key={option.value} value={option.value}>
                   {option.label}

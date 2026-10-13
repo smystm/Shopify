@@ -1,13 +1,36 @@
 "use client"
 
 import { useAppSelector } from "@/app/lib/store/hooks"
-import YokosoUser from "@/app/components/panel/YokosoUser"
 import HeroSection from "./HeroSection"
+import Marquee from "./Marquee"
+import Features from "./Features"
+import CategoriesShowcase from "./CategoriesShowcase"
+import FeaturedSkins from "./FeaturedSkins"
+import HowItWorks from "./HowItWorks"
+import Faq from "./Faq"
+import CtaBand from "./CtaBand"
 
+/**
+ * The landing page always renders — signed in or not.
+ * Only the auth-specific CTAs differ, so returning users keep seeing the
+ * full marketing page instead of being dropped onto the panel card.
+ */
 export default function HomeClient() {
    const user = useAppSelector((s) => s.auth.user)
+   const isSignedIn = Boolean(user)
+   const displayName = user?.name || user?.email || user?.phone || null
 
-   if (user) return <YokosoUser />
+   return (
+      <>
+         <HeroSection displayName={displayName} />
 
-   return <HeroSection />
+         <Marquee />
+         <Features />
+         <CategoriesShowcase />
+         <FeaturedSkins />
+         <HowItWorks />
+         <Faq />
+         <CtaBand isSignedIn={isSignedIn} />
+      </>
+   )
 }

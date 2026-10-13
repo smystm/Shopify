@@ -10,6 +10,7 @@ import type { AdminUser } from "./UsersTable"
 import { USERS_PAGE_SIZE } from "@/app/lib/users"
 import { useAppSelector } from "@/app/lib/store/hooks"
 import { selectPermission } from "@/app/lib/store/authSlice"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface UsersClientProps {
     initialUsers: AdminUser[]
@@ -48,11 +49,11 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
             <>
               <div className="flex flex-wrap items-center justify-between gap-3">
              <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">Users</h1>
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Everyone registered on your store.</p>
+                <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">{fa.admin.users.title}</h1>
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{fa.admin.users.subtitle}</p>
              </div>
              <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
-                {users.length} total
+                {fa.admin.users.total.replace("{count}", String(users.length))}
              </span>
           </div>
 

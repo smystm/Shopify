@@ -7,6 +7,7 @@ import type { ReactNode } from "react"
 import InputField from "../ui/InputField"
 import Button from "../ui/Button"
 import type { FormValues, AuthMode } from "../../contracts/auth/index"
+import { fa } from "@/app/lib/i18n/fa"
 
 export const authInitialValues: FormValues = {
    name: "",
@@ -18,7 +19,7 @@ export const authInitialValues: FormValues = {
 
 const phoneRegExp = /^(0|0098|\+98)9(0[1-5]|[1 3]\d|2[0-2]|98)\d{7}$/
 
-const phoneField = Yup.string().required("Phone number is required").matches(phoneRegExp, "Invalid phone number")
+const phoneField = Yup.string().required(fa.authPages.phoneRequired).matches(phoneRegExp, fa.authPages.phoneInvalid)
 
 // Yup schemas — phone-based flow (must match the rendered fields only).
 // Requiring a field that isn't rendered blocks submit silently, because
@@ -26,21 +27,21 @@ const phoneField = Yup.string().required("Phone number is required").matches(pho
 const loginSchema = Yup.object({
    phone: phoneField,
    // --- Email/password flow (kept for later reuse) ---
-   // email: Yup.string().email("Invalid email address").required("Email is required"),
-   // password: Yup.string().min(8, "Min 8 characters").required("Password is required"),
+   // email: Yup.string().email().required(),
+   // password: Yup.string().min(8).required(),
 })
 
 const signupSchema = Yup.object({
-   name: Yup.string().min(2, "Min 2 characters").required("Name is required"),
+   name: Yup.string().min(2, fa.authPages.nameMin).required(fa.authPages.nameRequired),
    phone: phoneField,
    //password: Yup.string()
-   //   .min(8, "Min 8 characters")
-   //   .matches(/[A-Z]/, "Need at least one uppercase letter")
-   //   .matches(/[0-9]/, "Need at least one number")
-   //   .required("Password is required"),
+   //   .min(8, fa.authPages.passwordMin)
+   //   .matches(/[A-Z]/, fa.authPages.passwordUpper)
+   //   .matches(/[0-9]/, fa.authPages.passwordNumber)
+   //   .required(fa.authPages.passwordRequired),
    //confirmPassword: Yup.string()
-   //   .oneOf([Yup.ref("password")], "Passwords must match")
-   //   .required("Please confirm your password"),
+   //   .oneOf([Yup.ref("password")], fa.authPages.passwordMismatch)
+   //   .required(fa.authPages.confirmPasswordRequired),
 })
 
 interface FormBaseProps {
@@ -95,17 +96,17 @@ export default function FormBase({ mode, initialValues = authInitialValues, onSu
       <FormShell<FormValues> initialValues={initialValues} validationSchema={isSignup ? signupSchema : loginSchema} onSubmit={onSubmit}>
          {({ isSubmitting, touched, errors }) => (
             <>
-               {isSignup && <InputField name="name" label="Name" type="text" placeholder="John Doe" touched={touched.name} error={errors.name} autoComplete="name" />}
+               {isSignup && <InputField name="name" label={fa.authPages.name} type="text" placeholder={fa.authPages.namePlaceholder} touched={touched.name} error={errors.name} autoComplete="name" />}
 
-               <InputField name="phone" label="Phone" type="tel" placeholder="09123456789" touched={touched.phone} error={errors.phone} autoComplete="tel" />
+               <InputField name="phone" label={fa.authPages.phone} type="tel" placeholder={fa.authPages.phonePlaceholder} touched={touched.phone} error={errors.phone} autoComplete="tel" />
 
-               {/* <InputField name="email" label="Email" type="email" placeholder="you@example.com" touched={touched.email} error={errors.email} autoComplete="email" /> */}
+               {/* <InputField name="email" label={fa.authPages.email} type="email" placeholder={fa.authPages.emailPlaceholder} touched={touched.email} error={errors.email} autoComplete="email" /> */}
 
                {/* <InputField
                   name="password"
-                  label="Password"
+                  label={fa.authPages.password}
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={fa.authPages.passwordPlaceholder}
                   touched={touched.password}
                   error={errors.password}
                   autoComplete={isSignup ? "new-password" : "current-password"}
@@ -114,9 +115,9 @@ export default function FormBase({ mode, initialValues = authInitialValues, onSu
                {/* {isSignup && (
                   <InputField
                      name="confirmPassword"
-                     label="Confirm password"
+                     label={fa.authPages.confirmPassword}
                      type="password"
-                     placeholder="••••••••"
+                     placeholder={fa.authPages.passwordPlaceholder}
                      touched={touched.confirmPassword}
                      error={errors.confirmPassword}
                      autoComplete="new-password"
@@ -124,7 +125,7 @@ export default function FormBase({ mode, initialValues = authInitialValues, onSu
                )} */}
 
                <Button type="submit" disabled={isSubmitting} className="mt-2">
-                  {isSubmitting ? "Please wait..." : isSignup ? "Create account" : "Log in"}
+                  {isSubmitting ? fa.authPages.pleaseWait : isSignup ? fa.authPages.submitSignup : fa.authPages.submitLogin}
                </Button>
             </>
          )}

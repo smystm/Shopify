@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { cookies } from "next/headers"
 import { getSingleProduct } from "@/app/helpers/productApi"
 import ProductDetail from "@/app/components/products/ProductDetail"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface ProductPageProps {
     params: Promise<{ id: string }>
@@ -12,8 +13,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     const { id } = await params
     const product = await getSingleProduct(parseInt(id, 10))
     return {
-        title: product ? `${product.title} — Shopify` : "Product — Shopify",
-        description: product?.desc ?? "Product details",
+        title: product ? `${product.title} — Shopify` : fa.products.detailMetaTitle,
+        description: product?.desc ?? fa.products.detailMetaDescription,
     }
 }
 

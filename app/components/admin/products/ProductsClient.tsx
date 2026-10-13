@@ -17,6 +17,7 @@ import { useAppSelector } from "@/app/lib/store/hooks"
 import { selectAuthUser, selectPermission } from "@/app/lib/store/authSlice"
 import { getProducts, getCategories } from "@/app/helpers/productApi"
 import ProductFilter from "@/app/components/ui/ProductFilter"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface ProductsClientProps {
     initialProducts: AdminProduct[]
@@ -135,14 +136,14 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 <>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">Products</h1>
+                            <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">{fa.admin.products.title}</h1>
                             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                                Manage your catalog. Products are stored in the backend.
+                                {fa.admin.products.subtitle}
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
-                                {displayProducts.length} total
+                                {fa.admin.products.total.replace("{count}", String(displayProducts.length))}
                             </span>
                             {/* Only users allowed to add products see the create button. */}
                             {canCreate && (
@@ -152,7 +153,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                                     className="inline-flex items-center gap-x-1.5 rounded-md bg-zinc-950 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                                 >
                                     <PlusIcon aria-hidden="true" className="h-5 w-5" />
-                                    Add Product
+                                    {fa.admin.products.addProduct}
                                 </button>
                             )}
                         </div>
@@ -165,11 +166,12 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                                 selectedCategory={selectedCategoryParam}
                                 minPrice={minPriceParam}
                                 maxPrice={maxPriceParam}
+                                labels={fa.products.filter}
                                 onChange={handleFilterChange}
                             />
                         </div>
                         {filterLoading ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading filtered products…</p>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400">{fa.admin.products.loadingFiltered}</p>
                         ) : isOutOfRange ? (
                             <ProductsEmptyState variant="page-out-of-range" onGoToFirstPage={() => handlePageChange(1)} />
                         ) : visibleProducts.length === 0 ? (

@@ -5,6 +5,7 @@ import { toast } from "react-toastify"
 import ProductDialog, { type ProductFormValues } from "./ProductDialog"
 import type { AdminProduct } from "@/app/contracts/products"
 import { updateProduct } from "@/app/helpers/productApi"
+import { fa } from "@/app/lib/i18n/fa"
 
 interface ProductEditDialogProps {
     product: AdminProduct
@@ -30,12 +31,13 @@ export default function ProductEditDialog({ product, onClose, onUpdated }: Produ
                 image: values.image,
             })
             onUpdated(updated)
-            toast.success("Product updated successfully")
+            toast.success(fa.admin.toast.updated)
             onClose()
         } catch (err) {
             const reason = err instanceof Error ? err.message : String(err)
-            setSaveError(`Failed to save product: ${reason}`)
-            toast.error(`Failed to save product: ${reason}`)
+            const message = fa.admin.toast.saveFailed.replace("{reason}", reason)
+            setSaveError(message)
+            toast.error(message)
         } finally {
             setSaving(false)
         }
