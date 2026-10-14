@@ -13,6 +13,7 @@ import CallApi from "@/app/helpers/CallApi"
 import ValidationError from "@/app/exeptions/ValidationError"
 import { useCookies } from "react-cookie"
 import { fa } from "@/app/lib/i18n/fa"
+import { useMounted } from "@/app/lib/hooks/useMounted"
 
 export type { AuthMode }
 
@@ -25,6 +26,7 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
    const dispatch = useAppDispatch()
    const router = useRouter()
    const user = useAppSelector((s) => s.auth.user)
+   const mounted = useMounted()
    const prefersReduced = useReducedMotion()
 
    const isSignup = mode === "signup"
@@ -97,7 +99,10 @@ export default function AuthForm({ mode, setToken }: AuthFormProps) {
    }
 
 
-    if (user) {
+    // Gate on this form's own hydration: the page is server-rendered, so switching
+   // to the "already signed in" card on `user` alone would let the client render
+   // a different branch than the server did. See the note in SiteHeader.
+   if (mounted && user) {
       const handleLogout = () => {
          removeCookie("shopy-token", { path: "/" })
          removeCookie("shopy-user", { path: "/" })

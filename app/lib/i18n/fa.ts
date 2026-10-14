@@ -216,7 +216,7 @@ export const fa = {
          offers: "پیشنهادهای معامله",
          wallet: "کیف پول",
          wishlist: "علاقه‌مندی‌ها",
-         inventory: "موجودی من",
+         inventory: "آیتم های من",
          profile: "اطلاعات حساب",
          tickets: "پشتیبانی",
       },
@@ -302,7 +302,7 @@ export const fa = {
       },
 
       inventory: {
-         title: "موجودی من",
+         title: "آیتم ها",
          subtitle: "اسکین‌ها و آیتم‌های خریداری‌شده شما",
          emptyTitle: "موجودی شما خالی است",
          emptyBody: "پس از تکمیل یک معامله، اقلام خریداری‌شده اینجا نمایش داده می‌شوند.",
@@ -315,6 +315,9 @@ export const fa = {
       profileEdit: {
          title: "ویرایش اطلاعات حساب",
          subtitle: "برای دریافت اسکین، آدرس معامله استیم باید صحیح باشد.",
+         identityTitle: "اطلاعات شخصی",
+         steamTitle: "اطلاعات استیم",
+         phoneTitle: "شماره موبایل",
          name: "نام و نام خانوادگی",
          namePlaceholder: "نام شما",
          email: "ایمیل",
@@ -326,20 +329,46 @@ export const fa = {
          tradeUrlPlaceholder: "https://steamcommunity.com/tradeoffer/...",
          tradeUrlHint: "اسکین‌ها از طریق این آدرس به شما تحویل داده می‌شوند.",
          save: "ذخیره تغییرات",
+         identitySave: "ذخیره اطلاعات شخصی",
+         steamSave: "ذخیره اطلاعات استیم",
          saving: "در حال ذخیره…",
-         saved: "تغییرات ذخیره شد",
-         failed: "ذخیره تغییرات ناموفق بود",
+         saved: "ذخیره شد",
+         failed: "ذخیره ناموفق بود",
+         invalidField: "مقدار وارد شده معتبر نیست",
          memberSince: "عضو از",
          refresh: "به‌روزرسانی اطلاعات",
          steamReady: "اطلاعات استیم شما کامل است.",
          steamMissing: "اطلاعات استیم ناقص است — دریافت اسکین ممکن نیست.",
+
+         phoneFixedHint: "شماره فعلی حساب شما",
+         phoneChange: "تغییر شماره",
+         phoneNew: "شماره موبایل جدید",
+         phoneNewPlaceholder: "09121234567",
+         phoneSendCode: "ارسال کد تأیید",
+         phoneSendingCode: "در حال ارسال…",
+         phoneCode: "کد تأیید",
+         phoneCodePlaceholder: "۶ رقم",
+         phoneCodeSent: "کد تأیید ارسال شد — آن را وارد کنید",
+         phoneConfirm: "تأیید و تغییر",
+         phoneCancel: "انصراف",
+         phoneChanged: "شماره موبایل با موفقیت تغییر کرد",
+         phoneCodeWrong: "کد تأیید نادرست یا منقضی شده است",
+         phoneInUse: "این شماره قبلاً برای حساب دیگری ثبت شده است",
+         phoneSame: "این شماره هم‌اکنون شماره حساب شماست",
+         phoneInvalid: "شماره موبایل معتبر نیست",
+      },
+
+      /** Slim identity strip shown on the panel overview. */
+      summary: {
+         title: "اطلاعات حساب",
+         editProfile: "ویرایش پروفایل",
       },
 
       tickets: {
          title: "پشتیبانی",
          subtitle: "ثبت تیکت و پیگیری درخواست‌ها",
          emptyTitle: "سیستم تیکت به‌زودی راه‌اندازی می‌شود",
-         emptyBody: "تا آن زمان می‌توانید از طریق پشتیبانی شبکه‌های اجتماعی فروشگاه با ما در تماس باشید.",
+         emptyBody: "توسعه سیستم تیکتینگ فعلا زوده، تا آن زمان می‌توانید از طریق پشتیبانی شبکه‌های اجتماعی فروشگاه با ما در تماس باشید.",
       },
    },
 
@@ -371,9 +400,10 @@ export const fa = {
          clearAll: "پاک کردن همه",
          category: "دسته‌بندی",
          categoryPlaceholder: "انتخاب دسته‌بندی",
+         selectAll: "انتخاب همه",
          allCategories: "همه",
-         minPrice: "کمترین قیمت",
-         maxPrice: "بیشترین قیمت",
+         minPrice: "از",
+         maxPrice: "تا",
          minPricePlaceholder: "مثلاً 100",
          maxPricePlaceholder: "مثلاً 5000",
       },
@@ -489,6 +519,7 @@ export const fa = {
             { slug: "deagle", label: "Deagle" },
             { slug: "glock", label: "Glock" },
             { slug: "ssg08", label: "SSG 08" },
+            { slug: "TF2", label: "کلید TF2" },
          ],
       },
 
@@ -718,6 +749,170 @@ export const fa = {
       light: "روشن",
       dark: "تاریک",
       system: "سیستم",
+   },
+   /**
+    * Site footer — shown on the home page and /products.
+    *
+    * The brand name is not repeated here: the footer reads `header.brand` so a
+    * rename stays a single edit. The copyright line is composed from
+    * `copyrightPrefix` + `header.brand` + `copyrightYear`.
+    */
+   footer: {
+      trustTitle: "خرید مطمئن، تحویل سریع",
+
+      /** Short reassurance row across the top of the footer. */
+      trust: {
+         bestPrice: {
+            title: "بهترین قیمت بازار",
+            body: "منصفانه‌ترین قیمت‌ها را در ایران ارائه می‌دهیم.",
+         },
+         instantDelivery: {
+            title: "تحویل آنی اسکین‌های موجود",
+            body: "اسکین‌های موجود در ربات بلافاصله تحویل داده می‌شوند. کلید و پرایم پس از تأیید.",
+         },
+         supportHours: {
+            title: "پشتیبانی ۸ صبح تا ۱۰ شب",
+            body: "تیم پشتیبانی در این ساعت‌ها به درخواست شما پاسخ می‌دهد.",
+         },
+         security: {
+            title: "تضمین امنیت و اعتماد",
+            body: "همه تراکنش‌ها با بالاترین سطح امنیتی محافظت می‌شوند.",
+         },
+      },
+
+      brand: {
+         tagline: "بازار امن اسکین CS2",
+         description:
+            "بازار ایرانی اسکین‌های CS2 و کلیدهای TF2؛ با کیف پل تومانی، قیمت‌گذاری لحظه‌ای و تحویل مستقیم به لینک ترید شما.",
+      },
+
+      /** Column headings. */
+      groups: {
+         buySell: "خرید و فروش",
+         account: "حساب کاربری",
+         support: "پشتیبانی",
+         about: "درباره ما",
+      },
+
+      /**
+       * Labels for the nav columns. The hrefs live in the component beside their
+       * external/internal flag, so it is obvious at a glance which links leave
+       * the site.
+       */
+      links: {
+         buySkins: "خرید اسکین CS2",
+         sellSkins: "فروش اسکین CS2",
+         tf2Keys: "کلید TF2",
+         buyPrime: "خرید پرایم CS2",
+         knives: "چاقوها",
+         gloves: "دستکش‌ها",
+
+         profile: "پروفایل",
+         wallet: "کیف پول",
+         withdrawals: "برداشت وجه",
+         orders: "سفارش‌ها",
+         tradeLink: "لینک ترید",
+         verification: "احراز هویت",
+
+         contact: "تماس با ما",
+         faq: "سوالات متداول",
+         rules: "قوانین و مقررات",
+         telegram: "پشتیبانی تلگرام",
+         whatIsTradeLink: "لینک ترید چیست؟",
+
+         aboutUs: "درباره ما",
+         blog: "بلاگ",
+         whyVerification: "چرا احراز هویت؟",
+      },
+
+      badges: {
+         title: "مجوزها و درگاه‌های پرداخت",
+         enamadLabel: "نماد اعتماد الکترونیکی",
+         zibalLabel: "درگاه پرداخت زیبال",
+      },
+
+      /** Announced by screen readers on links that open a new tab. */
+      opensInNewTab: "در صفحه جدید باز می‌شود",
+
+      /** The heart is rendered separately so it can animate — see SiteFooter. */
+      madeWithBefore: "ساخته شده با",
+      madeWithAfter: "برای شما",
+      copyrightPrefix: "تمامی حقوق محفوظ است.",
+      /**
+       * Hardcoded on purpose. Deriving the Persian year from `Intl` would make
+       * the server and the client disagree and re-introduce the hydration
+       * mismatch fixed in SiteHeader. Bump it each Nowruz.
+       */
+      copyrightYear: "۱۴۰۵",
+   },
+   /**
+    * Placeholder copy for routes that the footer links to but that are not
+    * built yet. Each one renders a real page rather than a 404, so the footer
+    * never dead-ends.
+    */
+   comingSoon: {
+      /** Heading on the placeholder panel. The page title is already in PageHero. */
+      heading: "به‌زودی",
+      contact: {
+         title: "تماس با ما",
+         subtitle: "برای هر پرسشی درباره سفارش، تحویل یا حساب کاربری با ما در تماس باشید.",
+         body: "این صفحه در حال آماده‌سازی است. تا آن زمان می‌توانید از پشتیبانی تلگرام استفاده کنید.",
+      },
+      about: {
+         title: "درباره ما",
+         subtitle: "شاپیفای یک بازار ایرانی برای خرید و فروش اسکین‌های CS2 است.",
+         body: "داستان و تیم ما به‌زودی روی این صفحه منتشر می‌شود.",
+      },
+      blog: {
+         title: "بلاگ",
+         subtitle: "راهنماها، اخبار و نکات دنیای CS2.",
+         body: "اولین مطلب‌های بلاگ در حال آماده‌سازی است.",
+      },
+      rules: {
+         title: "قوانین و مقررات",
+         subtitle: "شرایط استفاده از بازار شاپیفای.",
+         body: "متن کامل قوانین به‌زودی منتشر می‌شود.",
+      },
+      verify: {
+         title: "چرا احراز هویت؟",
+         subtitle: "احراز هویت کمک می‌کند خرید و تحویل شما امن بماند.",
+         body: "راهنمای کامل احراز هویت به‌زودی در این صفحه قرار می‌گیرد.",
+      },
+      tradeLink: {
+         title: "لینک ترید چیست؟",
+         subtitle: "راهنمای ساخت و استفاده از لینک ترید استیم.",
+         body: "برای ثبت لینک ترید خود، به بخش پروفایل در پنل کاربری بروید. راهنمای کامل به‌زودی منتشر می‌شود.",
+      },
+      sell: {
+         title: "فروش اسکین CS2",
+         subtitle: "اسکین‌های خود را به ما بفروشید.",
+         body: "فرم ثبت درخواست فروش به‌زودی راه‌اندازی می‌شود.",
+      },
+      prime: {
+         title: "خرید پرایم CS2",
+         subtitle: "پرایم CS2 را با کیف پل تومانی بخرید.",
+         body: "این بخش در حال آماده‌سازی است.",
+      },
+      knives: {
+         title: "چاقوها",
+         subtitle: "خرید چاقوهای CS2.",
+         body: "دسته‌بندی چاقوها به‌زودی به فروشگاه اضافه می‌شود.",
+      },
+      gloves: {
+         title: "دستکش‌ها",
+         subtitle: "خرید دستکش‌های CS2.",
+         body: "دسته‌بندی دستکش‌ها به‌زودی به فروشگاه اضافه می‌شود.",
+      },
+      tf2Keys: {
+         title: "کلید TF2",
+         subtitle: "خرید کلید Team Fortress 2.",
+         body: "این بخش در حال آماده‌سازی است.",
+      },
+      withdrawals: {
+         title: "برداشت وجه",
+         subtitle: "برداشت موجودی کیف پول.",
+         body: "درخواست‌های برداشت به‌زودی فعال می‌شوند.",
+      },
    },
 } as const
 

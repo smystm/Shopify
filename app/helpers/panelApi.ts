@@ -4,6 +4,7 @@ import type {
    Order,
    OrdersSummary,
    PanelProfile,
+   PhoneChangeRequested,
    TradeOffer,
    TradeOfferStatus,
    WalletTransaction,
@@ -51,6 +52,25 @@ async function getProfile(): Promise<PanelProfile | null> {
 /** PATCH /user — edits only name / email / steam_id / trade_url. */
 async function updateProfile(patch: EditableProfile): Promise<PanelProfile | null> {
    const res = await request("/user", { method: "PATCH", body: JSON.stringify(patch) })
+   const body = (await res.json()) as { user?: PanelProfile }
+   return body?.user ?? null
+}
+
+/**
+ * Start a verified phone change. The phone number cannot be set through
+ * updateProfile — it is absent from the server's whitelist on purpose.
+ */
+async function requestPhoneChange(phone: string): Promise<PhoneChangeRequested> {
+   const res = await request("/user/phone-change/request", { method: "POST", body: JSON.stringify({ phone }) })
+   return (await res.json()) as PhoneChangeRequested
+}
+
+/** Complete a phone change with the code sent to the new number. */
+async function confirmPhoneChange(verificationId: string, code: string): Promise<PanelProfile | null> {
+   const res = await request("/user/phone-change/confirm", {
+      method: "POST",
+      body: JSON.stringify({ verificationId, code }),
+   })
    const body = (await res.json()) as { user?: PanelProfile }
    return body?.user ?? null
 }
@@ -163,6 +183,8 @@ async function getInventory(): Promise<InventoryItem[]> {
 export {
    getProfile,
    updateProfile,
+   requestPhoneChange,
+   confirmPhoneChange,
    getOrders,
    getOrder,
    getTradeOffers,

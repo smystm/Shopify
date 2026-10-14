@@ -118,10 +118,23 @@ export interface PanelProfile {
    balance: number
 }
 
-/** The only fields PATCH /user accepts. */
+/** The only fields PATCH /user accepts. `phone` is deliberately NOT here. */
 export interface EditableProfile {
    name?: string
    email?: string
    steam_id?: string
    trade_url?: string
+}
+
+/**
+ * Response from starting a verified phone change.
+ *
+ * There is deliberately no `code` here: the endpoint must never return the
+ * value it is asking the user to prove. The code goes out over SMS (or, in
+ * development, the backend terminal).
+ */
+export interface PhoneChangeRequested {
+   verificationId: string
+   /** Milliseconds until the challenge expires. */
+   expiresIn: number
 }

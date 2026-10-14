@@ -1,0 +1,13 @@
+<!--
+  PLACEHOLDER — not the real Zibal logo.
+  Swap for the official asset your payment gateway account provides.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" role="img" aria-label="درگاه پرداخت زیبال">
+   <title>درگاه پرداخت زیبال</title>
+   <rect width="160" height="48" rx="12" fill="#0f172a" />
+   <rect x="1.5" y="1.5" width="157" height="45" rx="10.5" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-dasharray="5 4" />
+   <circle cx="26" cy="24" r="9" fill="none" stroke="#f59e0b" stroke-width="3" />
+   <path d="M22 24l3 3 5-6" fill="none" stroke="#14b8a6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+   <text x="44" y="29" fill="#e2e8f0" font-size="15" font-weight="700" font-family="Vazirmatn, sans-serif">زیبال</text>
+   <text x="146" y="30" fill="#64748b" font-size="11" font-family="Vazirmatn, sans-serif" text-anchor="end">نمونه</text>
+</svg>

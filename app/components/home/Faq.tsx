@@ -7,9 +7,13 @@ import Reveal from "@/app/components/ui/Reveal"
 
 const ITEMS = ["authenticity", "payment", "delivery", "refund"] as const
 
+/**
+ * The `id` on this section is the target for the footer's "سوالات متداول" link,
+ * and `scroll-mt-24` keeps the heading clear of the sticky header.
+ */
 export default function Faq() {
    return (
-      <section className="py-16">
+      <section id="faq" className="scroll-mt-24 py-16">
          <Reveal className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-navy-950 dark:text-white">{fa.home.faq.title}</h2>
             <p className="mt-3 text-base leading-7 text-navy-600 dark:text-navy-300">{fa.home.faq.subtitle}</p>

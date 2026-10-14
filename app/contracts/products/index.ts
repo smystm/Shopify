@@ -1,6 +1,8 @@
 export interface Category {
     id: number
     value: string
+    subcategories?: string[]
+    subcategory?: string
 }
 
 export interface AdminProduct {

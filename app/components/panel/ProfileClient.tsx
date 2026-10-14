@@ -5,34 +5,52 @@ import { useRouter } from "next/navigation"
 import { useDispatch } from "react-redux"
 import { useCookies } from "react-cookie"
 import { motion, useReducedMotion } from "motion/react"
+import { useSWRConfig } from "swr"
 import {
    CheckCircleIcon,
    ExclamationTriangleIcon,
    PhoneIcon,
    UserIcon,
-   EnvelopeIcon,
    IdentificationIcon,
-   LinkIcon,
    ArrowPathIcon,
+   PencilSquareIcon,
+   XMarkIcon,
 } from "@heroicons/react/24/outline"
 import type { EditableProfile, PanelProfile } from "@/app/contracts/panel"
-import { getProfile, updateProfile } from "@/app/helpers/panelApi"
-import { removeLoginAuth } from "@/app/helpers/auth"
+import { getProfile, updateProfile, requestPhoneChange, confirmPhoneChange } from "@/app/helpers/panelApi"
+import { removeLoginAuth, storeLoginUser } from "@/app/helpers/auth"
 import { loginSuccess, logout } from "@/app/lib/store/authSlice"
 import Button from "@/app/components/ui/Button"
 import Reveal from "@/app/components/ui/Reveal"
 import { fa } from "@/app/lib/i18n/fa"
 
 type SaveState = "idle" | "saving" | "saved" | "error"
+type PhoneStep = "idle" | "phone" | "code"
+
+/** Sections that can be saved independently of one another. */
+type BoxId = "identity" | "steam"
 
 function formatDate(ms: number | null): string {
    if (!ms) return "—"
    return new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(ms))
 }
 
+/**
+ * The backend keeps developer-facing errors in English by design, so map the
+ * handful we can hit here onto Persian copy instead of leaking them through.
+ */
+function phoneErrorText(message: string): string {
+   const m = message.toLowerCase()
+   if (m.includes("already registered")) return fa.panel.profileEdit.phoneInUse
+   if (m.includes("already your phone")) return fa.panel.profileEdit.phoneSame
+   if (m.includes("not valid")) return fa.panel.profileEdit.phoneInvalid
+   return fa.panel.profileEdit.phoneCodeWrong
+}
+
 export default function ProfileClient() {
    const router = useRouter()
    const dispatch = useDispatch()
+   const { mutate } = useSWRConfig()
    const prefersReduced = useReducedMotion()
    const [, , removeCookie] = useCookies(["shopy-token", "shopy-user"])
 
@@ -44,7 +62,17 @@ export default function ProfileClient() {
    const [steamId, setSteamId] = useState("")
    const [tradeUrl, setTradeUrl] = useState("")
 
-   const [state, setState] = useState<SaveState>("idle")
+   // One save state per section, so each box reports its own progress.
+   const [boxState, setBoxState] = useState<Record<BoxId, SaveState>>({ identity: "idle", steam: "idle" })
+
+   // Phone change runs as its own verified flow, deliberately separate from any
+   // section save — confirming a number is a different operation.
+   const [phoneStep, setPhoneStep] = useState<PhoneStep>("idle")
+   const [newPhone, setNewPhone] = useState("")
+   const [phoneCode, setPhoneCode] = useState("")
+   const [verificationId, setVerificationId] = useState<string | null>(null)
+   const [phoneBusy, setPhoneBusy] = useState(false)
+   const [phoneMsg, setPhoneMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
    useEffect(() => {
       let cancelled = false
@@ -70,32 +98,117 @@ export default function ProfileClient() {
 
    const steamComplete = Boolean(steamId.trim() && tradeUrl.trim())
 
-   const handleSave = async () => {
-      const patch: EditableProfile = {
-         name: name.trim(),
-         email: email.trim(),
-         steam_id: steamId.trim(),
-         trade_url: tradeUrl.trim(),
+   // Only the keys a section actually owns are ever sent, so saving the name can
+   // never blank the Steam fields and the two boxes never overwrite each other.
+   const identityDirty = name.trim() !== (profile?.name ?? "").trim() || email.trim() !== (profile?.email ?? "").trim()
+   const steamDirty = steamId.trim() !== (profile?.steam_id ?? "").trim() || tradeUrl.trim() !== (profile?.trade_url ?? "").trim()
+
+   // Mirrors the server's rules so the button is disabled rather than 422ing.
+   const nameValid = name.trim().length >= 2
+   const emailValid = email.trim() === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+   const tradeUrlValid = tradeUrl.trim() === "" || /^https:\/\/steamcommunity\.com\/tradeoffer\/[A-Za-z0-9]+\/?$/i.test(tradeUrl.trim())
+   const steamIdValid = steamId.trim().length <= 40
+
+   /**
+ * Propagates a profile change everywhere it is displayed.
+ *
+ * Three separate stores hold the user, and all three need updating:
+ *  1. this component's form state,
+ *  2. Redux — the header's UserMenu reads it,
+ *  3. the `shopy-user` cookie — /panel and /admin are server components that
+ *     read the cookie, so without this they keep showing the old name until a
+ *     full page load.
+ *
+ * `router.refresh()` then re-runs the current route's server components so they
+ * re-read that cookie, and mutating the SWR key revalidates useAuth, which caches
+ * the same user for the admin shell. This component's own state survives both.
+ */
+const applyProfile = (updated: PanelProfile) => {
+      setProfile(updated)
+      setName(updated.name ?? "")
+      setEmail(updated.email ?? "")
+      setSteamId(updated.steam_id ?? "")
+      setTradeUrl(updated.trade_url ?? "")
+
+      const nextUser = {
+         id: updated.id,
+         name: updated.name ?? undefined,
+         // email is included so UserMenu keeps preferring it for its detail
+         // line instead of silently falling back to the phone number.
+         email: updated.email ?? undefined,
+         phone: updated.phone ?? undefined,
+         permission: updated.permission ?? null,
       }
 
-      setState("saving")
+      storeLoginUser(nextUser)
+      dispatch(loginSuccess(nextUser))
+      // Fire-and-forget: a failed revalidation must not fail the save, and
+      // useAuth falls back to the cookie-hydrated Redux user anyway.
+      void mutate("user_me")
+      router.refresh()
+   }
+
+   const setBox = (box: BoxId, next: SaveState) => setBoxState((prev) => ({ ...prev, [box]: next }))
+
+   const saveBox = async (box: BoxId) => {
+      // An empty string clears the field; the server turns it into NULL.
+      const patch: EditableProfile =
+         box === "identity" ? { name: name.trim(), email: email.trim() } : { steam_id: steamId.trim(), trade_url: tradeUrl.trim() }
+
+      setBox(box, "saving")
       try {
          const updated = await updateProfile(patch)
-         if (updated) {
-            setProfile(updated)
-            // Keep the header's user menu in sync with the new name.
-            dispatch(
-               loginSuccess({
-                  id: updated.id,
-                  name: updated.name ?? undefined,
-                  phone: updated.phone ?? undefined,
-                  permission: updated.permission ?? null,
-               })
-            )
-         }
-         setState("saved")
+         if (updated) applyProfile(updated)
+         setBox(box, "saved")
       } catch {
-         setState("error")
+         setBox(box, "error")
+      }
+   }
+
+   // Clearing the "saved" flash the moment the user edits again keeps the
+   // message honest instead of claiming unsaved changes are stored.
+   const resetBoxState = (box: BoxId) => setBoxState((prev) => (prev[box] === "error" ? prev : { ...prev, [box]: "idle" }))
+
+   const resetPhoneFlow = () => {
+      setPhoneStep("idle")
+      setNewPhone("")
+      setPhoneCode("")
+      setVerificationId(null)
+      setPhoneMsg(null)
+   }
+
+   const sendCode = async () => {
+      setPhoneBusy(true)
+      setPhoneMsg(null)
+      try {
+         const res = await requestPhoneChange(newPhone.trim())
+         setVerificationId(res.verificationId)
+         // The endpoint never returns the code — it was sent to the new number,
+         // so the user types it in. Matches the login flow exactly.
+         setPhoneCode("")
+         setPhoneStep("code")
+         setPhoneMsg({ ok: true, text: fa.panel.profileEdit.phoneCodeSent })
+      } catch (err) {
+         setPhoneMsg({ ok: false, text: phoneErrorText(err instanceof Error ? err.message : "") })
+      } finally {
+         setPhoneBusy(false)
+      }
+   }
+
+   const submitCode = async () => {
+      if (!verificationId) return
+      setPhoneBusy(true)
+      setPhoneMsg(null)
+      try {
+         const updated = await confirmPhoneChange(verificationId, phoneCode.trim())
+         if (updated) applyProfile(updated)
+         setPhoneMsg({ ok: true, text: fa.panel.profileEdit.phoneChanged })
+         // Collapse back to the read-only view after a moment.
+         setTimeout(resetPhoneFlow, 1600)
+      } catch (err) {
+         setPhoneMsg({ ok: false, text: phoneErrorText(err instanceof Error ? err.message : "") })
+      } finally {
+         setPhoneBusy(false)
       }
    }
 
@@ -112,179 +225,336 @@ export default function ProfileClient() {
          <div className="space-y-4">
             <div className="h-9 w-48 animate-pulse rounded-xl bg-navy-200 dark:bg-navy-800" />
             <div className="h-4 w-72 animate-pulse rounded bg-navy-200 dark:bg-navy-800" />
-            <div className="h-64 animate-pulse rounded-2xl bg-navy-200/70 dark:bg-navy-800/50" />
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+               {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-80 animate-pulse rounded-2xl bg-navy-200/70 dark:bg-navy-800/50" />
+               ))}
+            </div>
          </div>
       )
    }
 
    return (
-      <div className="max-w-3xl">
+      <div className="max-w-6xl">
          <Reveal>
             <h1 className="text-2xl font-bold text-navy-950 dark:text-white">{fa.panel.profileEdit.title}</h1>
-            <p className="mt-2 text-[15px] leading-7 text-navy-600 dark:text-navy-300">{fa.panel.profileEdit.subtitle}</p>
+            <p className="mt-1.5 text-sm leading-6 text-navy-600 dark:text-navy-300">{fa.panel.profileEdit.subtitle}</p>
          </Reveal>
 
-         {/* Steam readiness — a skin cannot be delivered without this. */}
-         <Reveal delay={0.06}>
-            <div
-               className={[
-                  "mt-6 flex items-start gap-3 rounded-2xl border p-4",
-                  steamComplete
-                     ? "border-emerald-600/25 bg-emerald-600/10"
-                     : "border-accent-500/30 bg-accent-500/10",
-               ].join(" ")}
-            >
-               <span
-                  className={[
-                     "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                     steamComplete ? "bg-emerald-700 text-white" : "bg-accent-700 text-white",
-                  ].join(" ")}
-               >
-                  {steamComplete ? (
-                     <CheckCircleIcon className="h-5 w-5" aria-hidden="true" />
-                  ) : (
-                     <ExclamationTriangleIcon className="h-5 w-5" aria-hidden="true" />
-                  )}
-               </span>
-               <p
-                  className={[
-                     "text-sm font-medium leading-6",
-                     steamComplete ? "text-emerald-900 dark:text-emerald-200" : "text-accent-900 dark:text-accent-200",
-                  ].join(" ")}
-               >
-                  {steamComplete ? fa.panel.profileEdit.steamReady : fa.panel.profileEdit.steamMissing}
-               </p>
-            </div>
-         </Reveal>
-
-         {/* Editable fields */}
-         <Reveal delay={0.12}>
-            <div className="mt-6 space-y-5 rounded-2xl border border-border-strong bg-surface p-6 shadow-md shadow-navy-900/5">
-               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <Row
-                     icon={<UserIcon className="h-5 w-5" aria-hidden="true" />}
-                     label={fa.panel.profileEdit.name}
-                  >
+         {/* ---------- Three independent sections ---------- */}
+         <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <Reveal delay={0.06} className="h-full">
+               <Box title={fa.panel.profileEdit.identityTitle} icon={<UserIcon className="h-4 w-4" aria-hidden="true" />}>
+                  <Row label={fa.panel.profileEdit.name} invalid={name.trim().length > 0 && !nameValid}>
                      <input
                         type="text"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => {
+                           setName(e.target.value)
+                           resetBoxState("identity")
+                        }}
                         placeholder={fa.panel.profileEdit.namePlaceholder}
                         className={inputClass}
                      />
                   </Row>
 
-                  <Row icon={<EnvelopeIcon className="h-5 w-5" aria-hidden="true" />} label={fa.panel.profileEdit.email}>
+                  <Row label={fa.panel.profileEdit.email} hint={fa.panel.profileEdit.emailHint} invalid={!emailValid}>
                      <input
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                           setEmail(e.target.value)
+                           resetBoxState("identity")
+                        }}
                         placeholder={fa.panel.profileEdit.emailPlaceholder}
                         dir="ltr"
                         className={inputClass}
                      />
                   </Row>
 
-                  <Row
-                     icon={<IdentificationIcon className="h-5 w-5" aria-hidden="true" />}
-                     label={fa.panel.profileEdit.steamId}
+                  <SectionSave
+                     label={fa.panel.profileEdit.identitySave}
+                     state={boxState.identity}
+                     disabled={!identityDirty || !nameValid || !emailValid}
+                     onSave={() => saveBox("identity")}
+                  />
+               </Box>
+            </Reveal>
+
+            <Reveal delay={0.12} className="h-full">
+               <Box title={fa.panel.profileEdit.steamTitle} icon={<IdentificationIcon className="h-4 w-4" aria-hidden="true" />}>
+                  {/* Readiness lives inside the box it refers to. */}
+                  <div
+                     className={[
+                        "flex items-center gap-2 rounded-xl border px-3 py-2",
+                        steamComplete
+                           ? "border-emerald-600/25 bg-emerald-600/10 text-emerald-800 dark:text-emerald-200"
+                           : "border-accent-500/30 bg-accent-500/10 text-accent-900 dark:text-accent-200",
+                     ].join(" ")}
                   >
+                     <span
+                        className={[
+                           "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white",
+                           steamComplete ? "bg-emerald-700" : "bg-accent-700",
+                        ].join(" ")}
+                     >
+                        {steamComplete ? (
+                           <CheckCircleIcon className="h-4 w-4" aria-hidden="true" />
+                        ) : (
+                           <ExclamationTriangleIcon className="h-4 w-4" aria-hidden="true" />
+                        )}
+                     </span>
+                     <span className="text-xs font-bold leading-5">
+                        {steamComplete ? fa.panel.profileEdit.steamReady : fa.panel.profileEdit.steamMissing}
+                     </span>
+                  </div>
+
+                  <Row label={fa.panel.profileEdit.steamId}>
                      <input
                         type="text"
                         value={steamId}
-                        onChange={(e) => setSteamId(e.target.value)}
+                        onChange={(e) => {
+                           setSteamId(e.target.value)
+                           resetBoxState("steam")
+                        }}
                         placeholder={fa.panel.profileEdit.steamIdPlaceholder}
                         dir="ltr"
                         className={inputClass}
                      />
                   </Row>
 
-                  <Row icon={<LinkIcon className="h-5 w-5" aria-hidden="true" />} label={fa.panel.profileEdit.tradeUrl}>
+                  <Row label={fa.panel.profileEdit.tradeUrl} hint={fa.panel.profileEdit.tradeUrlHint} invalid={!tradeUrlValid}>
                      <input
                         type="url"
                         value={tradeUrl}
-                        onChange={(e) => setTradeUrl(e.target.value)}
+                        onChange={(e) => {
+                           setTradeUrl(e.target.value)
+                           resetBoxState("steam")
+                        }}
                         placeholder={fa.panel.profileEdit.tradeUrlPlaceholder}
                         dir="ltr"
                         className={inputClass}
                      />
                   </Row>
-               </div>
 
-               {/* Phone is the login identity — changing it needs re-verification. */}
-               <div className="border-t border-border-subtle pt-5">
-                  <Row icon={<PhoneIcon className="h-5 w-5" aria-hidden="true" />} label={fa.panel.profile.phone}>
-                     <input
-                        type="tel"
-                        value={profile?.phone ?? ""}
-                        readOnly
-                        dir="ltr"
-                        aria-readonly="true"
-                        className={`${inputClass} cursor-not-allowed opacity-70`}
-                     />
-                  </Row>
-               </div>
+                  <SectionSave
+                     label={fa.panel.profileEdit.steamSave}
+                     state={boxState.steam}
+                     disabled={!steamDirty || !tradeUrlValid || !steamIdValid}
+                     onSave={() => saveBox("steam")}
+                  />
+               </Box>
+            </Reveal>
 
-               <div className="flex flex-wrap items-center gap-4 border-t border-border-subtle pt-5">
-                  <Button onClick={handleSave} disabled={state === "saving"} className="w-auto">
-                     {state === "saving" ? fa.panel.profileEdit.saving : fa.panel.profileEdit.save}
-                  </Button>
+            <Reveal delay={0.18} className="h-full">
+               <Box title={fa.panel.profileEdit.phoneTitle} icon={<PhoneIcon className="h-4 w-4" aria-hidden="true" />}>
+                  {/* Idle: current number, read-only. */}
+                  {phoneStep === "idle" ? (
+                     <>
+                        <div className="rounded-xl border border-border-subtle bg-surface-muted/60 px-4 py-3">
+                           <span className="block text-xs font-medium text-navy-500 dark:text-navy-400">
+                              {fa.panel.profileEdit.phoneFixedHint}
+                           </span>
+                           <span dir="ltr" className="mt-0.5 block text-base font-extrabold text-navy-950 dark:text-white">
+                              {profile?.phone ?? fa.panel.profile.unknown}
+                           </span>
+                        </div>
 
-                  {state === "saved" ? (
-                     <motion.span
-                        initial={{ opacity: 0, x: prefersReduced ? 0 : -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-700 dark:text-emerald-300"
+                        <button
+                           type="button"
+                           onClick={() => {
+                              setPhoneStep("phone")
+                              setPhoneMsg(null)
+                           }}
+                           className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-brand-400/40 bg-brand-500/10 px-4 py-2.5 text-sm font-bold text-brand-700 transition-all duration-300 hover:border-brand-500 hover:bg-brand-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-300"
+                        >
+                           <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
+                           {fa.panel.profileEdit.phoneChange}
+                        </button>
+                     </>
+                  ) : null}
+
+                  {/* Step 1: the new number. */}
+                  {phoneStep === "phone" ? (
+                     <>
+                        <Row label={fa.panel.profileEdit.phoneNew}>
+                           <input
+                              type="tel"
+                              inputMode="numeric"
+                              value={newPhone}
+                              onChange={(e) => setNewPhone(e.target.value)}
+                              placeholder={fa.panel.profileEdit.phoneNewPlaceholder}
+                              dir="ltr"
+                              className={inputClass}
+                           />
+                        </Row>
+
+                        <div className="mt-1 flex gap-2">
+                           <Button onClick={sendCode} disabled={phoneBusy || newPhone.trim().length < 10} fullWidth={false} className="flex-1">
+                              {phoneBusy ? fa.panel.profileEdit.phoneSendingCode : fa.panel.profileEdit.phoneSendCode}
+                           </Button>
+                           <CancelButton onClick={resetPhoneFlow} />
+                        </div>
+                     </>
+                  ) : null}
+
+                  {/* Step 2: the code. */}
+                  {phoneStep === "code" ? (
+                     <>
+                        <Row label={fa.panel.profileEdit.phoneCode}>
+                           <input
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={6}
+                              value={phoneCode}
+                              onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                              placeholder={fa.panel.profileEdit.phoneCodePlaceholder}
+                              dir="ltr"
+                              className={`${inputClass} text-center text-lg font-extrabold tracking-[0.3em]`}
+                           />
+                        </Row>
+
+                        <div className="mt-1 flex gap-2">
+                           <Button onClick={submitCode} disabled={phoneBusy || phoneCode.trim().length !== 6} fullWidth={false} className="flex-1">
+                              {fa.panel.profileEdit.phoneConfirm}
+                           </Button>
+                           <CancelButton onClick={resetPhoneFlow} />
+                        </div>
+                     </>
+                  ) : null}
+
+                  {phoneMsg ? (
+                     <motion.p
+                        initial={{ opacity: 0, y: prefersReduced ? 0 : -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={[
+                           "flex items-start gap-1.5 text-xs font-bold leading-5",
+                           phoneMsg.ok ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300",
+                        ].join(" ")}
                      >
-                        <CheckCircleIcon className="h-5 w-5" aria-hidden="true" />
-                        {fa.panel.profileEdit.saved}
-                     </motion.span>
+                        {phoneMsg.ok ? (
+                           <CheckCircleIcon className="mt-px h-4 w-4 shrink-0" aria-hidden="true" />
+                        ) : (
+                           <ExclamationTriangleIcon className="mt-px h-4 w-4 shrink-0" aria-hidden="true" />
+                        )}
+                        {phoneMsg.text}
+                     </motion.p>
                   ) : null}
+               </Box>
+            </Reveal>
+         </div>
 
-                  {state === "error" ? (
-                     <span className="inline-flex items-center gap-1.5 text-sm font-bold text-red-700 dark:text-red-300">
-                        <ExclamationTriangleIcon className="h-5 w-5" aria-hidden="true" />
-                        {fa.panel.profileEdit.failed}
-                     </span>
-                  ) : null}
-
-                  <span className="ms-auto text-sm text-navy-500 dark:text-navy-400">
-                     {fa.panel.profileEdit.memberSince}: {formatDate(profile?.created_at ?? null)}
-                  </span>
-               </div>
-            </div>
-         </Reveal>
-
-         <Reveal delay={0.18}>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-               <Button onClick={handleLogout} className="w-auto">
-                  {fa.authPages.logout}
-               </Button>
+         {/* ---------- Account-level actions, not section saves ---------- */}
+         <Reveal delay={0.24}>
+            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-border-strong bg-surface px-5 py-4 shadow-md shadow-navy-900/5">
                <button
                   type="button"
                   onClick={() => router.refresh()}
-                  className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold text-navy-600 transition-colors hover:bg-navy-100 hover:text-brand-700 dark:text-navy-300 dark:hover:bg-navy-900 dark:hover:text-brand-300"
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold text-navy-600 transition-colors hover:bg-navy-100 hover:text-brand-700 dark:text-navy-300 dark:hover:bg-navy-900 dark:hover:text-brand-300"
                >
                   <ArrowPathIcon className="h-4 w-4" aria-hidden="true" />
                   {fa.panel.profileEdit.refresh}
                </button>
+
+               <Button onClick={handleLogout} fullWidth={false} variant="toggle" isActive={false}>
+                  {fa.authPages.logout}
+               </Button>
+
+               <span className="ms-auto text-sm text-navy-500 dark:text-navy-400">
+                  {fa.panel.profileEdit.memberSince}: {formatDate(profile?.created_at ?? null)}
+               </span>
             </div>
          </Reveal>
       </div>
    )
 }
 
-const inputClass =
-   "w-full rounded-xl border border-navy-300 bg-surface px-4 py-3 text-sm text-navy-950 outline-none transition-all duration-200 placeholder:text-navy-500 hover:border-brand-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 dark:border-navy-700 dark:bg-navy-900 dark:text-white dark:placeholder:text-navy-400"
+/* ------------------------------------------------------------------ pieces */
 
-function Row({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+const inputClass =
+   "w-full rounded-xl border border-navy-300 bg-surface px-4 py-2.5 text-sm text-navy-950 outline-none transition-all duration-200 placeholder:text-navy-500 hover:border-brand-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 dark:border-navy-700 dark:bg-navy-900 dark:text-white dark:placeholder:text-navy-400"
+
+function Box({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+   return (
+      <section className="flex h-full flex-col gap-4 rounded-2xl border border-border-strong bg-surface p-5 shadow-md shadow-navy-900/5">
+         <h2 className="flex items-center gap-2 text-sm font-bold text-navy-950 dark:text-white">
+            <span className="text-navy-500 dark:text-navy-400">{icon}</span>
+            {title}
+         </h2>
+         {children}
+      </section>
+   )
+}
+
+function Row({ label, hint, invalid, children }: { label: string; hint?: string; invalid?: boolean; children: React.ReactNode }) {
    return (
       <div>
-         <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-navy-800 dark:text-navy-200">
-            <span className="text-navy-500 dark:text-navy-400">{icon}</span>
-            {label}
+         <label className="mb-1.5 flex items-baseline justify-between gap-2 text-xs font-bold text-navy-700 dark:text-navy-300">
+            <span>{label}</span>
+            {hint ? <span className="text-[11px] font-medium text-navy-500 dark:text-navy-400">{hint}</span> : null}
          </label>
          {children}
+         {invalid ? (
+            <p className="mt-1 flex items-center gap-1 text-[11px] font-bold text-red-700 dark:text-red-300">
+               <ExclamationTriangleIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+               {fa.panel.profileEdit.invalidField}
+            </p>
+         ) : null}
       </div>
+   )
+}
+
+/**
+ * One section's save button. Sits inside its own box and reports only that
+ * section's outcome, so a failure in one section is never confused with another.
+ */
+function SectionSave({
+   label,
+   state,
+   disabled,
+   onSave,
+}: {
+   label: string
+   state: SaveState
+   disabled: boolean
+   onSave: () => void
+}) {
+   return (
+      <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border-subtle pt-4">
+         <Button onClick={onSave} disabled={disabled || state === "saving"} fullWidth={false}>
+            {state === "saving" ? fa.panel.profileEdit.saving : label}
+         </Button>
+
+         {state === "saved" ? (
+            <motion.span
+               initial={{ opacity: 0, y: 4 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300"
+            >
+               <CheckCircleIcon className="h-4 w-4" aria-hidden="true" />
+               {fa.panel.profileEdit.saved}
+            </motion.span>
+         ) : null}
+
+         {state === "error" ? (
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 dark:text-red-300">
+               <ExclamationTriangleIcon className="h-4 w-4" aria-hidden="true" />
+               {fa.panel.profileEdit.failed}
+            </span>
+         ) : null}
+      </div>
+   )
+}
+
+function CancelButton({ onClick }: { onClick: () => void }) {
+   return (
+      <button
+         type="button"
+         onClick={onClick}
+         className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border-strong px-4 py-2.5 text-sm font-bold text-navy-600 transition-colors hover:border-brand-400 hover:text-brand-700 dark:text-navy-300 dark:hover:text-brand-300"
+      >
+         <XMarkIcon className="h-4 w-4" aria-hidden="true" />
+         {fa.panel.profileEdit.phoneCancel}
+      </button>
    )
 }

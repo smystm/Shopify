@@ -11,6 +11,12 @@ interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "typ
   type?: ButtonType;
   variant?: ButtonVariant;
   isActive?: boolean;
+  /**
+   * Primary buttons default to `w-full`. Pass `fullWidth={false}` for an
+   * auto-width button — do NOT try `className="w-auto"`, because Tailwind emits
+   * `.w-auto` before `.w-full`, so the two same-specificity rules collide and
+   * `w-full` always wins.
+   */
   fullWidth?: boolean;
   /** Shared id for the sliding pill — must be identical across sibling toggles. */
   layoutId?: string;

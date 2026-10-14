@@ -4,11 +4,11 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react"
 import { Bars3Icon, BellIcon, ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 import { useRouter } from "next/navigation"
 import { useCookies } from "react-cookie"
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
 import { motion, useScroll, useTransform } from "motion/react"
 import { removeLoginAuth } from "@/app/helpers/auth"
 import { logout } from "@/app/lib/store/authSlice"
-import type { RootState } from "@/app/lib/store/store"
+import { useMounted } from "@/app/lib/hooks/useMounted"
 import useAuth from "@/app/lib/store/useAuth"
 import ThemeToggle from "@/app/components/ThemeToggle"
 import { fa } from "@/app/lib/i18n/fa"
@@ -20,13 +20,16 @@ interface AdminHeaderProps {
 export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
    const router = useRouter()
    const dispatch = useDispatch()
-   const user = useSelector((state: RootState) => state.auth.user)
+   const mounted = useMounted()
    const [, , removeCookie] = useCookies(["shopy-token", "shopy-user"])
    // Refresh the Redux user/permission from the backend while the admin shell is open.
-   useAuth()
+   const auth = useAuth()
 
-   const displayName: string = user?.name || user?.email || user?.phone || fa.admin.header.fallbackName
-   const displayDetail: string = user?.email || user?.phone || fa.admin.header.fallbackRole
+   // See the note in SiteHeader. SWR cannot run during SSR at all, so the
+   // backend value has to wait until this header has hydrated before it is used.
+   const effectiveUser = mounted ? auth.user : null
+   const displayName: string = effectiveUser?.name || effectiveUser?.email || effectiveUser?.phone || fa.admin.header.fallbackName
+   const displayDetail: string = effectiveUser?.email || effectiveUser?.phone || fa.admin.header.fallbackRole
 
    // Scroll-driven via motion values — no React state, no effect.
    const { scrollY } = useScroll()

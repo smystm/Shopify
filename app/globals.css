@@ -177,6 +177,52 @@ body {
    -webkit-font-smoothing: antialiased;
 }
 
+/* Slim, branded scrollbars used by the marketplace category controls. */
+.scrollbar-polished {
+   scrollbar-width: thin;
+   scrollbar-color: var(--brand-500) transparent;
+}
+
+.scrollbar-polished::-webkit-scrollbar {
+   width: 8px;
+   height: 8px;
+}
+
+.scrollbar-polished::-webkit-scrollbar-track {
+   background: transparent;
+   border-radius: 9999px;
+}
+
+.scrollbar-polished::-webkit-scrollbar-thumb {
+   border: 2px solid transparent;
+   border-radius: 9999px;
+   background: var(--brand-500);
+   background-clip: padding-box;
+}
+
+.scrollbar-polished::-webkit-scrollbar-thumb:hover {
+   background: var(--brand-600);
+   background-clip: padding-box;
+}
+
+.scrollbar-category::-webkit-scrollbar {
+   height: 6px;
+}
+
+.dark .scrollbar-polished {
+   scrollbar-color: var(--brand-400) transparent;
+}
+
+.dark .scrollbar-polished::-webkit-scrollbar-thumb {
+   background: var(--brand-400);
+   background-clip: padding-box;
+}
+
+.dark .scrollbar-polished::-webkit-scrollbar-thumb:hover {
+   background: var(--brand-300);
+   background-clip: padding-box;
+}
+
 @keyframes float {
    0%, 100% { transform: translateY(0px); }
    50% { transform: translateY(-12px); }

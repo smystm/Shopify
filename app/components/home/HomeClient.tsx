@@ -1,6 +1,7 @@
 "use client"
 
 import { useAppSelector } from "@/app/lib/store/hooks"
+import { useMounted } from "@/app/lib/hooks/useMounted"
 import HeroSection from "./HeroSection"
 import Marquee from "./Marquee"
 import Features from "./Features"
@@ -17,8 +18,13 @@ import CtaBand from "./CtaBand"
  */
 export default function HomeClient() {
    const user = useAppSelector((s) => s.auth.user)
-   const isSignedIn = Boolean(user)
-   const displayName = user?.name || user?.email || user?.phone || null
+
+   // Gated on this component's own hydration: the page is server-rendered, and
+   // reading `user` alone lets the client render a personalised hero while the
+   // server rendered the generic one. See the note in SiteHeader.
+   const mounted = useMounted()
+   const isSignedIn = mounted && Boolean(user)
+   const displayName = isSignedIn ? user?.name || user?.email || user?.phone || null : null
 
    return (
       <>

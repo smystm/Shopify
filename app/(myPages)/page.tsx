@@ -1,6 +1,7 @@
 ﻿"use client"
 
 import SiteHeader from "@/app/components/layout/SiteHeader"
+import SiteFooter from "@/app/components/layout/SiteFooter"
 import HomeClient from "@/app/components/home/HomeClient"
 
 /**
@@ -21,6 +22,7 @@ export default function Home() {
                <HomeClient />
             </div>
          </main>
+         <SiteFooter />
       </div>
    )
 }

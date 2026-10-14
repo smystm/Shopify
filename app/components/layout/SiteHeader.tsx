@@ -5,6 +5,7 @@ import { Bars3Icon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import { motion, useScroll, useTransform } from "motion/react"
 import { useAppSelector } from "@/app/lib/store/hooks"
+import { useMounted } from "@/app/lib/hooks/useMounted"
 import { canViewAdmin } from "@/app/lib/permissions"
 import HeaderNavLink from "./HeaderNavLink"
 import UserMenu from "./UserMenu"
@@ -16,8 +17,20 @@ import { fa, faNavLinks } from "@/app/lib/i18n/fa"
 export default function SiteHeader() {
    const [mobileOpen, setMobileOpen] = useState(false)
    const user = useAppSelector((s) => s.auth.user)
-   const hydrated = useAppSelector((s) => s.auth.hydrated)
    const showAdmin = user && canViewAdmin(user.permission)
+
+   // Gate every auth-dependent branch on this component's own hydration, never
+   // on `user` alone.
+   //
+   // React hydrates the shell first and defers inner boundaries, so AuthHydrator's
+   // dispatch lands while a deferred subtree is still being compared against the
+   // server HTML. The nav is the worst case: inserting links shifts the sibling
+   // list, so React reports the mismatch on whichever link moved — it surfaced as
+   // `/orders` on the server against `/panel` on the client. The Redux
+   // `hydrated` flag cannot fix this because it is already true by then.
+   // See useMounted for the details.
+   const mounted = useMounted()
+   const signedIn = mounted && Boolean(user)
 
    // Scroll-driven via motion values (no React state => no effect needed).
    // `hydrated` starts as false, so the auth area renders nothing during SSR
@@ -27,21 +40,18 @@ export default function SiteHeader() {
    const shadowOpacity = useTransform(scrollY, [0, 60], [0, 0.08])
 
    return (
-      <>
-         <header
-            dir="rtl"
-            lang="fa"
-            className="sticky top-0 z-40 border-b border-border-strong bg-surface/90 font-vazirmatn backdrop-blur-xl dark:border-navy-800/60 dark:bg-navy-950/80"
-         >
-            {/* Brand gradient hairline — fades in once you scroll */}
+      <div className="sticky top-0 z-30 border-b border-border-strong bg-surface/90 font-vazirmatn backdrop-blur-xl dark:border-navy-800/60 dark:bg-navy-950/80">
+         {/* Brand gradient hairline — fades in once you scroll */}
+         <div className="shopify-Motion">
             <motion.span
                aria-hidden="true"
                style={{ scaleX: hairlineScale, opacity: hairlineScale }}
                className="absolute inset-x-0 bottom-0 h-px origin-right bg-linear-to-l from-brand-500 via-brand-400 to-accent-400 rtl:origin-left"
             />
             <motion.span aria-hidden="true" style={{ opacity: shadowOpacity }} className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-navy-900/60 to-transparent" />
-
-            <div className="mx-auto flex h-16 max-w-7xl items-center gap-x-4 px-4 sm:px-6 lg:px-8">
+         </div>
+         <header dir="rtl" lang="fa" className="max-w-[100rem] w-full mx-auto top-0 font-vazirmatn">
+            <div className="w-full mx-auto flex h-16 items-center gap-x-4 px-4 sm:px-6 lg:px-8">
                <button
                   type="button"
                   onClick={() => setMobileOpen(true)}
@@ -53,10 +63,10 @@ export default function SiteHeader() {
 
                <BrandMark />
 
-               <nav className="hidden items-center gap-x-1 ps-6 lg:flex">
+               <nav className="hidden items-center gap-x-1 ps-5 lg:flex">
                   <HeaderNavLink href="/">{fa.nav.home}</HeaderNavLink>
                   <HeaderNavLink href="/products">{fa.nav.products}</HeaderNavLink>
-                  {user && (
+                  {signedIn && (
                      <>
                         <HeaderNavLink href="/panel">{fa.nav.panel}</HeaderNavLink>
                         {showAdmin && <HeaderNavLink href="/admin">{fa.nav.admin}</HeaderNavLink>}
@@ -71,9 +81,9 @@ export default function SiteHeader() {
 
                <div className="flex flex-1 items-center justify-end gap-x-2.5">
                   <ThemeToggle />
-                  {hydrated && user ? (
+                  {!mounted ? null : user ? (
                      <UserMenu />
-                  ) : !hydrated ? null : (
+                  ) : (
                      <>
                         <Link
                            href="/login"
@@ -98,6 +108,6 @@ export default function SiteHeader() {
          </header>
 
          <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
-      </>
+      </div>
    )
 }

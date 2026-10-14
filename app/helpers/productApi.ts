@@ -38,6 +38,7 @@ function authHeaders(token?: string): Record<string, string> {
 
 interface ProductFilters {
    categories?: string[]
+   subcategories?: string[]
    minPrice?: string
    maxPrice?: string
 }
@@ -48,6 +49,9 @@ async function getProducts(options?: { token?: string; filters?: ProductFilters 
    const params = new URLSearchParams()
    if (options?.filters?.categories) {
       options.filters.categories.forEach((c) => params.append("category", c))
+   }
+   if (options?.filters?.subcategories) {
+      options.filters.subcategories.forEach((subcategory) => params.append("subcategory", subcategory))
    }
    if (options?.filters?.minPrice) params.set("minPrice", options.filters.minPrice)
    if (options?.filters?.maxPrice) params.set("maxPrice", options.filters.maxPrice)

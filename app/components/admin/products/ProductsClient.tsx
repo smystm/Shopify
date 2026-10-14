@@ -16,7 +16,7 @@ import { canCreateProduct, canModifyProduct } from "@/app/lib/permissions"
 import { useAppSelector } from "@/app/lib/store/hooks"
 import { selectAuthUser, selectPermission } from "@/app/lib/store/authSlice"
 import { getProducts, getCategories } from "@/app/helpers/productApi"
-import ProductFilter from "@/app/components/ui/ProductFilter"
+import ProductFilter, { type ProductFilterChange } from "@/app/components/ui/ProductFilter"
 import { fa } from "@/app/lib/i18n/fa"
 
 interface ProductsClientProps {
@@ -36,6 +36,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
     const rawPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1)
 
     const selectedCategoryParam = searchParams.get("category") ?? ""
+    const selectedSubcategoriesParam = selectedCategoryParam ? searchParams.getAll("subcategory") : []
     const minPriceParam = searchParams.get("minPrice") ?? ""
     const maxPriceParam = searchParams.get("maxPrice") ?? ""
 
@@ -43,7 +44,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
     const editId = searchParams.get("edit")
     const editing = editId ? products.find((p) => p.id === Number(editId)) ?? null : null
 
-    const hasFilters = selectedCategoryParam !== "" || minPriceParam !== "" || maxPriceParam !== ""
+    const hasFilters = selectedCategoryParam !== "" || selectedSubcategoriesParam.length > 0 || minPriceParam !== "" || maxPriceParam !== ""
     const [filteredProducts, setFilteredProducts] = useState<AdminProduct[] | null>(null)
     const [categories, setCategories] = useState<Category[]>([])
     const [filterLoading, setFilterLoading] = useState(false)
@@ -59,7 +60,14 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
         }
         let cancelled = false
         setFilterLoading(true)
-        getProducts({ filters: { categories: selectedCategoryParam ? [selectedCategoryParam] : [], minPrice: minPriceParam, maxPrice: maxPriceParam } })
+        getProducts({
+            filters: {
+                categories: selectedCategoryParam ? [selectedCategoryParam] : [],
+                subcategories: selectedSubcategoriesParam,
+                minPrice: minPriceParam,
+                maxPrice: maxPriceParam,
+            },
+        })
             .then((data) => {
                 if (!cancelled) setFilteredProducts(data)
             })
@@ -91,9 +99,10 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
         router.push(`?${params.toString()}`, { scroll: false })
     }
 
-    const handleFilterChange = (next: { selectedCategory: string; minPrice: string; maxPrice: string }) => {
+    const handleFilterChange = (next: ProductFilterChange) => {
         const params = new URLSearchParams()
         if (next.selectedCategory) params.set("category", next.selectedCategory)
+        next.selectedSubcategories.forEach((subcategory) => params.append("subcategory", subcategory))
         if (next.minPrice) params.set("minPrice", next.minPrice)
         if (next.maxPrice) params.set("maxPrice", next.maxPrice)
         params.set("page", "1")
@@ -164,6 +173,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                             <ProductFilter
                                 categories={categories}
                                 selectedCategory={selectedCategoryParam}
+                                selectedSubcategories={selectedSubcategoriesParam}
                                 minPrice={minPriceParam}
                                 maxPrice={maxPriceParam}
                                 labels={fa.products.filter}

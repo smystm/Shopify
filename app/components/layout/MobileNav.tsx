@@ -6,6 +6,7 @@ import Link from "next/link"
 import { motion, useReducedMotion } from "motion/react"
 import { useSelector } from "react-redux"
 import type { RootState } from "@/app/lib/store/store"
+import { useMounted } from "@/app/lib/hooks/useMounted"
 import { canViewAdmin } from "@/app/lib/permissions"
 import HeaderNavLink from "./HeaderNavLink"
 import BrandMark from "./BrandMark"
@@ -21,6 +22,11 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
    const showAdmin = user && canViewAdmin(user.permission)
    const prefersReduced = useReducedMotion()
 
+   // See the note in SiteHeader: this drawer has to render exactly what the
+   // server rendered until React has finished hydrating it.
+   const mounted = useMounted()
+   const signedIn = mounted && Boolean(user)
+
    // Direction-neutral (opacity + small Y) so it behaves the same in RTL and LTR.
    const list = {
       hidden: {},
@@ -32,7 +38,7 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
    }
 
    return (
-      <Dialog open={open} onClose={onClose} className="relative z-50 lg:hidden">
+      <Dialog dir="rtl" open={open} onClose={onClose} className="relative z-50 lg:hidden">
          <DialogBackdrop
             transition
             className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm transition-opacity duration-300 ease-linear data-closed:opacity-0"
@@ -77,7 +83,7 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
                      </HeaderNavLink>
                   </motion.div>
 
-                  {user && (
+                  {signedIn && (
                      <>
                         <motion.div variants={row}>
                            <HeaderNavLink href="/panel" variant="drawer" onClick={onClose}>
@@ -105,7 +111,9 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
                   ))}
                </motion.nav>
 
-               {!user && (
+               {/* Auth CTAs appear only once this drawer has hydrated, so the server
+                    and the client produce the same markup. */}
+                  {mounted && !signedIn && (
                   <div className="relative border-t border-navy-200/60 p-4 dark:border-navy-800/60">
                      <div className="flex flex-col gap-2.5">
                         <Link
