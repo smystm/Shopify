@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react"
@@ -6,6 +6,12 @@ import { XMarkIcon } from "@heroicons/react/24/outline"
 import type { AdminProduct, Category } from "@/app/contracts/products"
 import { getCategories } from "@/app/helpers/productApi"
 import { fa } from "@/app/lib/i18n/fa"
+
+/** Shared form-control styling — one source of truth for every field below. */
+const fieldClass =
+   "mt-1.5 block w-full rounded-xl border border-navy-300 bg-surface px-3.5 py-2.5 text-sm text-navy-950 shadow-xs outline-none transition placeholder:text-navy-500 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-navy-700 dark:bg-navy-900 dark:text-white dark:placeholder:text-navy-400"
+
+const labelClass = "block text-sm font-semibold text-navy-800 dark:text-navy-100"
 
 export interface ProductFormValues {
     productNumber: string
@@ -37,13 +43,13 @@ export default function ProductDialog({ open, initial, suggestedNumber, onClose,
       <Dialog open={open} onClose={onClose} className="relative z-50">
          <DialogBackdrop
             transition
-            className="fixed inset-0 bg-zinc-950/60 transition-opacity duration-200 data-closed:opacity-0"
+            className="fixed inset-0 bg-navy-950/70 backdrop-blur-sm transition-opacity duration-200 data-closed:opacity-0"
          />
          <div className="fixed inset-0 z-10 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4">
                <DialogPanel
                   transition
-                  className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl ring-1 ring-zinc-200 transition data-closed:scale-95 data-closed:opacity-0 dark:bg-zinc-950 dark:ring-zinc-800"
+                  className="w-full max-w-md rounded-2xl border border-border-strong bg-surface p-6 shadow-2xl shadow-navy-900/20 transition data-closed:scale-95 data-closed:opacity-0 dark:shadow-black/40"
                >
                   {open ? (
                      <ProductForm
@@ -125,15 +131,15 @@ return (
           <div className="flex items-start justify-between gap-4">
              <div>
                 {isFullPage ? (
-                   <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
+                   <h1 className="text-2xl font-bold tracking-tight text-navy-950 dark:text-white">
                       {isEditing ? fa.admin.dialog.editTitle : fa.admin.dialog.addTitle}
                    </h1>
                 ) : (
-                   <DialogTitle className="text-base font-semibold text-zinc-950 dark:text-white">
+                   <DialogTitle className="text-base font-bold text-navy-950 dark:text-white">
                       {isEditing ? fa.admin.dialog.editTitle : fa.admin.dialog.addTitle}
                    </DialogTitle>
                 )}
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-sm text-navy-500 dark:text-navy-400">
                    {isEditing ? fa.admin.dialog.editSubtitle : fa.admin.dialog.addSubtitle}
                 </p>
              </div>
@@ -141,7 +147,7 @@ return (
                type="button"
                onClick={onClose}
                aria-label={fa.admin.dialog.close}
-               className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+               className="rounded-lg p-2 text-navy-400 transition-colors hover:bg-navy-100 hover:text-brand-700 dark:hover:bg-navy-800 dark:hover:text-brand-300"
             >
                <XMarkIcon aria-hidden="true" className="h-5 w-5" />
             </button>
@@ -151,7 +157,7 @@ return (
             <div>
                <label
                   htmlFor="product-number"
-                  className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200"
+                  className={labelClass}
                >
                   {fa.admin.dialog.labels.productNumber}
                </label>
@@ -161,11 +167,11 @@ return (
                   value={productNumber}
                   onChange={(e) => setProductNumber(e.target.value)}
                   placeholder={suggestedNumber}
-                  className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                  className={fieldClass}
                />
             </div>
              <div>
-                <label htmlFor="product-title" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                <label htmlFor="product-title" className={labelClass}>
                    {fa.admin.dialog.labels.title}
                 </label>
                 <input
@@ -175,14 +181,14 @@ return (
                    value={title}
                    onChange={(e) => setTitle(e.target.value)}
                    placeholder={fa.admin.dialog.placeholders.title}
-                   className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                   className={fieldClass}
                 />
                 {error ? <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
                 {saveError ? <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{saveError}</p> : null}
              </div>
 
              <div>
-                <label htmlFor="product-desc" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                <label htmlFor="product-desc" className={labelClass}>
                    {fa.admin.dialog.labels.description}
                 </label>
                 <textarea
@@ -192,20 +198,20 @@ return (
                    placeholder={fa.admin.dialog.placeholders.description}
                    rows={3}
                    maxLength={200}
-                   className="mt-1.5 block w-full resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                   className={`${fieldClass} resize-none`}
                 />
-                <p className="mt-1 text-xs text-zinc-400">{fa.admin.dialog.charCount.replace("{count}", String(desc.length))}</p>
+                <p className="mt-1 text-xs text-navy-500 dark:text-navy-400">{fa.admin.dialog.charCount.replace("{count}", String(desc.length))}</p>
              </div>
 
              <div>
-                <label htmlFor="product-category" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                <label htmlFor="product-category" className={labelClass}>
                    {fa.admin.dialog.labels.category}
                 </label>
                 <select
                    id="product-category"
                    value={categoryValue}
                    onChange={(e) => setCategoryValue(e.target.value)}
-                   className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                   className={fieldClass}
                 >
                    <option value="" disabled>
                       {fa.admin.dialog.placeholders.category}
@@ -219,7 +225,7 @@ return (
              </div>
 
              <div>
-                 <label htmlFor="product-price" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                 <label htmlFor="product-price" className={labelClass}>
                     {fa.admin.dialog.labels.price}
                  </label>
                  <input
@@ -228,12 +234,12 @@ return (
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     placeholder={fa.admin.dialog.placeholders.price}
-                    className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                    className={fieldClass}
                  />
               </div>
 
               <div>
-                 <label htmlFor="product-image" className="block text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                 <label htmlFor="product-image" className={labelClass}>
                     {fa.admin.dialog.labels.imageUrl}
                  </label>
                  <input
@@ -242,7 +248,7 @@ return (
                     value={image}
                     onChange={(e) => setImage(e.target.value)}
                     placeholder={fa.admin.dialog.placeholders.imageUrl}
-                    className="mt-1.5 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 shadow-xs outline-none placeholder:text-zinc-400 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-zinc-500 dark:focus:ring-zinc-800"
+                    className={fieldClass}
                  />
               </div>
 
@@ -250,14 +256,14 @@ return (
                <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  className="rounded-full border border-navy-300 px-5 py-2.5 text-sm font-semibold text-navy-700 transition-colors hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-navy-600 dark:text-navy-200 dark:hover:border-brand-400 dark:hover:bg-brand-500/10"
                >
                   {fa.admin.dialog.cancel}
                </button>
                <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                  className="group relative overflow-hidden rounded-full bg-linear-to-l from-brand-700 to-brand-800 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-700/25 transition-all hover:shadow-xl hover:shadow-brand-700/40 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                >
                   {saving ? fa.admin.dialog.saving : isEditing ? fa.admin.dialog.save : fa.admin.dialog.submitAdd}
                </button>

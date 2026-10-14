@@ -1,11 +1,11 @@
-"use client"
+﻿"use client"
 
 import Image from "next/image"
 import Link from "next/link"
 import { motion, useReducedMotion } from "motion/react"
 import { ArrowLeftIcon } from "@heroicons/react/24/outline"
 import { fa } from "@/app/lib/i18n/fa"
-import Reveal from "./Reveal"
+import Reveal from "@/app/components/ui/Reveal"
 
 /**
  * Curated showcase cards backed by the real images already shipped in
@@ -35,9 +35,9 @@ export default function FeaturedSkins() {
                   <motion.div
                      whileHover={prefersReduced ? undefined : { y: -10 }}
                      transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                     className="group h-full overflow-hidden rounded-2xl border border-navy-200/70 bg-white/70 shadow-sm backdrop-blur transition-colors hover:border-brand-400/60 hover:shadow-2xl hover:shadow-brand-500/10 dark:border-navy-700/60 dark:bg-navy-900/40 dark:hover:border-brand-400/40"
+                     className="group h-full overflow-hidden rounded-2xl border border-border-strong bg-surface shadow-md shadow-navy-900/5 transition-colors hover:border-brand-400 hover:shadow-2xl hover:shadow-brand-500/10 dark:hover:border-brand-400/40"
                   >
-                     <div className="relative aspect-[4/3] overflow-hidden bg-navy-100/70 dark:bg-navy-950/60">
+                     <div className="relative aspect-4/3 overflow-hidden bg-navy-100/70 dark:bg-navy-950/60">
                         <Image
                            src={`/images/weapons-real/skins/${item.slug}/${item.slug}-0002.png`}
                            alt={item.name}
@@ -46,7 +46,7 @@ export default function FeaturedSkins() {
                            className="object-contain p-6 transition-transform duration-500 group-hover:scale-110"
                            unoptimized
                         />
-                        <span className="absolute end-3 top-3 rounded-full bg-brand-500/90 px-3 py-1 text-[11px] font-bold text-white">
+                        <span className="absolute inset-e-3 top-3 rounded-full bg-brand-500/90 px-3 py-1 text-[11px] font-bold text-white">
                            {item.tag}
                         </span>
                      </div>
@@ -55,7 +55,7 @@ export default function FeaturedSkins() {
                         <h3 className="truncate text-sm font-bold text-navy-900 dark:text-white">{item.name}</h3>
                         <div className="mt-3 flex items-center justify-between">
                            <div>
-                              <div className="text-[11px] text-navy-500 dark:text-navy-400">{fa.home.featured.priceLabel}</div>
+                              <div className="text-[11px] text-navy-500 dark:text-navy-500">{fa.home.featured.priceLabel}</div>
                               <div className="text-lg font-extrabold text-brand-700 dark:text-brand-300">{item.price}</div>
                            </div>
                            <Link

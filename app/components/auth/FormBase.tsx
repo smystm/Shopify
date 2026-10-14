@@ -4,6 +4,7 @@ import { Formik, Form, type FormikHelpers, type FormikProps, type FormikValues }
 import * as Yup from "yup"
 import type { ObjectSchema } from "yup"
 import type { ReactNode } from "react"
+import { UserIcon, PhoneIcon } from "@heroicons/react/24/outline"
 import InputField from "../ui/InputField"
 import Button from "../ui/Button"
 import type { FormValues, AuthMode } from "../../contracts/auth/index"
@@ -96,9 +97,29 @@ export default function FormBase({ mode, initialValues = authInitialValues, onSu
       <FormShell<FormValues> initialValues={initialValues} validationSchema={isSignup ? signupSchema : loginSchema} onSubmit={onSubmit}>
          {({ isSubmitting, touched, errors }) => (
             <>
-               {isSignup && <InputField name="name" label={fa.authPages.name} type="text" placeholder={fa.authPages.namePlaceholder} touched={touched.name} error={errors.name} autoComplete="name" />}
+               {isSignup && (
+                  <InputField
+                     name="name"
+                     label={fa.authPages.name}
+                     type="text"
+                     placeholder={fa.authPages.namePlaceholder}
+                     touched={touched.name}
+                     error={errors.name}
+                     autoComplete="name"
+                     icon={<UserIcon className="h-5 w-5" aria-hidden="true" />}
+                  />
+               )}
 
-               <InputField name="phone" label={fa.authPages.phone} type="tel" placeholder={fa.authPages.phonePlaceholder} touched={touched.phone} error={errors.phone} autoComplete="tel" />
+               <InputField
+                  name="phone"
+                  label={fa.authPages.phone}
+                  type="tel"
+                  placeholder={fa.authPages.phonePlaceholder}
+                  touched={touched.phone}
+                  error={errors.phone}
+                  autoComplete="tel"
+                  icon={<PhoneIcon className="h-5 w-5" aria-hidden="true" />}
+               />
 
                {/* <InputField name="email" label={fa.authPages.email} type="email" placeholder={fa.authPages.emailPlaceholder} touched={touched.email} error={errors.email} autoComplete="email" /> */}
 

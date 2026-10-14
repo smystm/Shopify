@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -6,7 +6,7 @@ import { PlusIcon } from "@heroicons/react/24/outline"
 import ProductCreateDialog from "./ProductCreateDialog"
 import ProductEditDialog from "./ProductEditDialog"
 import ProductDeleteDialog from "./ProductDeleteDialog"
-import AdminPagination from "@/app/components/admin/AdminPagination"
+import Pagination from "@/app/components/ui/Pagination"
 import ProductsTable from "./ProductsTable"
 import ProductsEmptyState from "./ProductsEmptyState"
 import AccessDenied from "@/app/components/admin/AccessDenied"
@@ -136,13 +136,13 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 <>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">{fa.admin.products.title}</h1>
-                            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                            <h1 className="text-2xl font-bold tracking-tight text-navy-950 dark:text-white">{fa.admin.products.title}</h1>
+                            <p className="mt-1 text-sm text-navy-500 dark:text-navy-400">
                                 {fa.admin.products.subtitle}
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+                            <span className="rounded-full border border-brand-500/25 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700 dark:border-brand-400/25 dark:bg-brand-500/10 dark:text-brand-300">
                                 {fa.admin.products.total.replace("{count}", String(displayProducts.length))}
                             </span>
                             {/* Only users allowed to add products see the create button. */}
@@ -150,7 +150,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                                 <button
                                     type="button"
                                     onClick={() => router.push("/admin/products?create=true", { scroll: false })}
-                                    className="inline-flex items-center gap-x-1.5 rounded-md bg-zinc-950 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                                    className="group relative inline-flex items-center gap-x-1.5 overflow-hidden rounded-full bg-linear-to-l from-brand-700 to-brand-800 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-700/25 transition-all hover:shadow-xl hover:shadow-brand-700/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                                 >
                                     <PlusIcon aria-hidden="true" className="h-5 w-5" />
                                     {fa.admin.products.addProduct}
@@ -171,7 +171,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                             />
                         </div>
                         {filterLoading ? (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">{fa.admin.products.loadingFiltered}</p>
+                            <p className="text-sm text-navy-500 dark:text-navy-400">{fa.admin.products.loadingFiltered}</p>
                         ) : isOutOfRange ? (
                             <ProductsEmptyState variant="page-out-of-range" onGoToFirstPage={() => handlePageChange(1)} />
                         ) : visibleProducts.length === 0 ? (
@@ -190,7 +190,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                         )}
                     </div>
 
-                    <AdminPagination
+                    <Pagination
                         page={rawPage}
                         totalPages={totalPages}
                         total={displayProducts.length}

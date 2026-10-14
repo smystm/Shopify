@@ -1,4 +1,5 @@
-import { Field, ErrorMessage } from "formik";
+﻿import { Field, ErrorMessage } from "formik";
+import type { ReactNode } from "react";
 
 interface InputFieldProps {
   name: string;
@@ -9,10 +10,12 @@ interface InputFieldProps {
   touched?: boolean;
   error?: string;
   className?: string;
+  /** Optional leading glyph, e.g. a phone or user icon. */
+  icon?: ReactNode;
 }
 
 const baseInputClass =
-  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
+  "w-full rounded-xl border border-navy-300 bg-surface text-sm text-navy-900 outline-none transition-all duration-200 placeholder:text-navy-500 hover:border-brand-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 dark:border-navy-700 dark:bg-navy-900 dark:text-navy-50 dark:placeholder:text-navy-400";
 
 export default function InputField({
   name,
@@ -23,23 +26,42 @@ export default function InputField({
   touched,
   error,
   className = "",
+  icon,
 }: InputFieldProps) {
   const hasError = Boolean(touched && error);
 
+  const inputClass = [
+    baseInputClass,
+    // `ps-*` is logical, so the slot stays on the right in RTL.
+    icon ? "py-3 pr-11 pl-4" : "px-4 py-3",
+    hasError ? "border-red-500 ring-2 ring-red-500/15" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <div className={className || undefined}>
-      <label htmlFor={name} className="mb-1 block text-sm font-medium">
+      <label htmlFor={name} className="mb-1.5 block text-sm font-bold text-navy-800 dark:text-navy-200">
         {label}
       </label>
-      <Field
-        id={name}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        autoComplete={autoComplete}
-        className={`${baseInputClass} ${hasError ? "border-red-500" : ""}`}
-      />
-      <ErrorMessage name={name} component="p" className="mt-1 text-xs text-red-500" />
+
+      <div className="relative">
+        {icon ? (
+          <span className="pointer-events-none absolute inset-y-0 inset-start-0 flex w-11 items-center justify-center text-navy-500 dark:text-navy-400">
+            {icon}
+          </span>
+        ) : null}
+        <Field
+          id={name}
+          name={name}
+          type={type}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          className={inputClass}
+        />
+      </div>
+
+      <ErrorMessage name={name} component="p" className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400" />
     </div>
   );
 }

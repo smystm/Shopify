@@ -15,8 +15,9 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
    }
 
    return (
-      <main dir="rtl" lang="fa" className="min-h-screen w-full flex flex-col font-vazirmatn">
-         {/* you can add some common layout elements here, like a header or footer, if needed */}
+      /* Background, orbs and centering live in <AuthShell>; the cookie guard above
+         applies to every page in this group. */
+      <main dir="rtl" lang="fa" className="font-vazirmatn">
          {children}
       </main>
    )

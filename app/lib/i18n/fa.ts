@@ -14,7 +14,21 @@
  * This file must stay UTF-8 encoded.
  */
 
+import type { Permission } from "@/app/lib/permissions"
+import type { OrderStatus, TradeOfferStatus } from "@/app/contracts/panel"
+
 export const fa = {
+   /** 404 pages — rendered by not-found.tsx and global-not-found.tsx. */
+   notFound: {
+      code: "خطای ۴۰۴",
+      title: "صفحه مورد نظر پیدا نشد",
+      description: "ممکن است آدرس را اشتباه وارد کرده باشید یا این صفحه جابه‌جا شده باشد. از اینجا می‌توانید به خانه یا فروشگاه برگردید.",
+      backHome: "بازگشت به خانه",
+      browseShop: "مشاهده فروشگاه",
+      metaTitle: "صفحه پیدا نشد — Shopify",
+      metaDescription: "صفحه‌ای که به دنبال آن بودید وجود ندارد یا جابه‌جا شده است.",
+   },
+
    nav: {
       home: "صفحه اصلی",
       products: "محصولات",
@@ -128,6 +142,205 @@ export const fa = {
       metaDescription: "پنل شخصی حساب کاربری شما — پروفایل و سفارش‌های خود را مدیریت کنید.",
       loadingTitle: "در حال بارگذاری پنل شما",
       loadingHint: "لطفاً کمی صبر کنید",
+      /** «{greeting}، {name}» — resolved on the client after mount. */
+      greetingLine: "{greeting}، {name}",
+      greeting: {
+         morning: "صبح بخیر",
+         noon: "ظهر بخیر",
+         afternoon: "عصر بخیر",
+         evening: "شب بخیر",
+      },
+
+      /** Human role for each backend permission enum, shown as the user's identity. */
+      roles: {
+         FullAcc: "مدیر",
+         WriteDeleteEditSelfAdds: "کاربر ویرایشگر",
+         ReadOnly: "کاربر مشاهده‌گر",
+         NoAccess: "کاربر عادی",
+      } satisfies Record<Permission, string>,
+
+      stats: {
+         title: "در یک نگاه",
+         subtitle: "خلاصه‌ای از وضعیت حساب و فروشگاه",
+         ordersLabel: "سفارش",
+         ordersHint: "سفارش‌های ثبت‌شده شما",
+         balanceLabel: "موجودی",
+         balanceHint: "موجودی کیف پول",
+         offersLabel: "پیشنهاد معامله",
+         offersHint: "در انتظار پاسخ شما",
+         categoriesLabel: "دسته‌بندی",
+         categoriesHint: "دسته‌بندی فعال",
+      },
+
+      actions: {
+         title: "دسترسی سریع",
+         subtitle: "میان‌برهای پرکاربرد شما",
+         comingSoonBadge: "به‌زودی",
+         browse: {
+            title: "مرور فروشگاه",
+            body: "همه پوسته‌ها و محصولات موجود را ببینید و انتخاب کنید.",
+            cta: "مشاهده محصولات",
+         },
+         admin: {
+            title: "پنل مدیریت",
+            bodyAllowed: "مدیریت محصولات، دسته‌بندی‌ها و کاربران فروشگاه.",
+            ctaAllowed: "ورود به مدیریت",
+         },
+         cart: {
+            title: "سبد خرید",
+            body: "سبد خرید در حال راه‌اندازی است و به‌زودی در دسترس قرار می‌گیرد.",
+            cta: "به‌زودی",
+         },
+         orders: {
+            title: "سفارش‌ها",
+            body: "پیگیری و تاریخچه سفارش‌ها به‌زودی فعال می‌شود.",
+            cta: "به‌زودی",
+         },
+      },
+
+      profile: {
+         title: "اطلاعات حساب",
+         subtitle: "این اطلاعات از سرویس حساب کاربری شما خوانده می‌شود.",
+         name: "نام و نام خانوادگی",
+         phone: "شماره موبایل",
+         userId: "شناسه کاربری",
+         permission: "سطح دسترسی",
+         unknown: "ثبت نشده",
+      },
+
+      /** Tab bar labels. */
+      tabs: {
+         label: "بخش‌های پنل کاربری",
+         overview: "نمای کلی",
+         orders: "سفارش‌ها",
+         offers: "پیشنهادهای معامله",
+         wallet: "کیف پول",
+         wishlist: "علاقه‌مندی‌ها",
+         inventory: "موجودی من",
+         profile: "اطلاعات حساب",
+         tickets: "پشتیبانی",
+      },
+
+      /** Trade lifecycle, not shipping states. */
+      orderStatus: {
+         pending_payment: "در انتظار پرداخت",
+         in_escrow: "در امانت فروشگاه",
+         trade_sent: "پیشنهاد معامله ارسال شد",
+         completed: "تکمیل شده",
+         disputed: "در حال بررسی",
+         refunded: "بازگشت وجه",
+         cancelled: "لغو شده",
+      } satisfies Record<OrderStatus, string>,
+
+      offerStatus: {
+         pending: "در انتظار پاسخ شما",
+         accepted: "پذیرفته شده",
+         declined: "رد شده",
+         cancelled: "لغو شده",
+      } satisfies Record<TradeOfferStatus, string>,
+
+      orders: {
+         title: "سفارش‌های من",
+         subtitle: "سفارش‌های شما به همراه وضعیت معامله و اقلام خریداری‌شده",
+         emptyTitle: "هنوز سفارشی ثبت نکرده‌اید",
+         emptyBody: "هر زمان خرید کنید، سفارش‌ها و وضعیت معامله‌های شما اینجا نمایش داده می‌شود.",
+         emptyCta: "مرور فروشگاه",
+         orderNumber: "شماره سفارش",
+         placedAt: "تاریخ ثبت",
+         total: "مبلغ کل",
+         items: "اقلام سفارش",
+         itemsCount: "{count} قلم",
+         allStatuses: "همه سفارش ها",
+         status: "وضعیت",
+      },
+
+      offers: {
+         title: "پیشنهادهای معامله",
+         subtitle: "پیشنهادهای استیم که باید بپذیرید یا رد کنید",
+         incoming: "دریافتی",
+         outgoing: "ارسالی",
+         accept: "پذیرش",
+         decline: "رد کن",
+         emptyTitle: "پیشنهاد معامله‌ای ندارید",
+         emptyBody: "وقتی فروشگاه برای سفارش شما پیشنهاد معامله استیم بفرستد، اینجا نمایش داده می‌شود.",
+         acceptedHint: "پیشنهاد پذیرفته شد و سفارش به‌روزرسانی شد.",
+         declinedHint: "پیشنهاد رد شد و سفارش به بررسی رفت.",
+         alreadyAnswered: "این پیشنهاد قبلاً پاسخ داده شده است.",
+         directionIncoming: "دریافتی از فروشگاه",
+         directionOutgoing: "ارسالی توسط شما",
+      },
+
+      wallet: {
+         title: "کیف پول",
+         subtitle: "موجودی و تراکنش‌های حساب شما",
+         balance: "موجودی فعلی",
+         topup: "افزایش موجودی",
+         topupDemoHint: "در نسخه نمایشی، افزایش موجودی مستقیماً ثبت می‌شود.",
+         topupAmount: "مبلغ افزایش",
+         topupSubmit: "ثبت افزایش",
+         topupDone: "موجودی به‌روزرسانی شد",
+         history: "تاریخچه تراکنش‌ها",
+         emptyTitle: "هنوز تراکنشی ندارید",
+         emptyBody: "پس از اولین افزایش موجودی یا خرید، تراکنش‌ها اینجا نمایش داده می‌شوند.",
+         type: {
+            topup: "افزایش موجودی",
+            purchase: "خرید",
+            refund: "بازگشت وجه",
+         },
+      },
+
+      wishlist: {
+         title: "علاقه‌مندی‌ها",
+         subtitle: "محصولات ذخیره‌شده و هشدار کاهش قیمت",
+         emptyTitle: "هنوز محصولی ذخیره نکرده‌اید",
+         emptyBody: "محصولات را ذخیره کنید تا قیمتشان را دنبال کنید و از کاهش قیمت باخبر شوید.",
+         emptyCta: "مرور فروشگاه",
+         targetPrice: "قیمت هشدار",
+         currentPrice: "قیمت فعلی",
+         priceDrop: "کاهش قیمت",
+         reached: "به قیمت هدف رسید",
+      },
+
+      inventory: {
+         title: "موجودی من",
+         subtitle: "اسکین‌ها و آیتم‌های خریداری‌شده شما",
+         emptyTitle: "موجودی شما خالی است",
+         emptyBody: "پس از تکمیل یک معامله، اقلام خریداری‌شده اینجا نمایش داده می‌شوند.",
+         emptyCta: "مرور فروشگاه",
+         acquiredAt: "تاریخ دریافت",
+         fromOrder: "سفارش #{id}",
+         unavailable: "این محصول دیگر در فروشگاه موجود نیست",
+      },
+
+      profileEdit: {
+         title: "ویرایش اطلاعات حساب",
+         subtitle: "برای دریافت اسکین، آدرس معامله استیم باید صحیح باشد.",
+         name: "نام و نام خانوادگی",
+         namePlaceholder: "نام شما",
+         email: "ایمیل",
+         emailPlaceholder: "you@example.com",
+         emailHint: "برای دریافت اطلاعیه‌های سفارش",
+         steamId: "Steam ID",
+         steamIdPlaceholder: "STEAM_0:1:12345678",
+         tradeUrl: "آدرس معامله استیم",
+         tradeUrlPlaceholder: "https://steamcommunity.com/tradeoffer/...",
+         tradeUrlHint: "اسکین‌ها از طریق این آدرس به شما تحویل داده می‌شوند.",
+         save: "ذخیره تغییرات",
+         saving: "در حال ذخیره…",
+         saved: "تغییرات ذخیره شد",
+         failed: "ذخیره تغییرات ناموفق بود",
+         memberSince: "عضو از",
+         refresh: "به‌روزرسانی اطلاعات",
+         steamReady: "اطلاعات استیم شما کامل است.",
+         steamMissing: "اطلاعات استیم ناقص است — دریافت اسکین ممکن نیست.",
+      },
+
+      tickets: {
+         title: "پشتیبانی",
+         subtitle: "ثبت تیکت و پیگیری درخواست‌ها",
+         emptyTitle: "سیستم تیکت به‌زودی راه‌اندازی می‌شود",
+         emptyBody: "تا آن زمان می‌توانید از طریق پشتیبانی شبکه‌های اجتماعی فروشگاه با ما در تماس باشید.",
+      },
    },
 
    /**
@@ -141,10 +354,16 @@ export const fa = {
       detailMetaTitle: "محصول — Shopify",
       detailMetaDescription: "جزئیات محصول",
       heading: "محصولات",
+      heroBadge: "فروشگاه اسکین",
       noProductsFound: "محصولی یافت نشد.",
+      emptyHint: "با فیلترهای فعلی محصولی مطابقت ندارد. برای دیدن همه محصولات فیلترها را پاک کنید.",
+      emptyClearFilters: "پاک کردن فیلترها",
       /** Fallback when a product has no category assigned. */
       generalCategory: "عمومی",
       view: "مشاهده",
+      priceLabel: "قیمت",
+      relatedTitle: "محصولات پیشنهادی",
+      relatedSubtitle: "سایر محصولات همین دسته‌بندی که شاید بپسندید",
 
       // --- Filter / pagination chrome (passed to the shared ProductFilter) ---
       filter: {
@@ -168,6 +387,8 @@ export const fa = {
       // --- Detail page ---
       backToProducts: "بازگشت به محصولات",
       quantity: "تعداد",
+      quantityDecrease: "کاهش تعداد",
+      quantityIncrease: "افزایش تعداد",
       addToCart: "افزودن به سبد خرید",
       addedToCart: "به سبد خرید اضافه شد!",
       freeShipping: "ارسال رایگان برای سفارش‌های بالای ۵۰ دلار",
@@ -183,6 +404,7 @@ export const fa = {
          "این محصول بخشی از مجموعه پریمیوم ماست. با مواد اولیه باکیفیت ساخته شده و برای استفاده روزمره طراحی شده است.",
       detailsLabels: {
          productNumber: "شماره محصول",
+         sku: "کد محصول",
          category: "دسته‌بندی",
          price: "قیمت",
          created: "تاریخ ایجاد",
@@ -348,6 +570,18 @@ export const fa = {
          metaDescription: "داشبورد مدیریت — مدیریت فروشگاه، محصولات و کاربران.",
          title: "داشبورد",
          subtitle: "به فضای کاری مدیریت خوش آمدید. یک بخش را از نوار کناری انتخاب کنید.",
+         quickActionsTitle: "دسترسی سریع",
+         quickActionsSubtitle: "میانبر به پرکاربرد‌ترین بخش‌های پنل مدیریت.",
+         quickActions: {
+            users: {
+               title: "مدیریت کاربران",
+               body: "مشاهده کاربران ثبت‌نام‌شده و بررسی سطح دسترسی آن‌ها.",
+            },
+            products: {
+               title: "مدیریت محصولات",
+               body: "افزودن، ویرایش و سازماندهی محصولات فروشگاه.",
+            },
+         },
       },
       /** Sidebar labels, keyed by href to match lib/adminNavigation.ts. */
       nav: {
@@ -477,6 +711,13 @@ export const fa = {
          saveFailed: "ذخیره محصول ناموفق بود: {reason}",
          deleteFailed: "حذف محصول ناموفق بود: {reason}",
       },
+   },
+/** Light/dark/system theme switcher in the header. */
+   theme: {
+      toggle: "تغییر پوسته",
+      light: "روشن",
+      dark: "تاریک",
+      system: "سیستم",
    },
 } as const
 

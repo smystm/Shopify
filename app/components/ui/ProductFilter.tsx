@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import type { Category } from "@/app/contracts/products"
 import SelectBox from "@/app/components/ui/SelectBox"
@@ -52,13 +52,13 @@ export default function ProductFilter({
     const t: ProductFilterLabels = { ...defaultLabels, ...labels }
 
     return (
-        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="rounded-xl border border-navy-200 bg-white p-5 shadow-xs dark:border-navy-800 dark:bg-navy-950">
             <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{t.title}</h2>
+                <h2 className="text-base font-semibold tracking-tight text-navy-900 dark:text-navy-50">{t.title}</h2>
                 <button
                     type="button"
                     onClick={() => onChange({ selectedCategory: "", minPrice: "", maxPrice: "" })}
-                    className="text-xs font-medium text-zinc-500 underline-offset-2 hover:underline dark:text-zinc-400"
+                    className="text-xs font-medium text-navy-500 underline-offset-2 hover:underline dark:text-navy-400"
                 >
                     {t.clearAll}
                 </button>
@@ -85,7 +85,7 @@ export default function ProductFilter({
                         placeholder={t.minPricePlaceholder}
                         value={minPrice}
                         onChange={(e) => onChange({ selectedCategory, minPrice: e.target.value, maxPrice })}
-                        className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-xs outline-none transition focus:border-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                        className="w-full rounded-lg border border-navy-300 bg-surface px-3 py-2 text-sm text-navy-900 shadow-xs outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-navy-700 dark:bg-navy-900 dark:text-navy-50"
                     />
                 </div>
 
@@ -99,7 +99,7 @@ export default function ProductFilter({
                         placeholder={t.maxPricePlaceholder}
                         value={maxPrice}
                         onChange={(e) => onChange({ selectedCategory, minPrice, maxPrice: e.target.value })}
-                        className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-xs outline-none transition focus:border-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                        className="w-full rounded-lg border border-navy-300 bg-surface px-3 py-2 text-sm text-navy-900 shadow-xs outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-navy-700 dark:bg-navy-900 dark:text-navy-50"
                     />
                 </div>
             </div>

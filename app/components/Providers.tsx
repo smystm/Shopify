@@ -6,23 +6,25 @@ import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { store } from "../lib/store/store"
 import AuthHydrator from "./auth/AuthHydrator"
+import { ThemeProvider } from "./ThemeProvider"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     return (
       <Provider store={store}>
           <CookiesProvider>
-            <AuthHydrator />
-            {children}
-            <ToastContainer
-               position="bottom-right"
-               autoClose={2000}
-               hideProgressBar={false}
-               newestOnTop
-               closeOnClick
-               pauseOnHover
-               draggable
-               theme="dark"
-            />
+            <ThemeProvider>
+              <AuthHydrator />
+              {children}
+              <ToastContainer
+                 position="bottom-right"
+                 autoClose={2000}
+                 hideProgressBar={false}
+                 newestOnTop
+                 closeOnClick
+                 pauseOnHover
+                 draggable
+              />
+            </ThemeProvider>
           </CookiesProvider>
       </Provider>
     )

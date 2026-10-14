@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react"
 import { XMarkIcon } from "@heroicons/react/24/outline"
@@ -43,10 +43,10 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
                transition
                dir="rtl"
                lang="fa"
-               className="relative flex w-full max-w-80 flex-1 flex-col border-s border-navy-200/60 bg-white font-vazirmatn transition duration-300 ease-in-out data-closed:-translate-x-full rtl:data-closed:translate-x-full dark:border-navy-800/60 dark:bg-navy-950"
+               className="relative flex w-full max-w-80 flex-1 flex-col border-s border-border-strong bg-surface font-vazirmatn transition duration-300 ease-in-out data-closed:-translate-x-full rtl:data-closed:translate-x-full dark:border-navy-800/60 dark:bg-navy-950"
             >
                {/* Brand wash at the top of the drawer */}
-               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/10 to-transparent dark:from-brand-400/10" />
+               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-linear-to-b from-brand-500/10 to-transparent dark:from-brand-400/10" />
 
                <div className="relative flex h-16 shrink-0 items-center justify-between border-b border-navy-200/60 px-4 dark:border-navy-800/60">
                   <BrandMark onClick={onClose} />
@@ -111,18 +111,18 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
                         <Link
                            href="/login"
                            onClick={onClose}
-                           className="rounded-full border border-navy-300 px-6 py-2.5 text-center text-sm font-semibold text-navy-700 transition-all duration-300 hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-navy-600 dark:text-navy-200 dark:hover:border-brand-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+                           className="rounded-full border border-navy-300 bg-surface px-6 py-2.5 text-center text-sm font-semibold text-navy-700 transition-all duration-300 hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 dark:border-navy-600 dark:text-navy-200 dark:hover:border-brand-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
                         >
                            {fa.auth.login}
                         </Link>
                         <Link
                            href="/register"
                            onClick={onClose}
-                           className="group relative overflow-hidden rounded-full bg-gradient-to-l from-brand-600 to-brand-500 px-6 py-2.5 text-center text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition-all duration-300 hover:shadow-xl hover:shadow-brand-600/40"
+                           className="group relative overflow-hidden rounded-full bg-linear-to-l from-brand-700 to-brand-800 px-6 py-2.5 text-center text-sm font-bold text-white shadow-lg shadow-brand-700/30 transition-all duration-300 hover:shadow-xl hover:shadow-brand-700/45"
                         >
                            <span
                               aria-hidden="true"
-                              className="absolute inset-0 -translate-x-full bg-gradient-to-l from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full"
+                              className="absolute inset-0 -translate-x-full bg-linear-to-l from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full"
                            />
                            <span className="relative">{fa.auth.signup}</span>
                         </Link>

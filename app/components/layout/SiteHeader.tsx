@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { Bars3Icon } from "@heroicons/react/24/outline"
@@ -10,6 +10,7 @@ import HeaderNavLink from "./HeaderNavLink"
 import UserMenu from "./UserMenu"
 import MobileNav from "./MobileNav"
 import BrandMark from "./BrandMark"
+import ThemeToggle from "@/app/components/ThemeToggle"
 import { fa, faNavLinks } from "@/app/lib/i18n/fa"
 
 export default function SiteHeader() {
@@ -30,15 +31,15 @@ export default function SiteHeader() {
          <header
             dir="rtl"
             lang="fa"
-            className="sticky top-0 z-40 border-b border-navy-200/60 bg-white/80 font-vazirmatn backdrop-blur-xl dark:border-navy-800/60 dark:bg-navy-950/80"
+            className="sticky top-0 z-40 border-b border-border-strong bg-surface/90 font-vazirmatn backdrop-blur-xl dark:border-navy-800/60 dark:bg-navy-950/80"
          >
             {/* Brand gradient hairline — fades in once you scroll */}
             <motion.span
                aria-hidden="true"
                style={{ scaleX: hairlineScale, opacity: hairlineScale }}
-               className="absolute inset-x-0 bottom-0 h-px origin-right bg-gradient-to-l from-brand-500 via-brand-400 to-accent-400 rtl:origin-left"
+               className="absolute inset-x-0 bottom-0 h-px origin-right bg-linear-to-l from-brand-500 via-brand-400 to-accent-400 rtl:origin-left"
             />
-            <motion.span aria-hidden="true" style={{ opacity: shadowOpacity }} className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-navy-900/60 to-transparent" />
+            <motion.span aria-hidden="true" style={{ opacity: shadowOpacity }} className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-navy-900/60 to-transparent" />
 
             <div className="mx-auto flex h-16 max-w-7xl items-center gap-x-4 px-4 sm:px-6 lg:px-8">
                <button
@@ -68,24 +69,25 @@ export default function SiteHeader() {
                   ))}
                </nav>
 
-               <div className="flex flex-1 items-center justify-end gap-x-3">
+               <div className="flex flex-1 items-center justify-end gap-x-2.5">
+                  <ThemeToggle />
                   {hydrated && user ? (
                      <UserMenu />
                   ) : !hydrated ? null : (
                      <>
                         <Link
                            href="/login"
-                           className="rounded-full border border-navy-300 px-5 py-2 text-sm font-semibold text-navy-700 transition-all duration-300 hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-navy-600 dark:text-navy-200 dark:hover:border-brand-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+                           className="rounded-full border border-navy-300 bg-surface px-5 py-2 text-sm font-semibold text-navy-700 transition-all duration-300 hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-navy-600 dark:text-navy-200 dark:hover:border-brand-400 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
                         >
                            {fa.auth.login}
                         </Link>
                         <Link
                            href="/register"
-                           className="group relative overflow-hidden rounded-full bg-gradient-to-l from-brand-600 to-brand-500 px-5 py-2 text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition-all duration-300 hover:shadow-xl hover:shadow-brand-600/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+                           className="group relative overflow-hidden rounded-full bg-linear-to-l from-brand-700 to-brand-800 px-5 py-2 text-sm font-bold text-white shadow-lg shadow-brand-700/30 transition-all duration-300 hover:shadow-xl hover:shadow-brand-700/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                         >
                            <span
                               aria-hidden="true"
-                              className="absolute inset-0 -translate-x-full bg-gradient-to-l from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full"
+                              className="absolute inset-0 -translate-x-full bg-linear-to-l from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full"
                            />
                            <span className="relative">{fa.auth.signup}</span>
                         </Link>

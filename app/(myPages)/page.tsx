@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import SiteHeader from "@/app/components/layout/SiteHeader"
 import HomeClient from "@/app/components/home/HomeClient"
@@ -14,7 +14,7 @@ import HomeClient from "@/app/components/home/HomeClient"
  */
 export default function Home() {
    return (
-      <div dir="rtl" lang="fa" className="flex min-h-screen flex-col bg-navy-50 font-vazirmatn dark:bg-navy-950">
+      <div dir="rtl" lang="fa" className="flex min-h-screen flex-col bg-navy-100 font-vazirmatn dark:bg-navy-950">
          <SiteHeader />
          <main className="flex flex-1 flex-col">
             <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">

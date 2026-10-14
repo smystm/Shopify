@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { motion, useReducedMotion } from "motion/react"
 import { type FormikHelpers } from "formik"
 import * as Yup from "yup"
 import Button from "../ui/Button"
@@ -47,11 +48,12 @@ interface VerifyFormProps {
 const CODE_LENGTH = 6
 
 const otpInputClass =
-   "h-12 w-full rounded-lg border border-zinc-300 bg-white text-center text-lg font-medium text-zinc-900 outline-none transition focus:border-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-white"
+   "h-14 w-full rounded-2xl border-2 border-navy-400 bg-surface text-center text-xl font-extrabold text-navy-950 caret-brand-600 outline-none transition-all duration-200 placeholder:text-navy-300 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15 dark:border-navy-600 dark:bg-navy-900 dark:text-white dark:caret-brand-300"
 
 export default function VerifyForm({ phone, initialValues = verifyInitialValues, onVerify, onResend, isVerifying = false, isResending = false, error = null }: VerifyFormProps) {
    const router = useRouter()
    const inputsRef = useRef<Array<HTMLInputElement | null>>([])
+   const prefersReduced = useReducedMotion()
 
    const dispatch = useAppDispatch()
 
@@ -108,14 +110,15 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
    }
 
    return (
-      <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-         <h2 className="text-2xl font-semibold tracking-tight">{fa.authPages.verifyHeading}</h2>
-         <p className="mb-6 mt-1 text-sm text-zinc-500">
-            {phone ? (
-               fa.authPages.verifySentTo.replace("{phone}", phone)
-            ) : (
-               fa.authPages.verifySentHint
-            )}
+      <motion.div
+         initial={{ opacity: 0, y: prefersReduced ? 0 : 24, scale: prefersReduced ? 1 : 0.98 }}
+         animate={{ opacity: 1, y: 0, scale: 1 }}
+         transition={{ duration: 0.5, delay: prefersReduced ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
+         className="w-full max-w-md rounded-3xl border border-border-strong bg-surface p-8 shadow-2xl shadow-navy-900/10 dark:shadow-black/30"
+      >
+         <h2 className="text-2xl font-extrabold leading-tight text-navy-950 dark:text-white">{fa.authPages.verifyHeading}</h2>
+         <p className="mb-6 mt-2 text-[15px] leading-7 text-navy-600 dark:text-navy-300">
+            {phone ? fa.authPages.verifySentTo.replace("{phone}", phone) : fa.authPages.verifySentHint}
          </p>
 
          <FormShell<VerifyValues> initialValues={initialValues} validationSchema={verifySchema} onSubmit={handleSubmit}>
@@ -149,33 +152,64 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
                return (
                   <>
                      <div>
-                        <div className="flex justify-between gap-2" onPaste={handlePaste}>
+                        <div className="flex justify-between gap-2" dir="ltr" onPaste={handlePaste}>
                            {digits.map((digit, i) => (
-                              <input
-                                 key={i}
-                                 ref={(el) => {
-                                    inputsRef.current[i] = el
-                                 }}
-                                 name={`code-${i}`}
-                                 value={digit}
-                                 onChange={(e) => setDigit(i, e.target.value)}
-                                 onKeyDown={(e) => handleKeyDown(i, e)}
-                                 onBlur={() => setTouched({ code: true })}
-                                 type="text"
-                                 inputMode="numeric"
-                                 autoComplete={i === 0 ? "one-time-code" : "off"}
-                                 maxLength={1}
-                                 aria-label={fa.authPages.digitLabel.replace("{index}", String(i + 1))}
-                                 aria-invalid={hasError}
-                                 className={`${otpInputClass} ${hasError ? "border-red-500" : ""}`}
-                              />
+                              <motion.div
+                                 key={`box-${i}`}
+                                 initial={false}
+                                 /* Over-scale pop the moment a digit lands. Empty boxes rest at full
+                                  scale/opacity — dimming them read as broken. */
+                                 animate={digit ? { scale: [0.88, 1.06, 1] } : { scale: 1, opacity: 1 }}
+                                 transition={prefersReduced ? { duration: 0 } : { duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                                 className="flex-1"
+                              >
+                                 <input
+                                    ref={(el) => {
+                                       inputsRef.current[i] = el
+                                    }}
+                                    name={`code-${i}`}
+                                    value={digit}
+                                    onChange={(e) => setDigit(i, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(i, e)}
+                                    onBlur={() => setTouched({ code: true })}
+                                    type="text"
+                                    inputMode="numeric"
+                                    autoComplete={i === 0 ? "one-time-code" : "off"}
+                                    maxLength={1}
+                                    aria-label={fa.authPages.digitLabel.replace("{index}", String(i + 1))}
+                                    aria-invalid={hasError}
+                                    /* Digits are numeric — force LTR so the caret and
+                                       selection don't inherit the RTL flow. */
+                                    dir="ltr"
+                                    className={`${otpInputClass} ${hasError ? "border-red-500 ring-2 ring-red-500/15" : ""}`}
+                                 />
+                              </motion.div>
                            ))}
                         </div>
-                        {hasError && <p className="mt-1 text-xs text-red-500">{errors.code}</p>}
-                        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+
+                        {/* Progress — grows with the number of digits entered. */}
+                        <div
+                           role="progressbar"
+                           aria-valuemin={0}
+                           aria-valuemax={CODE_LENGTH}
+                           aria-valuenow={values.code.length}
+                           /* LTR so the fill grows left → right with the digits. */
+                           dir="ltr"
+                           className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-navy-200 dark:bg-navy-800"
+                        >
+                           <motion.div
+                              className="h-full rounded-full bg-linear-to-l from-brand-700 to-brand-600"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${(values.code.length / CODE_LENGTH) * 100}%` }}
+                              transition={prefersReduced ? { duration: 0 } : { type: "spring", stiffness: 220, damping: 28 }}
+                           />
+                        </div>
+
+                        {hasError && <p className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">{errors.code}</p>}
+                        {error && <p className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">{error}</p>}
                      </div>
 
-                     <Button type="submit" disabled={!isComplete || busy} className="mt-2">
+                     <Button type="submit" disabled={!isComplete || busy} className="mt-6">
                         {busy ? fa.authPages.verifying : fa.authPages.verifySubmit}
                      </Button>
                   </>
@@ -183,21 +217,25 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
             }}
          </FormShell>
 
-         <div className="mt-6 flex items-center justify-between text-sm">
-            <span className="text-zinc-500">{fa.authPages.resendPrompt}</span>
+         <div className="mt-6 flex items-center justify-between gap-3 text-sm">
+            <span className="text-navy-600 dark:text-navy-300">{fa.authPages.resendPrompt}</span>
             <button
                type="button"
                onClick={handleResend}
                disabled={isResending}
-               className="font-medium text-black transition hover:underline disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
+               className="rounded-full px-3 py-1 font-bold text-brand-700 transition-colors hover:bg-brand-500/10 hover:text-brand-800 disabled:cursor-not-allowed disabled:opacity-50 dark:text-brand-300 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
             >
                {isResending ? fa.authPages.sending : fa.authPages.resend}
             </button>
          </div>
 
-         <button type="button" onClick={handleBack} className="mt-4 text-sm text-zinc-500 transition hover:text-zinc-800 dark:hover:text-zinc-200">
+         <button
+            type="button"
+            onClick={handleBack}
+            className="mt-4 text-sm font-medium text-navy-500 transition-colors hover:text-brand-700 dark:text-navy-400 dark:hover:text-brand-300"
+         >
             {fa.authPages.backToLogin}
          </button>
-      </div>
+      </motion.div>
    )
 }

@@ -1,20 +1,23 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { getProducts, getCategories } from "@/app/helpers/productApi"
 import type { AdminProduct, Category } from "@/app/contracts/products"
 import ProductCard from "@/app/components/products/ProductCard"
-import ProductPagination from "@/app/components/products/ProductPagination"
+import Pagination from "@/app/components/ui/Pagination"
 import ProductFilter from "@/app/components/ui/ProductFilter"
 import { PRODUCTS_PAGE_SIZE } from "@/app/lib/products"
 import { fa } from "@/app/lib/i18n/fa"
+import { FolderOpenIcon } from "@heroicons/react/24/outline"
+import { motion, useReducedMotion } from "motion/react"
 
 const filterLabels = fa.products.filter
 
 export default function ProductClient() {
    const router = useRouter()
    const searchParams = useSearchParams()
+   const prefersReduced = useReducedMotion()
    const pageParam = searchParams.get("page")
    const rawPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1)
 
@@ -74,10 +77,14 @@ export default function ProductClient() {
       return (
          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: PRODUCTS_PAGE_SIZE }).map((_, i) => (
-               <div
-                  key={i}
-                  className="h-72 animate-pulse rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
-               />
+               <div key={i} className="overflow-hidden rounded-2xl border border-border-strong bg-surface shadow-md shadow-navy-900/5">
+                  <div className="aspect-square animate-pulse bg-navy-100/70 dark:bg-navy-900/50" />
+                  <div className="space-y-3 p-4">
+                     <div className="h-4 w-3/4 animate-pulse rounded bg-navy-200 dark:bg-navy-800" />
+                     <div className="h-3 w-full animate-pulse rounded bg-navy-100 dark:bg-navy-800/70" />
+                     <div className="h-3 w-2/3 animate-pulse rounded bg-navy-100 dark:bg-navy-800/70" />
+                  </div>
+               </div>
             ))}
          </div>
       )
@@ -96,7 +103,32 @@ export default function ProductClient() {
                   onChange={handleFilterChange}
                />
             </div>
-            <p className="text-zinc-500">{fa.products.noProductsFound}</p>
+
+            <div className="relative overflow-hidden rounded-2xl border border-dashed border-navy-300 bg-surface px-6 py-16 text-center dark:border-navy-700">
+               <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-e-16 -top-16 h-48 w-48 rounded-full bg-accent-400/20 blur-3xl"
+               />
+               <motion.span
+                  initial={prefersReduced ? false : { scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                  className="relative mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-brand-600 to-brand-700 text-white shadow-lg shadow-brand-700/25"
+               >
+                  <FolderOpenIcon className="h-6 w-6" aria-hidden="true" />
+               </motion.span>
+               <p className="relative text-base font-bold text-navy-950 dark:text-white">{fa.products.noProductsFound}</p>
+               <p className="relative mx-auto mt-2 max-w-sm text-sm leading-6 text-navy-600 dark:text-navy-300">
+                  {fa.products.emptyHint}
+               </p>
+               <button
+                  type="button"
+                  onClick={() => handleFilterChange({ selectedCategory: "", minPrice: "", maxPrice: "" })}
+                  className="relative mt-6 inline-flex items-center rounded-full bg-linear-to-l from-brand-700 to-brand-800 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-700/25 transition-all hover:shadow-xl hover:shadow-brand-700/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+               >
+                  {fa.products.emptyClearFilters}
+               </button>
+            </div>
          </>
       )
    }
@@ -114,11 +146,11 @@ export default function ProductClient() {
             />
          </div>
          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {visible.map((product) => (
-               <ProductCard key={product.id} product={product} />
+            {visible.map((product, i) => (
+               <ProductCard key={product.id} product={product} index={i} />
             ))}
          </div>
-         <ProductPagination
+         <Pagination
             page={currentPage}
             totalPages={totalPages}
             total={products.length}

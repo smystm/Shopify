@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
@@ -74,14 +74,14 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
    return (
       <section
          ref={ref}
-         className="relative overflow-hidden rounded-3xl border border-brand-500/15 bg-white/70 shadow-2xl shadow-navy-900/5 backdrop-blur-xl dark:border-brand-400/10 dark:bg-navy-950/60 dark:shadow-black/40"
+         className="relative overflow-hidden rounded-3xl border border-brand-500/25 bg-surface shadow-2xl shadow-navy-900/5 backdrop-blur-xl dark:border-brand-400/10 dark:bg-navy-950/60 dark:shadow-black/40"
       >
          {/* Ambient glows + grid texture */}
-         <div className="pointer-events-none absolute -end-28 -top-28 h-80 w-80 rounded-full bg-brand-400/25 blur-[100px] dark:bg-brand-500/20" />
-         <div className="pointer-events-none absolute -bottom-32 -start-24 h-80 w-80 rounded-full bg-accent-400/20 blur-[100px] dark:bg-accent-500/15" />
+         <div className="pointer-events-none absolute -inset-e-28 -top-28 h-80 w-80 rounded-full bg-brand-400/25 blur-[100px] dark:bg-brand-500/20" />
+         <div className="pointer-events-none absolute -bottom-32 -inset-s-24 h-80 w-80 rounded-full bg-accent-400/20 blur-[100px] dark:bg-accent-500/15" />
          <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 text-navy-400 opacity-[0.18] dark:text-navy-100 dark:opacity-[0.06]"
+            className="pointer-events-none absolute inset-0 text-navy-500 opacity-[0.18] dark:text-navy-100 dark:opacity-[0.06]"
             style={{
                backgroundImage:
                   "linear-gradient(to left, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
@@ -115,7 +115,7 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                </motion.p>
 
                {isSignedIn ? (
-                  <motion.p variants={item} className="mt-4 max-w-xl text-sm text-navy-500 dark:text-navy-400">
+                  <motion.p variants={item} className="mt-4 max-w-xl text-sm text-navy-500 dark:text-navy-500">
                      {fa.home.heroSignedInHint}
                   </motion.p>
                ) : null}
@@ -124,26 +124,26 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                   {STATS.map((s) => (
                      <div
                         key={s.label}
-                        className="rounded-2xl border border-navy-200/70 bg-white/80 px-3 py-4 text-center shadow-sm dark:border-navy-700/60 dark:bg-navy-900/50"
+                        className="rounded-2xl border border-border-strong bg-surface px-3 py-4 text-center shadow-sm"
                      >
-                        <div className="bg-gradient-to-l from-brand-600 to-brand-400 bg-clip-text text-2xl font-bold text-transparent dark:from-brand-300 dark:to-brand-500">
+                        <div className="bg-linear-to-l from-brand-600 to-brand-400 bg-clip-text text-2xl font-bold text-transparent dark:from-brand-300 dark:to-brand-500">
                            <CountUp value={s.value} suffix={s.suffix} />
                         </div>
-                        <div className="mt-1 text-xs text-navy-500 dark:text-navy-400">{s.label}</div>
+                        <div className="mt-1 text-xs text-navy-500 dark:text-navy-500">{s.label}</div>
                      </div>
                   ))}
                </motion.div>
 
                <motion.div variants={item} className="mt-6 flex flex-wrap items-center gap-3 text-sm text-navy-600 dark:text-navy-300">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-navy-200/70 bg-white/70 px-3 py-1 dark:border-navy-700/60 dark:bg-navy-900/50">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface px-3 py-1">
                      <span className="relative flex h-2 w-2">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75" />
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
                      </span>
                      {fa.home.metrics.liveCatalog}
                   </span>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-navy-200/70 bg-white/70 px-3 py-1 dark:border-navy-700/60 dark:bg-navy-900/50">
-                     <BanknotesIcon className="h-4 w-4 text-accent-500" aria-hidden="true" />
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface px-3 py-1">
+                     <BanknotesIcon className="h-4 w-4 text-accent-600" aria-hidden="true" />
                      {fa.home.metrics.fairRates}
                   </span>
                </motion.div>
@@ -152,7 +152,7 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                <motion.div variants={item} className="mt-9 flex flex-wrap items-center gap-4">
                   <Link
                      href="/products"
-                     className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-l from-brand-600 to-brand-500 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition hover:shadow-xl hover:shadow-brand-600/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+                     className="group inline-flex items-center gap-2 rounded-full bg-linear-to-l from-brand-700 to-brand-800 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-700/30 transition hover:shadow-xl hover:shadow-brand-700/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                   >
                      {fa.home.cta.browseProducts}
                      <ArrowLeftIcon
@@ -172,7 +172,7 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                   ) : (
                      <Link
                         href="/register"
-                        className="inline-flex items-center gap-2 rounded-full border border-navy-300 bg-white/70 px-7 py-3.5 text-sm font-bold text-navy-700 transition hover:border-brand-400 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-navy-600 dark:bg-navy-900/50 dark:text-navy-100 dark:hover:border-brand-400 dark:hover:text-brand-300"
+                        className="inline-flex items-center gap-2 rounded-full border border-navy-300 bg-surface px-7 py-3.5 text-sm font-bold text-navy-700 transition hover:border-brand-400 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:border-navy-600 dark:bg-navy-900/50 dark:text-navy-100 dark:hover:border-brand-400 dark:hover:text-brand-300"
                      >
                         {fa.home.cta.createAccount}
                      </Link>
@@ -181,7 +181,7 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
 
                <motion.p
                   variants={item}
-                  className="mt-6 inline-flex items-center gap-2 text-xs text-navy-500 dark:text-navy-400"
+                  className="mt-6 inline-flex items-center gap-2 text-xs text-navy-500 dark:text-navy-500"
                >
                   <ShieldCheckIcon className="h-4 w-4 text-brand-500" aria-hidden="true" />
                   {fa.home.features.items.authentic.title}
@@ -203,8 +203,8 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                   className="relative w-full max-w-sm"
                >
-                  <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-brand-400/40 via-transparent to-accent-400/40 blur-2xl" />
-                  <div className="relative rounded-3xl border border-brand-500/20 bg-white/85 p-6 shadow-2xl shadow-navy-900/10 backdrop-blur dark:border-brand-400/15 dark:bg-navy-900/70 dark:shadow-black/40">
+                  <div className="absolute -inset-3 rounded-4xl bg-linear-to-br from-brand-400/40 via-transparent to-accent-400/40 blur-2xl" />
+                  <div className="relative rounded-3xl border border-brand-500/25 bg-surface p-6 shadow-2xl shadow-navy-900/10 backdrop-blur dark:border-brand-400/15 dark:bg-navy-900/70 dark:shadow-black/40">
                      <Image
                         src="/images/weapons-real/skins/awp/awp-0001.png"
                         alt="AWP"
@@ -217,9 +217,9 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                      <div className="mt-4 flex items-center justify-between rounded-2xl bg-navy-50/80 px-4 py-3 dark:bg-navy-950/60">
                         <div>
                            <div className="text-sm font-bold text-navy-900 dark:text-white">AWP | Dragon Lore</div>
-                           <div className="text-xs text-navy-500 dark:text-navy-400">{fa.home.stats.weapons}</div>
+                           <div className="text-xs text-navy-500 dark:text-navy-500">{fa.home.stats.weapons}</div>
                         </div>
-                        <div className="rounded-full bg-accent-400/20 px-3 py-1 text-sm font-bold text-accent-600 dark:text-accent-300">
+                        <div className="rounded-full bg-accent-400/20 px-3 py-1 text-sm font-bold text-accent-700 dark:text-accent-300">
                            $ 1200
                         </div>
                      </div>

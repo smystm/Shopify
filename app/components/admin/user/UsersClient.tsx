@@ -1,8 +1,8 @@
-"use client"
+﻿"use client"
 
 import { useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import AdminPagination from "@/app/components/admin/AdminPagination"
+import Pagination from "@/app/components/ui/Pagination"
 import UsersTable from "./UsersTable"
 import UsersEmptyState from "./UsersEmptyState"
 import AccessDenied from "@/app/components/admin/AccessDenied"
@@ -49,10 +49,10 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
             <>
               <div className="flex flex-wrap items-center justify-between gap-3">
              <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">{fa.admin.users.title}</h1>
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{fa.admin.users.subtitle}</p>
+                <h1 className="text-2xl font-bold tracking-tight text-navy-950 dark:text-white">{fa.admin.users.title}</h1>
+                <p className="mt-1 text-sm text-navy-500 dark:text-navy-400">{fa.admin.users.subtitle}</p>
              </div>
-             <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+             <span className="rounded-full border border-brand-500/25 bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700 dark:border-brand-400/25 dark:bg-brand-500/10 dark:text-brand-300">
                 {fa.admin.users.total.replace("{count}", String(users.length))}
              </span>
           </div>
@@ -69,7 +69,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
 
               {
                  totalPages > 1 && (
-                    <AdminPagination
+                    <Pagination
                        page={rawPage}
                        totalPages={totalPages}
                        total={users.length}

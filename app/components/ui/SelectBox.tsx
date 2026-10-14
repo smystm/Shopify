@@ -1,4 +1,4 @@
-interface SelectOption {
+﻿interface SelectOption {
    value: string;
    label: string;
 }
@@ -20,7 +20,7 @@ interface SelectBoxProps {
 }
 
 const baseSelectClass =
-   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
+   "w-full rounded-lg border border-navy-300 bg-surface px-3 py-2 text-sm text-navy-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-navy-700 dark:bg-navy-900 dark:text-navy-50";
 
 export default function SelectBox({
    name,

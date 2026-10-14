@@ -1,9 +1,9 @@
-"use client"
+﻿"use client"
 
 import { motion, useReducedMotion } from "motion/react"
 import { UserPlusIcon, CursorArrowRaysIcon, BanknotesIcon } from "@heroicons/react/24/outline"
 import { fa } from "@/app/lib/i18n/fa"
-import Reveal from "./Reveal"
+import Reveal from "@/app/components/ui/Reveal"
 
 const STEPS = [
    { key: "register", Icon: UserPlusIcon },
@@ -25,7 +25,7 @@ export default function HowItWorks() {
             {/* Connector line (desktop only) */}
             <div
                aria-hidden="true"
-               className="absolute inset-x-0 top-7 hidden h-px bg-gradient-to-l from-transparent via-navy-300/60 to-transparent lg:block dark:via-navy-600/60"
+               className="absolute inset-x-0 top-7 hidden h-px bg-linear-to-l from-transparent via-navy-300/60 to-transparent lg:block dark:via-navy-600/60"
             />
 
             <ol className="relative grid grid-cols-1 gap-8 lg:grid-cols-3 lg:gap-6">
@@ -34,10 +34,10 @@ export default function HowItWorks() {
                      <motion.div
                         whileHover={prefersReduced ? undefined : { scale: 1.06 }}
                         transition={{ type: "spring", stiffness: 340, damping: 20 }}
-                        className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-xl shadow-brand-600/25 ring-4 ring-navy-50 dark:ring-navy-950"
+                        className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-brand-600 to-brand-700 text-white shadow-xl shadow-brand-700/25 ring-4 ring-navy-50 dark:ring-navy-950"
                      >
                         <Icon className="h-6 w-6" aria-hidden="true" />
-                        <span className="absolute -end-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-accent-500 text-xs font-extrabold text-navy-950 shadow-lg">
+                        <span className="absolute -inset-e-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-accent-500 text-xs font-extrabold text-navy-950 shadow-lg">
                            {i + 1}
                         </span>
                      </motion.div>

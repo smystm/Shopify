@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react"
 import { ChevronDownIcon } from "@heroicons/react/24/outline"
@@ -40,7 +40,7 @@ export default function UserMenu() {
             <span className="sr-only">{fa.header.openUserMenu}</span>
 
             {/* Avatar with a gradient ring */}
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-600 p-px">
+            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-brand-600 to-brand-700 p-px">
                <span className="flex h-full w-full items-center justify-center rounded-full bg-white text-xs font-extrabold text-brand-700 transition-transform duration-300 group-hover:scale-110 dark:bg-navy-950 dark:text-brand-300">
                   {displayName.slice(0, 1)}
                </span>
@@ -49,22 +49,22 @@ export default function UserMenu() {
             <span className="hidden items-center sm:flex">
                <span className="ms-2 text-start text-sm">
                   <span className="block font-bold text-navy-950 dark:text-white">{displayName}</span>
-                  {displayDetail && <span className="block text-xs text-navy-500 dark:text-navy-400">{displayDetail}</span>}
+                  {displayDetail && <span className="block text-xs text-navy-500 dark:text-navy-500">{displayDetail}</span>}
                </span>
                <ChevronDownIcon
                   aria-hidden="true"
-                  className="ms-1 h-4 w-4 text-navy-400 transition-transform duration-300 group-data-open:rotate-180"
+                  className="ms-1 h-4 w-4 text-navy-500 transition-transform duration-300 group-data-open:rotate-180"
                />
             </span>
          </MenuButton>
 
          <MenuItems
             transition
-            className="absolute end-0 z-50 mt-2.5 w-56 origin-top-right rounded-2xl border border-navy-200/70 bg-white/95 p-2 shadow-2xl shadow-navy-900/10 backdrop-blur-xl transition duration-150 ease-out data-closed:scale-95 data-closed:opacity-0 rtl:origin-top-left dark:border-navy-700/60 dark:bg-navy-900/95 dark:shadow-black/40"
+            className="absolute inset-e-0 z-50 mt-2.5 w-56 origin-top-right rounded-2xl border border-border-strong bg-surface p-2 shadow-2xl shadow-navy-900/10 transition duration-150 ease-out data-closed:scale-95 data-closed:opacity-0 rtl:origin-top-left dark:shadow-black/40"
          >
-            <div className="mb-1 rounded-xl bg-gradient-to-bl from-brand-50 to-accent-50 px-3 py-2.5 dark:from-brand-500/10 dark:to-accent-500/10">
+            <div className="mb-1 rounded-xl bg-linear-to-bl from-brand-50 to-accent-50 px-3 py-2.5 dark:from-brand-500/10 dark:to-accent-500/10">
                <p className="text-sm font-bold text-navy-950 dark:text-white">{displayName}</p>
-               {displayDetail && <p className="mt-0.5 text-xs text-navy-500 dark:text-navy-400">{displayDetail}</p>}
+               {displayDetail && <p className="mt-0.5 text-xs text-navy-500 dark:text-navy-500">{displayDetail}</p>}
             </div>
 
             <MenuItem>

@@ -26,12 +26,12 @@ export default function BrandMark({ className, showWordmark = true, onClick }: B
             whileHover={prefersReduced ? undefined : { rotate: -8, scale: 1.06 }}
             whileTap={prefersReduced ? undefined : { scale: 0.96 }}
             transition={{ type: "spring", stiffness: 400, damping: 18 }}
-            className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-600/25"
+            className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-linear-to-br from-brand-600 to-brand-700 shadow-lg shadow-brand-700/30"
          >
             {/* Shine sweep */}
             <span
                aria-hidden="true"
-               className="absolute inset-0 -translate-x-full bg-gradient-to-l from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full"
+               className="absolute inset-0 -translate-x-full bg-linear-to-l from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full rtl:translate-x-full rtl:group-hover:-translate-x-full"
             />
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative">
                <path d="M5 8h14l1 13H4L5 8Z" fill="white" />
