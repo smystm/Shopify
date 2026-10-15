@@ -1,7 +1,10 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import { useAppSelector } from "@/app/lib/store/hooks"
 import { useMounted } from "@/app/lib/hooks/useMounted"
+import { getProducts, getCategories } from "@/app/helpers/productApi"
+import type { AdminProduct, Category } from "@/app/contracts/products"
 import HeroSection from "./HeroSection"
 import Marquee from "./Marquee"
 import Features from "./Features"
@@ -26,14 +29,48 @@ export default function HomeClient() {
    const isSignedIn = mounted && Boolean(user)
    const displayName = isSignedIn ? user?.name || user?.email || user?.phone || null : null
 
+   // One fetch for the whole page. The three data-driven sections all need the
+   // same catalogue, so fetching per-section would triple the request count for
+   // identical data.
+   const [products, setProducts] = useState<AdminProduct[]>([])
+   const [categories, setCategories] = useState<Category[]>([])
+   const [catalogueState, setCatalogueState] = useState<"loading" | "ready" | "error">("loading")
+
+   useEffect(() => {
+      let cancelled = false
+
+      Promise.all([getProducts(), getCategories()])
+         .then(([productList, categoryList]) => {
+            if (cancelled) return
+            setProducts(productList)
+            setCategories(categoryList)
+            setCatalogueState("ready")
+         })
+         .catch((err) => {
+            console.error("Failed to load the home catalogue:", err)
+            if (cancelled) return
+            setCatalogueState("error")
+         })
+
+      return () => {
+         cancelled = true
+      }
+   }, [])
+
+   // Newest first. There are no orders yet, so "best-selling" would be fiction;
+   // recency is the one ordering the database can actually support.
+   const newestFirst = useMemo(() => [...products].sort((a, b) => b.id - a.id), [products])
+
+   const loading = catalogueState === "loading"
+
    return (
       <>
-         <HeroSection displayName={displayName} />
+         <HeroSection displayName={displayName} products={newestFirst} loading={loading} />
 
-         <Marquee />
+         <Marquee categories={categories} />
          <Features />
-         <CategoriesShowcase />
-         <FeaturedSkins />
+         <CategoriesShowcase categories={categories} products={newestFirst} loading={loading} />
+         <FeaturedSkins products={newestFirst} loading={loading} />
          <HowItWorks />
          <Faq />
          <CtaBand isSignedIn={isSignedIn} />

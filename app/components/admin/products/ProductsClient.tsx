@@ -10,14 +10,22 @@ import Pagination from "@/app/components/ui/Pagination"
 import ProductsTable from "./ProductsTable"
 import ProductsEmptyState from "./ProductsEmptyState"
 import AccessDenied from "@/app/components/admin/AccessDenied"
-import type { AdminProduct, Category } from "@/app/contracts/products"
+import type { AdminProduct, Category, ProductFilterState, ProductSort } from "@/app/contracts/products"
 import { PRODUCTS_PAGE_SIZE, suggestProductNumber } from "@/app/lib/products"
 import { canCreateProduct, canModifyProduct } from "@/app/lib/permissions"
 import { useAppSelector } from "@/app/lib/store/hooks"
 import { selectAuthUser, selectPermission } from "@/app/lib/store/authSlice"
 import { getProducts, getCategories } from "@/app/helpers/productApi"
-import ProductFilter, { type ProductFilterChange } from "@/app/components/ui/ProductFilter"
+import ProductCategoryFilter, { type CategorySelection } from "@/app/components/products/ProductCategoryFilter"
+import ProductPriceFilter, { type PanelFilterChange } from "@/app/components/products/ProductPriceFilter"
 import { fa } from "@/app/lib/i18n/fa"
+
+const PRODUCT_SORTS: ProductSort[] = ["", "price_asc", "price_desc", "best_selling"]
+
+/** The URL is user-editable, so a hand-typed ?sort= must not become state. */
+function toProductSort(value: string | null): ProductSort {
+    return PRODUCT_SORTS.includes(value as ProductSort) ? (value as ProductSort) : ""
+}
 
 interface ProductsClientProps {
     initialProducts: AdminProduct[]
@@ -39,12 +47,17 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
     const selectedSubcategoriesParam = selectedCategoryParam ? searchParams.getAll("subcategory") : []
     const minPriceParam = searchParams.get("minPrice") ?? ""
     const maxPriceParam = searchParams.get("maxPrice") ?? ""
+    const searchParam = searchParams.get("search") ?? ""
+    const sortParam = toProductSort(searchParams.get("sort"))
 
     const createModal = searchParams.get("create") === "true"
     const editId = searchParams.get("edit")
     const editing = editId ? products.find((p) => p.id === Number(editId)) ?? null : null
 
-    const hasFilters = selectedCategoryParam !== "" || selectedSubcategoriesParam.length > 0 || minPriceParam !== "" || maxPriceParam !== ""
+    // Search and sort must be in here too: this flag decides whether the list
+    // comes from the filtered fetch or falls back to the unfiltered `products`,
+    // so omitting them would make admin silently ignore both.
+    const hasFilters = selectedCategoryParam !== "" || selectedSubcategoriesParam.length > 0 || minPriceParam !== "" || maxPriceParam !== "" || searchParam !== "" || sortParam !== ""
     const [filteredProducts, setFilteredProducts] = useState<AdminProduct[] | null>(null)
     const [categories, setCategories] = useState<Category[]>([])
     const [filterLoading, setFilterLoading] = useState(false)
@@ -66,6 +79,8 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 subcategories: selectedSubcategoriesParam,
                 minPrice: minPriceParam,
                 maxPrice: maxPriceParam,
+                search: searchParam,
+                sort: sortParam,
             },
         })
             .then((data) => {
@@ -99,15 +114,34 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
         router.push(`?${params.toString()}`, { scroll: false })
     }
 
-    const handleFilterChange = (next: ProductFilterChange) => {
+    const handleFilterChange = (next: ProductFilterState) => {
         const params = new URLSearchParams()
         if (next.selectedCategory) params.set("category", next.selectedCategory)
         next.selectedSubcategories.forEach((subcategory) => params.append("subcategory", subcategory))
         if (next.minPrice) params.set("minPrice", next.minPrice)
         if (next.maxPrice) params.set("maxPrice", next.maxPrice)
+        if (next.search) params.set("search", next.search)
+        if (next.sort) params.set("sort", next.sort)
         params.set("page", "1")
-        router.push(`?${params.toString()}`, { scroll: false })
+        // Filters refine the current view rather than navigating, so they
+        // replace instead of pushing one history entry per keystroke.
+        router.replace(`?${params.toString()}`, { scroll: false })
     }
+
+    // Each filter owns one slice of the state, so merge it back over whatever
+    // the URL currently says before rebuilding the query string.
+    const currentFilter: ProductFilterState = {
+        selectedCategory: selectedCategoryParam,
+        selectedSubcategories: selectedSubcategoriesParam,
+        minPrice: minPriceParam,
+        maxPrice: maxPriceParam,
+        search: searchParam,
+        sort: sortParam,
+    }
+    const handleCategoryChange = (next: CategorySelection) => handleFilterChange({ ...currentFilter, ...next })
+    const handlePanelChange = (next: PanelFilterChange) => handleFilterChange({ ...currentFilter, ...next })
+    const clearAllFilters = () =>
+        handleFilterChange({ selectedCategory: "", selectedSubcategories: [], minPrice: "", maxPrice: "", search: "", sort: "" })
 
     // UI permissions mirror the backend checks.
     const canCreate = canCreateProduct(permission)
@@ -170,15 +204,24 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
 
                     <div className="mt-6">
                         <div className="mb-4">
-                            <ProductFilter
+                            <ProductCategoryFilter
                                 categories={categories}
                                 selectedCategory={selectedCategoryParam}
                                 selectedSubcategories={selectedSubcategoriesParam}
-                                minPrice={minPriceParam}
-                                maxPrice={maxPriceParam}
                                 labels={fa.products.filter}
-                                onChange={handleFilterChange}
+                                onChange={handleCategoryChange}
                             />
+                            <div className="mt-4">
+                                <ProductPriceFilter
+                                    minPrice={minPriceParam}
+                                    maxPrice={maxPriceParam}
+                                    search={searchParam}
+                                    sort={sortParam}
+                                    labels={fa.products.filter}
+                                    onChange={handlePanelChange}
+                                    onClearAll={clearAllFilters}
+                                />
+                            </div>
                         </div>
                         {filterLoading ? (
                             <p className="text-sm text-navy-500 dark:text-navy-400">{fa.admin.products.loadingFiltered}</p>

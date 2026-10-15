@@ -11,6 +11,7 @@ import OrderStatusBadge from "@/app/components/ui/OrderStatusBadge"
 import EmptyState from "@/app/components/ui/EmptyState"
 import Reveal from "@/app/components/ui/Reveal"
 import { fa } from "@/app/lib/i18n/fa"
+import { formatToman } from "@/app/lib/formatPrice"
 
 /** Persian (Jalali-friendly) short date without pulling in a date library. */
 function formatDate(ms: number | null): string {
@@ -157,7 +158,7 @@ export default function OrdersClient() {
                      <div className="relative mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
                         <span className="text-sm text-navy-600 dark:text-navy-300">{fa.panel.orders.total}</span>
                         <span className="bg-gradient-to-l from-brand-800 to-brand-700 bg-clip-text text-lg font-extrabold text-transparent" dir="ltr">
-                           ${Number(order.total).toLocaleString("en-US")}
+                           {formatToman(Number(order.total))}
                         </span>
                      </div>
                   </motion.article>

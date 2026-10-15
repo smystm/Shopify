@@ -34,7 +34,7 @@ const SPEED_PX_PER_SEC = 55
  * the pills: a gap BETWEEN two groups belongs to no pill, so it would be
  * missing at the wrap point and leave a visible notch.
  */
-export default function Marquee() {
+export default function Marquee({ categories }: { categories: { value: string }[] }) {
    const prefersReduced = useReducedMotion()
    const groupRef = useRef<HTMLDivElement>(null)
 
@@ -68,7 +68,10 @@ export default function Marquee() {
       }
    }, [])
 
-   const items = fa.home.categories.items
+   const items = categories.map((category) => ({
+      key: category.value,
+      label: fa.home.categories.labels[category.value] ?? category.value,
+   }))
 
    return (
       <section aria-label={fa.home.marquee.label} className="relative overflow-hidden py-2">
@@ -104,7 +107,7 @@ export default function Marquee() {
                   >
                      {items.map((item, i) => (
                         <span
-                           key={`${item.slug}-${i}`}
+                           key={`${item.key}-${i}`}
                            dir="auto"
                            className="shrink-0 rounded-full border border-border-subtle bg-surface px-5 py-2 text-sm font-semibold text-navy-600 dark:text-navy-200"
                         >

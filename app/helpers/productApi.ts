@@ -1,4 +1,4 @@
-import type { AdminProduct, Category } from "@/app/contracts/products"
+import type { AdminProduct, Category, ProductSort } from "@/app/contracts/products"
 import { getLoginToken } from "./auth"
 
 const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
@@ -41,6 +41,8 @@ interface ProductFilters {
    subcategories?: string[]
    minPrice?: string
    maxPrice?: string
+   search?: string
+   sort?: ProductSort
 }
 
 // getProducts — fetch all products, optionally filtered by category and price range.
@@ -55,6 +57,8 @@ async function getProducts(options?: { token?: string; filters?: ProductFilters 
    }
    if (options?.filters?.minPrice) params.set("minPrice", options.filters.minPrice)
    if (options?.filters?.maxPrice) params.set("maxPrice", options.filters.maxPrice)
+   if (options?.filters?.search) params.set("search", options.filters.search)
+   if (options?.filters?.sort) params.set("sort", options.filters.sort)
    const query = params.toString() ? `?${params.toString()}` : ""
    const controller = new AbortController()
    const timeout = setTimeout(() => controller.abort(), 5000)

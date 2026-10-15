@@ -151,19 +151,32 @@ html:not(.dark) body {
 }
 
 @keyframes marquee {
-   from { transform: translateX(0); }
-   to { transform: translateX(-50%); }
+   from {
+      transform: translateX(0);
+   }
+   to {
+      transform: translateX(-50%);
+   }
 }
 
 /* For RTL layouts the content should travel toward the right edge instead. */
 @keyframes marquee-rtl {
-   from { transform: translateX(0); }
-   to { transform: translateX(50%); }
+   from {
+      transform: translateX(0);
+   }
+   to {
+      transform: translateX(50%);
+   }
 }
 
 @keyframes shimmer {
-   0%, 100% { opacity: 0.35; }
-   50% { opacity: 0.8; }
+   0%,
+   100% {
+      opacity: 0.35;
+   }
+   50% {
+      opacity: 0.8;
+   }
 }
 
 @utility font-vazirmatn {
@@ -177,15 +190,193 @@ body {
    -webkit-font-smoothing: antialiased;
 }
 
-/* Slim, branded scrollbars used by the marketplace category controls. */
+/* Grid items default to their min-content width. The Hero visual contains an
+   intentionally overflow-visible carousel, so explicitly allowing both grid
+   tracks to shrink is part of the layout contract, not a visual workaround. */
+.hero-content-grid > * {
+   min-width: 0;
+}
+
+/* The carousel may fan cards inside its own column, but transformed slides must
+   not escape that column and cover the Hero copy beside it. */
+.hero-slider-shell {
+   max-width: 100%;
+   overflow: hidden;
+}
+
+/* Hero cards slider (Swiper's `effect: 'cards'` rebuilt on Embla).
+   The Embla slide remains responsible for loop relocation; the nested card
+   wrapper is the independent 3D layer used to fan and stack the posters. */
+.herocards {
+   perspective: 1050px;
+   isolation: isolate;
+}
+
+.herocards-viewport {
+   touch-action: pan-y;
+   cursor: grab;
+}
+
+.herocards-viewport:active {
+   cursor: grabbing;
+}
+
+.herocards-track {
+   transform-style: preserve-3d;
+}
+
+.herocards-slide {
+   transform-style: preserve-3d;
+   backface-visibility: hidden;
+   will-change: transform, opacity;
+}
+
+.hero-card-stack {
+   position: relative;
+   width: 100%;
+   transform-origin: center;
+   transform-style: preserve-3d;
+   backface-visibility: hidden;
+   will-change: transform;
+}
+
+/* Which card is centred is written by the component as `data-centre`.
+   Plain attribute selectors rather than a `group-data-` variant: that variant
+   resolves against the `.group` ancestor, and the attribute lives on the card
+   itself, so it silently compiled to nothing. */
+.herocards-card {
+   transition: filter 450ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 450ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 450ms cubic-bezier(0.22, 1, 0.36, 1), background-color 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.herocards-card[data-centre='false'] {
+   filter: saturate(0.9) brightness(0.94);
+}
+
+.herocards-card[data-centre='true'] {
+   border-color: color-mix(in oklab, var(--brand-400) 55%, transparent);
+   box-shadow: 0 26px 50px -22px rgb(2 6 23 / 0.7), 0 0 0 1px color-mix(in oklab, var(--brand-400) 45%, transparent);
+}
+
+.dark .herocards-card[data-centre='true'] {
+   box-shadow: 0 26px 50px -22px rgb(0 0 0 / 0.8), 0 0 0 1px color-mix(in oklab, var(--brand-400) 35%, transparent);
+}
+
+/* The stacked-card shadow behind each card. Geometry is driven inline from the
+   same per-slide pass as the transform; only the base look lives here. */
+.herocards-shadow {
+   transform-origin: center top;
+   will-change: transform, opacity;
+}
+
+/* Poster details give the Hero cards their own identity while retaining the
+   same image-first hierarchy as ProductCard. */
+.hero-card-aura {
+   background: linear-gradient(135deg, color-mix(in oklab, var(--brand-400) 65%, transparent), transparent 52%, color-mix(in oklab, var(--accent-400) 55%, transparent));
+   filter: blur(18px);
+   opacity: 0.18;
+   transform: scale(0.96);
+   transition: opacity 500ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.herocards-card[data-centre='true'] .hero-card-aura,
+.herocards-card:hover .hero-card-aura {
+   opacity: 0.46;
+   transform: scale(1.03);
+}
+
+.hero-card-stage {
+   isolation: isolate;
+}
+
+.hero-card-grid {
+   background-image: linear-gradient(to right, color-mix(in oklab, var(--brand-500) 10%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--brand-500) 10%, transparent) 1px, transparent 1px);
+   background-size: 24px 24px;
+   mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.hero-card-spotlight {
+   background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--brand-400) 38%, transparent), transparent 65%);
+}
+
+.hero-card-shine {
+   background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.6), transparent);
+   filter: blur(4px);
+   transition-property: inset-inline-start, opacity;
+}
+
+.herocards-image {
+   --hero-image-scale: 1;
+   transform: scale(var(--hero-image-scale));
+   transform-origin: center;
+   transition: transform 550ms cubic-bezier(0.22, 1, 0.36, 1);
+   will-change: transform;
+}
+
+.herocards-card:hover .herocards-image,
+.herocards-card:focus-within .herocards-image {
+   transform: scale(calc(var(--hero-image-scale) * 1.08)) rotate(-2deg);
+}
+
+.herocards-body {
+   background: linear-gradient(to bottom, var(--surface), color-mix(in oklab, var(--surface) 92%, var(--brand-50)));
+}
+
+.dark .herocards-body {
+   background: linear-gradient(to bottom, var(--surface), color-mix(in oklab, var(--surface) 90%, var(--brand-900)));
+}
+
+@media (prefers-reduced-motion: reduce) {
+   .herocards-card,
+   .herocards-image,
+   .hero-card-aura,
+   .hero-card-shine {
+      transition: none;
+   }
+
+   .hero-card-shine {
+      display: none;
+   }
+}
+
+/* Embla carousels.
+   Slide widths come from custom properties set by the Carousel component, so
+   one class covers every breakpoint. Building Tailwind class names as strings
+   instead was tried first and is a trap: `flex-0-0` is a static utility equal
+   to `flex: 0 0 auto` and takes no value, `basis-1/6` is not emitted at all,
+   and `px-8` means 2rem rather than 8px. */
+.carousel-slide {
+   flex: 0 0 var(--slide-basis, 100%);
+   padding-inline: calc(var(--carousel-gap, 0px) / 2);
+}
+
+@media (min-width: 640px) {
+   .carousel-slide {
+      flex-basis: var(--slide-basis-sm, var(--slide-basis, 100%));
+   }
+}
+
+@media (min-width: 1024px) {
+   .carousel-slide {
+      flex-basis: var(--slide-basis-lg, var(--slide-basis-sm, var(--slide-basis, 100%)));
+   }
+}
+
+/* Slim, branded scrollbars used by the marketplace category controls.
+
+   The category strip is a thin horizontal rail that only starts scrolling once
+   the viewport is narrow, so its scrollbar has to stay out of the way: a 4px
+   track with a 1px inset still leaves a 2px thumb. The subcategory panel
+   scrolls vertically and can get long, so it gets a narrower 6px track instead. */
 .scrollbar-polished {
    scrollbar-width: thin;
-   scrollbar-color: var(--brand-500) transparent;
+   scrollbar-color: var(--brand-900) transparent;
 }
 
 .scrollbar-polished::-webkit-scrollbar {
-   width: 8px;
-   height: 8px;
+   width: 6px;
+   height: 6px;
 }
 
 .scrollbar-polished::-webkit-scrollbar-track {
@@ -206,7 +397,13 @@ body {
 }
 
 .scrollbar-category::-webkit-scrollbar {
-   height: 6px;
+   height: 4px;
+}
+
+/* Equal specificity to the rule above, so source order wins: match the thinner
+   track with a thinner inset rather than letting the thumb collapse. */
+.scrollbar-category::-webkit-scrollbar-thumb {
+   border: 1px solid transparent;
 }
 
 .dark .scrollbar-polished {
@@ -224,21 +421,43 @@ body {
 }
 
 @keyframes float {
-   0%, 100% { transform: translateY(0px); }
-   50% { transform: translateY(-12px); }
+   0%,
+   100% {
+      transform: translateY(0px);
+   }
+   50% {
+      transform: translateY(-12px);
+   }
 }
 
 @keyframes glow-pulse {
-   0%, 100% { opacity: 0.4; transform: scale(1); }
-   50% { opacity: 0.7; transform: scale(1.05); }
+   0%,
+   100% {
+      opacity: 0.4;
+      transform: scale(1);
+   }
+   50% {
+      opacity: 0.7;
+      transform: scale(1.05);
+   }
 }
 
 @keyframes fade-in-up {
-   from { opacity: 0; transform: translateY(16px); }
-   to { opacity: 1; transform: translateY(0); }
+   from {
+      opacity: 0;
+      transform: translateY(16px);
+   }
+   to {
+      opacity: 1;
+      transform: translateY(0);
+   }
 }
 
 @keyframes tilt-hover {
-   0% { transform: perspective(1000px) rotateY(0deg) rotateX(0deg); }
-   100% { transform: perspective(1000px) rotateY(3deg) rotateX(2deg); }
+   0% {
+      transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+   }
+   100% {
+      transform: perspective(1000px) rotateY(3deg) rotateX(2deg);
+   }
 }

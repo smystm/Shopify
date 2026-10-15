@@ -3,16 +3,24 @@
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { getProducts, getCategories } from "@/app/helpers/productApi"
-import type { AdminProduct, Category } from "@/app/contracts/products"
+import type { AdminProduct, Category, ProductFilterState, ProductSort } from "@/app/contracts/products"
 import ProductCard from "@/app/components/products/ProductCard"
 import Pagination from "@/app/components/ui/Pagination"
-import ProductFilter, { type ProductFilterChange } from "@/app/components/ui/ProductFilter"
+import ProductCategoryFilter, { type CategorySelection } from "@/app/components/products/ProductCategoryFilter"
+import ProductPriceFilter, { type PanelFilterChange } from "@/app/components/products/ProductPriceFilter"
 import { PRODUCTS_PAGE_SIZE } from "@/app/lib/products"
 import { fa } from "@/app/lib/i18n/fa"
 import { FolderOpenIcon } from "@heroicons/react/24/outline"
 import { motion, useReducedMotion } from "motion/react"
 
 const filterLabels = fa.products.filter
+
+const PRODUCT_SORTS: ProductSort[] = ["", "price_asc", "price_desc", "best_selling"]
+
+/** The URL is user-editable, so a hand-typed ?sort= must not become state. */
+function toProductSort(value: string | null): ProductSort {
+   return PRODUCT_SORTS.includes(value as ProductSort) ? (value as ProductSort) : ""
+}
 
 export default function ProductClient() {
    const router = useRouter()
@@ -25,6 +33,8 @@ export default function ProductClient() {
    const selectedSubcategoriesParam = selectedCategoryParam ? searchParams.getAll("subcategory") : []
    const minPriceParam = searchParams.get("minPrice") ?? ""
    const maxPriceParam = searchParams.get("maxPrice") ?? ""
+   const searchParam = searchParams.get("search") ?? ""
+   const sortParam = toProductSort(searchParams.get("sort"))
 
    const [products, setProducts] = useState<AdminProduct[]>([])
    const [categories, setCategories] = useState<Category[]>([])
@@ -41,6 +51,8 @@ export default function ProductClient() {
                      subcategories: selectedSubcategoriesParam,
                      minPrice: minPriceParam,
                      maxPrice: maxPriceParam,
+                     search: searchParam,
+                     sort: sortParam,
                   },
                }),
                getCategories(),
@@ -72,15 +84,35 @@ export default function ProductClient() {
       router.push(`/products?${params.toString()}`)
    }
 
-   const handleFilterChange = (next: ProductFilterChange) => {
+   const handleFilterChange = (next: ProductFilterState) => {
       const params = new URLSearchParams()
       if (next.selectedCategory) params.set("category", next.selectedCategory)
       next.selectedSubcategories.forEach((subcategory) => params.append("subcategory", subcategory))
       if (next.minPrice) params.set("minPrice", next.minPrice)
       if (next.maxPrice) params.set("maxPrice", next.maxPrice)
+      if (next.search) params.set("search", next.search)
+      if (next.sort) params.set("sort", next.sort)
       params.set("page", "1")
-      router.push(`/products?${params.toString()}`)
+      // Filters refine the current view, they are not a destination, so they
+      // replace rather than push. Typing a search would otherwise leave one
+      // history entry per keystroke and make Back useless.
+      router.replace(`/products?${params.toString()}`)
    }
+
+   // Each filter owns one slice of the state, so merge it back over whatever
+   // the URL currently says before rebuilding the query string.
+   const currentFilter: ProductFilterState = {
+      selectedCategory: selectedCategoryParam,
+      selectedSubcategories: selectedSubcategoriesParam,
+      minPrice: minPriceParam,
+      maxPrice: maxPriceParam,
+      search: searchParam,
+      sort: sortParam,
+   }
+   const handleCategoryChange = (next: CategorySelection) => handleFilterChange({ ...currentFilter, ...next })
+   const handlePanelChange = (next: PanelFilterChange) => handleFilterChange({ ...currentFilter, ...next })
+   const clearAllFilters = () =>
+      handleFilterChange({ selectedCategory: "", selectedSubcategories: [], minPrice: "", maxPrice: "", search: "", sort: "" })
 
    if (loading) {
       return (
@@ -103,29 +135,25 @@ export default function ProductClient() {
       return (
          <>
             <div className="mb-6">
-               <ProductFilter
+               <ProductCategoryFilter
                   categories={categories}
                   selectedCategory={selectedCategoryParam}
                   selectedSubcategories={selectedSubcategoriesParam}
-                  minPrice={minPriceParam}
-                  maxPrice={maxPriceParam}
                   labels={filterLabels}
-                  mode="categories"
-                  onChange={handleFilterChange}
+                  onChange={handleCategoryChange}
                />
             </div>
 
             <div className="grid items-start gap-6 lg:grid-cols-12">
                <aside className="min-w-0 lg:sticky lg:top-24 lg:col-span-2">
-                  <ProductFilter
-                     categories={categories}
-                     selectedCategory={selectedCategoryParam}
-                     selectedSubcategories={selectedSubcategoriesParam}
+                  <ProductPriceFilter
                      minPrice={minPriceParam}
                      maxPrice={maxPriceParam}
+                     search={searchParam}
+                     sort={sortParam}
                      labels={filterLabels}
-                     mode="prices"
-                     onChange={handleFilterChange}
+                     onChange={handlePanelChange}
+                     onClearAll={clearAllFilters}
                   />
                </aside>
 
@@ -149,7 +177,7 @@ export default function ProductClient() {
                      </p>
                      <button
                         type="button"
-                        onClick={() => handleFilterChange({ selectedCategory: "", selectedSubcategories: [], minPrice: "", maxPrice: "" })}
+                        onClick={clearAllFilters}
                         className="relative mt-6 inline-flex items-center rounded-full bg-linear-to-l from-brand-700 to-brand-800 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-700/25 transition-all hover:shadow-xl hover:shadow-brand-700/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
                      >
                         {fa.products.emptyClearFilters}
@@ -164,33 +192,29 @@ export default function ProductClient() {
    return (
       <>
          <div className="mb-6">
-            <ProductFilter
+            <ProductCategoryFilter
                categories={categories}
                selectedCategory={selectedCategoryParam}
                selectedSubcategories={selectedSubcategoriesParam}
-               minPrice={minPriceParam}
-               maxPrice={maxPriceParam}
                labels={filterLabels}
-               mode="categories"
-               onChange={handleFilterChange}
+               onChange={handleCategoryChange}
             />
          </div>
          <div className="grid items-start gap-6 lg:grid-cols-12">
             <aside className="min-w-0 lg:sticky lg:top-24 lg:col-span-3 xl:col-span-2">
-               <ProductFilter
-                  categories={categories}
-                  selectedCategory={selectedCategoryParam}
-                  selectedSubcategories={selectedSubcategoriesParam}
+               <ProductPriceFilter
                   minPrice={minPriceParam}
                   maxPrice={maxPriceParam}
+                  search={searchParam}
+                  sort={sortParam}
                   labels={filterLabels}
-                  mode="prices"
-                  onChange={handleFilterChange}
+                  onChange={handlePanelChange}
+                  onClearAll={clearAllFilters}
                />
             </aside>
 
             <div className="min-w-0 lg:col-span-9 xl:col-span-10">
-               <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 xl:grid-cols-5">
+               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
                   {visible.map((product, i) => (
                      <ProductCard key={product.id} product={product} index={i} />
                   ))}

@@ -1,3 +1,5 @@
+"use client"
+
 import { NoSymbolIcon } from "@heroicons/react/24/outline"
 import { motion, useReducedMotion } from "motion/react"
 import { fa } from "@/app/lib/i18n/fa"

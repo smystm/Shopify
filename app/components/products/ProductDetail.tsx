@@ -18,6 +18,7 @@ import { motion, useReducedMotion } from "motion/react"
 import type { AdminProduct } from "@/app/contracts/products"
 import RelatedProducts from "@/app/components/products/RelatedProducts"
 import { fa } from "@/app/lib/i18n/fa"
+import { formatToman } from "@/app/lib/formatPrice"
 
 interface ProductDetailProps {
    product: AdminProduct
@@ -118,8 +119,13 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                   {fa.products.detailsLabels.sku}: {product.productNumber}
                </p>
 
-               <p className="mt-4 bg-linear-to-l from-brand-800 to-brand-700 bg-clip-text text-4xl font-extrabold text-transparent">
-                  ${product.price}
+               <p className="mt-4 flex items-baseline gap-2">
+                  <span dir="ltr" className="bg-linear-to-l from-brand-800 to-brand-700 bg-clip-text text-4xl font-extrabold text-transparent">
+                     {formatToman(product.price)}
+                  </span>
+                  {/* The one surface with no adjacent label to carry the unit,
+                      so it is spelled out beside the amount. */}
+                  <span className="text-lg font-bold text-navy-500 dark:text-navy-400">{fa.currency}</span>
                </p>
 
                <p className="mt-4 text-base leading-7 text-navy-600 dark:text-navy-300">{product.desc}</p>
@@ -265,7 +271,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                         {[
                            { label: fa.products.detailsLabels.productNumber, value: product.productNumber },
                            { label: fa.products.detailsLabels.category, value: product.category?.value ?? fa.products.generalCategory },
-                           { label: fa.products.detailsLabels.price, value: `$${product.price}` },
+                           { label: fa.products.detailsLabels.price, value: formatToman(product.price) },
                            { label: fa.products.detailsLabels.created, value: formatDate(product.created_at) },
                         ].map((row) => (
                            <div key={row.label} className="rounded-2xl border border-border-subtle bg-surface-muted p-4">

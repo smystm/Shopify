@@ -9,6 +9,7 @@ import EmptyState from "@/app/components/ui/EmptyState"
 import Reveal from "@/app/components/ui/Reveal"
 import Button from "@/app/components/ui/Button"
 import { fa } from "@/app/lib/i18n/fa"
+import { formatToman } from "@/app/lib/formatPrice"
 
 function formatDate(ms: number | null): string {
    if (!ms) return "—"
@@ -96,7 +97,7 @@ export default function WalletClient() {
                   <p className="relative mt-4 text-sm font-bold text-brand-100">{fa.panel.wallet.balance}</p>
                   {/* White on brand-700/800 passes at 5.47 / 7.58. */}
                   <p className="relative mt-1 text-3xl font-extrabold text-white" dir="ltr">
-                     ${(balance ?? 0).toLocaleString("en-US")}
+                     {formatToman(balance ?? 0)}
                   </p>
                </div>
 
@@ -188,7 +189,8 @@ export default function WalletClient() {
                               ].join(" ")}
                               dir="ltr"
                            >
-                              {credit ? "+" : "−"}${Number(tx.amount).toLocaleString("en-US")}
+                              {credit ? "+" : "−"}
+                              {formatToman(Number(tx.amount))}
                            </span>
                         </li>
                      )

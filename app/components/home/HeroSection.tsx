@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import {
    animate,
    motion,
@@ -12,18 +11,24 @@ import {
    useTransform,
 } from "motion/react"
 import { ArrowLeftIcon, BanknotesIcon, BoltIcon, ShieldCheckIcon, SparklesIcon } from "@heroicons/react/24/outline"
+import type { AdminProduct } from "@/app/contracts/products"
 import { fa } from "@/app/lib/i18n/fa"
+import { hasImage } from "@/app/lib/catalog"
+import type { ProductWithImage } from "@/app/lib/catalog"
+import HeroCardsSlider from "./HeroCardsSlider"
 
 interface HeroSectionProps {
    /** Present when the visitor is signed in; drives the secondary CTA + greeting. */
    displayName?: string | null
+   /** Newest-first. The hero picks three of them from distinct categories. */
+   products: AdminProduct[]
+   loading?: boolean
 }
-
-const STATS = [
-   { value: 1400, suffix: "+", label: fa.home.stats.items },
-   { value: 32, suffix: "", label: fa.home.stats.categories },
-   { value: 32, suffix: "", label: fa.home.stats.weapons },
-] as const
+interface Stat {
+   value: number
+   suffix: string
+   label: string
+}
 
 /** Counts up to `value` the first time it scrolls into view. */
 function CountUp({ value, suffix }: { value: number; suffix: string }) {
@@ -53,8 +58,41 @@ function CountUp({ value, suffix }: { value: number; suffix: string }) {
       </span>
    )
 }
+/** How many products the hero slider cycles through. */
+const SHOWCASE_COUNT = 8
 
-export default function HeroSection({ displayName }: HeroSectionProps) {
+/**
+ * One product per category, newest first, so the slider shows visual variety
+ * instead of eight near-identical knives - a fifth of the catalogue is knives.
+ */
+function pickShowcase(products: AdminProduct[]): ProductWithImage[] {
+   // `image` is nullable in the contract, and a slide with no artwork would be
+   // an empty box.
+   const usable = products.filter(hasImage)
+
+   const seen = new Set<string>()
+   const chosen: ProductWithImage[] = []
+
+   for (const product of usable) {
+      const category = product.category?.value ?? "other"
+      if (seen.has(category)) continue
+      seen.add(category)
+      chosen.push(product)
+      if (chosen.length === SHOWCASE_COUNT) break
+   }
+
+   // Fewer categories in stock than slots: top up with the newest leftovers.
+   if (chosen.length < SHOWCASE_COUNT) {
+      for (const product of usable) {
+         if (chosen.length === SHOWCASE_COUNT) break
+         if (!chosen.some((c) => c.id === product.id)) chosen.push(product)
+      }
+   }
+
+   return chosen
+}
+
+export default function HeroSection({ displayName, products, loading }: HeroSectionProps) {
    const prefersReduced = useReducedMotion()
    const ref = useRef<HTMLElement>(null)
 
@@ -63,6 +101,16 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
    const copyY = useTransform(scrollYProgress, [0, 1], [0, prefersReduced ? 0 : 26])
 
    const isSignedIn = Boolean(displayName)
+   const showcase = pickShowcase(products)
+
+   // Real counts, not marketing round numbers.
+   const categoryCount = new Set(products.map((p) => p.category?.value).filter(Boolean)).size
+   const subcategoryCount = new Set(products.map((p) => p.category?.subcategory).filter(Boolean)).size
+   const stats: Stat[] = [
+      { value: products.length, suffix: "", label: fa.home.stats.items },
+      { value: categoryCount, suffix: "", label: fa.home.stats.categories },
+      { value: subcategoryCount, suffix: "", label: fa.home.stats.weapons },
+   ]
 
    // Direction-neutral entrance (opacity + y only) so RTL never animates "wrong".
    const container = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } } }
@@ -91,10 +139,10 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
 
          <motion.div
             style={{ y: copyY }}
-            className="relative z-10 grid grid-cols-1 items-center gap-12 p-8 md:p-14 lg:grid-cols-2"
+            className="hero-content-grid relative z-10 grid min-w-0 grid-cols-1 items-center gap-12 p-8 md:p-14 lg:grid-cols-2"
          >
             {/* ---------- Copy ---------- */}
-            <motion.div variants={container} initial="hidden" animate="show">
+            <motion.div variants={container} initial="hidden" animate="show" className="min-w-0">
                <motion.span
                   variants={item}
                   className="inline-flex items-center gap-2 rounded-full border border-brand-500/25 bg-brand-50 px-4 py-1.5 text-xs font-semibold text-brand-700 dark:border-brand-400/25 dark:bg-brand-500/10 dark:text-brand-300"
@@ -121,7 +169,7 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                ) : null}
 
                <motion.div variants={item} className="mt-8 grid grid-cols-3 gap-3">
-                  {STATS.map((s) => (
+                  {stats.map((s) => (
                      <div
                         key={s.label}
                         className="rounded-2xl border border-border-strong bg-surface px-3 py-4 text-center shadow-sm"
@@ -188,45 +236,28 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                </motion.p>
             </motion.div>
 
-            {/* ---------- Visual ---------- */}
+            {/* ---------- Visual: infinite 3D product slider ---------- */}
             <motion.div
                initial={{ opacity: 0, scale: 0.92, y: prefersReduced ? 0 : 26 }}
                animate={{ opacity: 1, scale: 1, y: 0 }}
                transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
                style={{ y: imageY }}
-               className="relative z-10 flex items-center justify-center"
+               className="relative z-10 flex min-w-0 flex-col items-stretch"
             >
-               <div className="animate-shimmer absolute inset-8 rounded-full bg-brand-400/30 blur-[90px] dark:bg-brand-500/20" />
+               <div className="animate-shimmer pointer-events-none absolute inset-8 rounded-full bg-brand-400/30 blur-[90px] dark:bg-brand-500/20" />
 
-               <motion.div
-                  animate={prefersReduced ? undefined : { y: [0, -14, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative w-full max-w-sm"
-               >
-                  <div className="absolute -inset-3 rounded-4xl bg-linear-to-br from-brand-400/40 via-transparent to-accent-400/40 blur-2xl" />
-                  <div className="relative rounded-3xl border border-brand-500/25 bg-surface p-6 shadow-2xl shadow-navy-900/10 backdrop-blur dark:border-brand-400/15 dark:bg-navy-900/70 dark:shadow-black/40">
-                     <Image
-                        src="/images/weapons-real/skins/awp/awp-0001.png"
-                        alt="AWP"
-                        width={420}
-                        height={420}
-                        className="h-auto w-full object-contain drop-shadow-2xl"
-                        unoptimized
-                        priority
-                     />
-                     <div className="mt-4 flex items-center justify-between rounded-2xl bg-navy-50/80 px-4 py-3 dark:bg-navy-950/60">
-                        <div>
-                           <div className="text-sm font-bold text-navy-900 dark:text-white">AWP | Dragon Lore</div>
-                           <div className="text-xs text-navy-500 dark:text-navy-500">{fa.home.stats.weapons}</div>
-                        </div>
-                        <div className="rounded-full bg-accent-400/20 px-3 py-1 text-sm font-bold text-accent-700 dark:text-accent-300">
-                           $ 1200
-                        </div>
-                     </div>
-                  </div>
-               </motion.div>
+               {/*
+                * The carousel intentionally keeps its Embla viewport visible so
+                * adjacent 3D cards can peek into the stage. This shell is the
+                * visual column's actual paint boundary: cards may fan within
+                * this column, but never paint over the copy column.
+                */}
+               <div className="hero-slider-shell relative min-w-0 w-full">
+                  <HeroCardsSlider products={showcase} loading={loading} />
+               </div>
             </motion.div>
          </motion.div>
       </section>
    )
 }
+

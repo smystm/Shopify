@@ -247,7 +247,7 @@ export const fa = {
          emptyCta: "مرور فروشگاه",
          orderNumber: "شماره سفارش",
          placedAt: "تاریخ ثبت",
-         total: "مبلغ کل",
+         total: "مبلغ کل (تومان)",
          items: "اقلام سفارش",
          itemsCount: "{count} قلم",
          allStatuses: "همه سفارش ها",
@@ -273,7 +273,7 @@ export const fa = {
       wallet: {
          title: "کیف پول",
          subtitle: "موجودی و تراکنش‌های حساب شما",
-         balance: "موجودی فعلی",
+         balance: "موجودی فعلی (تومان)",
          topup: "افزایش موجودی",
          topupDemoHint: "در نسخه نمایشی، افزایش موجودی مستقیماً ثبت می‌شود.",
          topupAmount: "مبلغ افزایش",
@@ -390,22 +390,30 @@ export const fa = {
       /** Fallback when a product has no category assigned. */
       generalCategory: "عمومی",
       view: "مشاهده",
-      priceLabel: "قیمت",
+      /** The unit lives in the label so it is not repeated on every card. */
+      priceLabel: "تومان",
       relatedTitle: "محصولات پیشنهادی",
       relatedSubtitle: "سایر محصولات همین دسته‌بندی که شاید بپسندید",
 
-      // --- Filter / pagination chrome (passed to the shared ProductFilter) ---
+      // --- Filter / pagination chrome (split across ProductCategoryFilter and
+      // --- ProductPriceFilter; both accept a Partial of this block) ---
       filter: {
          title: "فیلتر محصولات",
          clearAll: "پاک کردن همه",
-         category: "دسته‌بندی",
-         categoryPlaceholder: "انتخاب دسته‌بندی",
          selectAll: "انتخاب همه",
          allCategories: "همه",
          minPrice: "از",
          maxPrice: "تا",
          minPricePlaceholder: "مثلاً 100",
          maxPricePlaceholder: "مثلاً 5000",
+         search: "جستجو",
+         searchPlaceholder: "جستجوی محصول…",
+         clearSearch: "پاک کردن جستجو",
+         sort: "مرتب‌سازی",
+         sortDefault: "پیش‌فرض",
+         sortPriceAsc: "ارزان‌ترین",
+         sortPriceDesc: "گران‌ترین",
+         sortBestSelling: "پرفروش‌ترین",
       },
       pagination: {
          ariaLabel: "صفحه‌بندی",
@@ -436,7 +444,7 @@ export const fa = {
          productNumber: "شماره محصول",
          sku: "کد محصول",
          category: "دسته‌بندی",
-         price: "قیمت",
+         price: "تومان",
          created: "تاریخ ایجاد",
       },
       /** Shown when a product has no creation date. */
@@ -509,29 +517,61 @@ export const fa = {
       /** Weapon-class showcase grid. */
       categories: {
          title: "مرور بر اساس دسته‌بندی",
-         subtitle: "از تفنگ‌های assault تا اسنایپر و کلت‌های کلاسیک، دسته مورد نظر خود را انتخاب کنید.",
+         subtitle: "از تفنگ‌های سوزنی تا اسنایپر و کلت‌های کلاسیک، دسته مورد نظر خود را انتخاب کنید.",
          cta: "مشاهده همه محصولات",
-         /** Slugs map to /images/weapons-real/skins/<slug>/. */
-         items: [
-            { slug: "ak47", label: "AK-47" },
-            { slug: "awp", label: "AWP" },
-            { slug: "m4a1", label: "M4A1" },
-            { slug: "deagle", label: "Deagle" },
-            { slug: "glock", label: "Glock" },
-            { slug: "ssg08", label: "SSG 08" },
-            { slug: "TF2", label: "کلید TF2" },
-         ],
+         /**
+          * Keys are the category directory names under
+          * public/images/weapons-real/skins, so they must stay in sync with
+          * GET /api/categories. Values are what users see.
+          */
+         labels: {
+            knife: "چاقو",
+            gloves: "دستکش",
+            pistol: "کلت",
+            rifle: "تفنگ",
+            sniper: "تیرانداز",
+            smg: "تفنگ کوتاه",
+            shotgun: "شاتگان",
+            machinegun: "مسلسل سنگین",
+            agent: "ایجنت",
+            case: "کیس",
+            music_kit: "کیت موزیک",
+            other: "سایر",
+         } as Record<string, string>,
+         empty: "هنوز محصولی در کاتالوگ ثبت نشده است.",
       },
 
-      /** Curated skin cards. */
+      /** Newest arrivals, straight from the live catalogue. */
       featured: {
          title: "پوسته‌های منتخب",
-         subtitle: "محبوب‌ترین اسکین‌های این هفته در فروشگاه",
+         subtitle: "تازه‌ترین اسکین‌های اضافه‌شده به فروشگاه",
          cta: "مشاهده همه محصولات",
-         priceLabel: "قیمت",
+         priceLabel: "قیمت (تومان)",
+         newestTag: "جدید",
+         empty: "هنوز محصولی برای نمایش وجود ندارد.",
       },
 
-      /** Three-step explainer. */
+      /**
+       * Shared carousel chrome. prev/next are labelled for screen readers.
+       */
+      carousel: {
+         prev: "قبلی",
+         next: "بعدی",
+         label: "پیمایش",
+         /** Hero 3D slider. The pause control is what keeps auto-advance inside WCAG 2.2.2. */
+         heroLabel: "محصولات منتخب",
+         pause: "توقف پخش خودکار",
+         play: "ادامه پخش خودکار",
+         slide: "{index} از {total}",
+      },
+
+      /** Hero: the headline item plus two smaller companions. */
+      heroShowcase: {
+         eyebrow: "تازه رسیده",
+         viewProduct: "مشاهده محصول",
+         browseAll: "همه محصولات",
+      },
+/** Three-step explainer. */
       howItWorks: {
          title: "خرید در سه قدم",
          subtitle: "فرآیند خرید در فروشگاه ما ساده و سریع است.",
@@ -836,7 +876,7 @@ export const fa = {
 
       /** The heart is rendered separately so it can animate — see SiteFooter. */
       madeWithBefore: "ساخته شده با",
-      madeWithAfter: "برای شما",
+      madeWithAfter: "توسط smy_shadow",
       copyrightPrefix: "تمامی حقوق محفوظ است.",
       /**
        * Hardcoded on purpose. Deriving the Persian year from `Intl` would make
@@ -914,6 +954,12 @@ export const fa = {
          body: "درخواست‌های برداشت به‌زودی فعال می‌شوند.",
       },
    },
+   /**
+    * Every amount in the product catalogue, the wallet and order totals is
+    * denominated in Toman. There is no currency conversion anywhere - this key
+    * exists so the unit is written in one place.
+    */
+   currency: "تومان",
 } as const
 
 export interface NavLink {
