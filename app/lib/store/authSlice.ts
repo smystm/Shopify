@@ -8,6 +8,9 @@ export interface AuthUser {
    name?: string
    email?: string
    phone?: string
+   /** Steam persona picture, when the account has a Steam login. */
+   avatar?: string | null
+   steam_id?: string | null
    // Controls what this user can do in the admin UI and APIs.
    permission?: Permission | null
 }

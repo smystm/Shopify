@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { motion, useReducedMotion } from "motion/react"
-import { ShoppingBagIcon } from "@heroicons/react/24/outline"
+import { ArrowLeftIcon, ShoppingBagIcon } from "@heroicons/react/24/outline"
 import type { Order, OrderStatus } from "@/app/contracts/panel"
 import { ORDER_STATUSES } from "@/app/contracts/panel"
 import { getOrders } from "@/app/helpers/panelApi"
@@ -12,11 +13,17 @@ import EmptyState from "@/app/components/ui/EmptyState"
 import Reveal from "@/app/components/ui/Reveal"
 import { fa } from "@/app/lib/i18n/fa"
 import { formatToman } from "@/app/lib/formatPrice"
+import { orderItemImage, orderItemLabel, orderItemQuantity } from "@/app/lib/orderItems"
 
 /** Persian (Jalali-friendly) short date without pulling in a date library. */
 function formatDate(ms: number | null): string {
    if (!ms) return "—"
    return new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(ms))
+}
+
+/** How many units an order holds, counting a service line's multiplier. */
+function countUnits(order: Order): number {
+   return order.items.reduce((total, item) => total + Math.max(1, Number(item.quantity) || 1), 0)
 }
 
 export default function OrdersClient() {
@@ -133,33 +140,73 @@ export default function OrdersClient() {
                         <OrderStatusBadge status={order.status} />
                      </div>
 
-                     {/* Item snapshots */}
+                     {/* Item snapshots. A service line has no product title, so both
+                         the label and the artwork come from the shared resolver -
+                         the same one the order's own page uses. */}
                      {order.items.length > 0 ? (
                         <div className="relative mt-5 flex flex-wrap items-center gap-3">
-                           {order.items.map((item) => (
-                              <span
-                                 key={item.id}
-                                 title={item.title}
-                                 className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-muted"
-                              >
-                                 {item.image ? (
-                                    <Image src={item.image} alt={item.title} fill sizes="64px" className="object-contain p-2" unoptimized />
-                                 ) : (
-                                    <span className="px-1 text-center text-[10px] text-navy-500">{item.title}</span>
-                                 )}
-                              </span>
-                           ))}
+                           {order.items.map((item) => {
+                              const label = orderItemLabel(item)
+                              const image = orderItemImage(item)
+                              const quantity = orderItemQuantity(item)
+
+                              return (
+                                 <span
+                                    key={item.id}
+                                    title={quantity ? `${label} (× ${quantity})` : label}
+                                    className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-muted"
+                                 >
+                                    {image ? (
+                                       <Image
+                                          src={image}
+                                          alt={label}
+                                          fill
+                                          sizes="64px"
+                                          className={`p-2 ${item.service ? "object-cover" : "object-contain"}`}
+                                          unoptimized
+                                       />
+                                    ) : (
+                                       <span className="px-1 text-center text-[10px] text-navy-500">{label}</span>
+                                    )}
+
+                                    {quantity ? (
+                                       <span
+                                          dir="ltr"
+                                          className="absolute bottom-0.5 end-0.5 rounded-md bg-navy-950/80 px-1 text-[9px] font-extrabold text-white"
+                                       >
+                                          × {quantity}
+                                       </span>
+                                    ) : null}
+                                 </span>
+                              )
+                           })}
                            <span className="ms-1 text-sm text-navy-500 dark:text-navy-400">
-                              {fa.panel.orders.itemsCount.replace("{count}", order.items.length.toLocaleString("fa-IR"))}
+                              {fa.panel.orders.itemsCount.replace("{count}", countUnits(order).toLocaleString("fa-IR"))}
                            </span>
                         </div>
                      ) : null}
 
                      <div className="relative mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4">
                         <span className="text-sm text-navy-600 dark:text-navy-300">{fa.panel.orders.total}</span>
-                        <span className="bg-gradient-to-l from-brand-800 to-brand-700 bg-clip-text text-lg font-extrabold text-transparent" dir="ltr">
-                           {formatToman(Number(order.total))}
-                        </span>
+                        <div className="flex items-center gap-4">
+                           <span
+                              className="bg-linear-to-l from-brand-800 to-brand-700 bg-clip-text text-lg font-extrabold text-transparent"
+                              dir="ltr"
+                           >
+                              {formatToman(Number(order.total))}
+                           </span>
+
+                           <Link
+                              href={`/panel/orders/${order.id}`}
+                              className="group/link inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface px-4 py-2 text-xs font-bold text-navy-700 transition-colors duration-300 hover:border-brand-400 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-navy-200 dark:hover:border-brand-400/60 dark:hover:text-brand-300"
+                           >
+                              {fa.panel.orders.view}
+                              <ArrowLeftIcon
+                                 className="h-3.5 w-3.5 transition-transform duration-300 group-hover/link:-translate-x-1 rtl:scale-x-[-1] rtl:group-hover/link:translate-x-1"
+                                 aria-hidden="true"
+                              />
+                           </Link>
+                        </div>
                      </div>
                   </motion.article>
                ))}

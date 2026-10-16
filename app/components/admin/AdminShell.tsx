@@ -27,12 +27,12 @@ export default function AdminShell({ children }: AdminShellProps) {
                transition
                className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm transition-opacity duration-300 ease-linear data-closed:opacity-0"
             />
-            <div className="fixed inset-0 flex">
+            <div dir="rtl" className="fixed inset-0 flex">
                <DialogPanel
                   transition
                   dir="rtl"
                   lang="fa"
-                  className="relative me-16 flex w-full max-w-80 flex-1 transition duration-300 ease-in-out data-closed:-translate-x-full rtl:data-closed:translate-x-full"
+                  className="relative me-5 flex w-full max-w-80 flex-1 transition duration-300 ease-in-out data-closed:-translate-x-full rtl:data-closed:translate-x-full"
                >
                   <div className="absolute top-0 inset-end-0 flex w-16 justify-center pt-5">
                      <button

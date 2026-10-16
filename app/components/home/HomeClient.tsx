@@ -7,7 +7,7 @@ import { getProducts, getCategories } from "@/app/helpers/productApi"
 import type { AdminProduct, Category } from "@/app/contracts/products"
 import HeroSection from "./HeroSection"
 import Marquee from "./Marquee"
-import Features from "./Features"
+import BrandFeatures from "@/app/components/ui/BrandFeatures"
 import CategoriesShowcase from "./CategoriesShowcase"
 import FeaturedSkins from "./FeaturedSkins"
 import HowItWorks from "./HowItWorks"
@@ -68,7 +68,7 @@ export default function HomeClient() {
          <HeroSection displayName={displayName} products={newestFirst} loading={loading} />
 
          <Marquee categories={categories} />
-         <Features />
+         <BrandFeatures />
          <CategoriesShowcase categories={categories} products={newestFirst} loading={loading} />
          <FeaturedSkins products={newestFirst} loading={loading} />
          <HowItWorks />

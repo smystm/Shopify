@@ -11,6 +11,7 @@ import HeaderNavLink from "./HeaderNavLink"
 import UserMenu from "./UserMenu"
 import MobileNav from "./MobileNav"
 import BrandMark from "./BrandMark"
+import CartBadge from "./CartBadge"
 import ThemeToggle from "@/app/components/ThemeToggle"
 import { fa, faNavLinks } from "@/app/lib/i18n/fa"
 
@@ -55,7 +56,7 @@ export default function SiteHeader() {
                <button
                   type="button"
                   onClick={() => setMobileOpen(true)}
-                  className="-m-2.5 rounded-xl p-2.5 text-navy-600 transition-colors hover:bg-navy-100 hover:text-brand-700 lg:hidden dark:text-navy-300 dark:hover:bg-navy-800 dark:hover:text-brand-300"
+                  className="-m-2.5 rounded-xl p-2.5 text-navy-600 transition-colors hover:bg-navy-100 hover:text-brand-700 xl:hidden dark:text-navy-300 dark:hover:bg-navy-800 dark:hover:text-brand-300"
                >
                   <span className="sr-only">{fa.header.openMenu}</span>
                   <Bars3Icon aria-hidden="true" className="h-6 w-6" />
@@ -63,9 +64,11 @@ export default function SiteHeader() {
 
                <BrandMark />
 
-               <nav className="hidden items-center gap-x-1 ps-5 lg:flex">
+               <nav className="hidden items-center gap-x-1 ps-5 xl:flex">
                   <HeaderNavLink href="/">{fa.nav.home}</HeaderNavLink>
-                  <HeaderNavLink href="/products">{fa.nav.products}</HeaderNavLink>
+                  <HeaderNavLink href="/products">{fa.nav.products}</HeaderNavLink>        
+                  <HeaderNavLink href="/prime">{fa.nav.prime}</HeaderNavLink>
+                  <HeaderNavLink href="/tf2-keys">{fa.nav.Tf2Keys}</HeaderNavLink>
                   {signedIn && (
                      <>
                         <HeaderNavLink href="/panel">{fa.nav.panel}</HeaderNavLink>
@@ -77,9 +80,14 @@ export default function SiteHeader() {
                         {item.name}
                      </HeaderNavLink>
                   ))}
+                  <HeaderNavLink href="/about">{fa.nav.about}</HeaderNavLink>
+                  <HeaderNavLink href="/contact">{fa.nav.contact}</HeaderNavLink>
                </nav>
 
                <div className="flex flex-1 items-center justify-end gap-x-2.5">
+                  {/* Same gate as the auth area: no cart exists without a user, and
+                      rendering the badge from SSR HTML would bake in a stale count. */}
+                  {signedIn ? <CartBadge /> : null}
                   <ThemeToggle />
                   {!mounted ? null : user ? (
                      <UserMenu />

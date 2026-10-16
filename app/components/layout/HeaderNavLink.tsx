@@ -60,7 +60,7 @@ export default function HeaderNavLink({ href, children, onClick, variant = "nav"
          ) : null}
 
          {isDrawer && active ? (
-            <span aria-hidden="true" className="absolute inset-y-2 start-0 w-1 rounded-full bg-brand-500" />
+            <span aria-hidden="true" className="absolute inset-y-2 inset-s-0 w-1 rounded-full bg-brand-500" />
          ) : null}
 
          <span className="relative">{children}</span>

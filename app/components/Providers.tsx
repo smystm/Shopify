@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { store } from "../lib/store/store"
 import AuthHydrator from "./auth/AuthHydrator"
+import CartIntentReplay from "./cart/CartIntentReplay"
 import { ThemeProvider } from "./ThemeProvider"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <CookiesProvider>
             <ThemeProvider>
               <AuthHydrator />
+              <CartIntentReplay />
               {children}
               <ToastContainer
                  position="bottom-right"

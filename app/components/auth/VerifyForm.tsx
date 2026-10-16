@@ -64,7 +64,11 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
    }
 
    useEffect(() => {
-      if (token === undefined) router.push("/panel")
+      // Back to the start, not on to the dashboard. An empty store means this page
+      // was opened directly or refreshed - nobody is mid-verification - and the old
+      // bounce to /panel looked like a sign-in that had quietly succeeded while
+      // nothing had been verified at all.
+      if (token === undefined) router.push("/login")
    }, [token, router])
 
    const handleBack = () => {
@@ -80,9 +84,6 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
    const handleSubmit = async (values: VerifyValues, helpers: FormikHelpers<VerifyValues>) => {
       const res = await CallApi().post("/auth/login/verify-phone", { code: values.code, token: token })
       if (res.status === 200) {
-         console.log(res.data?.user?.token)
-         clearPhoneToken()
-
           const verifiedUser = {
              id: res.data?.user?.id,
              name: res.data?.user?.name,
@@ -92,9 +93,15 @@ export default function VerifyForm({ phone, initialValues = verifyInitialValues,
              permission: res.data?.user?.permission,
           }
 
-         storeLoginToken(res.data?.user?.token)
-         storeLoginUser(verifiedUser)
-         
+         // Awaited, and deliberately not clearing the phone token first: both write
+         // the cookies the *next server render* reads, so pushing before they land
+         // renders the page that follows as a signed-out one. Clearing the token
+         // would also trip the guard above on the way out and send a just-signed-in
+         // customer back to /login - the page unmounts on navigation, so there is
+         // nothing to reset here anyway.
+         await storeLoginToken(res.data?.user?.token)
+         await storeLoginUser(verifiedUser)
+
          dispatch(loginSuccess(verifiedUser))
          router.push("/")
       }

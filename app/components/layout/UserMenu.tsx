@@ -40,10 +40,24 @@ export default function UserMenu() {
             <span className="sr-only">{fa.header.openUserMenu}</span>
 
             {/* Avatar with a gradient ring */}
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-brand-600 to-brand-700 p-px">
-               <span className="flex h-full w-full items-center justify-center rounded-full bg-white text-xs font-extrabold text-brand-700 transition-transform duration-300 group-hover:scale-110 dark:bg-navy-950 dark:text-brand-300">
-                  {displayName.slice(0, 1)}
-               </span>
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-brand-600 to-brand-700 p-px">
+               {user?.avatar ? (
+                     <img
+                        src={user.avatar}
+                        alt=""
+                        // Steam's CDN, straight from Steam's own API. unoptimized
+                        // rather than through the Next optimizer: this is somebody's
+                        // profile picture, and there is no reason to cache it on our
+                        // disk to save one round trip.
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        referrerPolicy="no-referrer"
+                        loading="lazy"
+                     />
+                  ) : (
+                     <span className="flex h-full w-full items-center justify-center rounded-full bg-white text-xs font-extrabold text-brand-700 transition-transform duration-300 group-hover:scale-110 dark:bg-navy-950 dark:text-brand-300">
+                        {displayName.slice(0, 1)}
+                     </span>
+                  )}
             </span>
 
             <span className="hidden items-center sm:flex">
@@ -83,6 +97,11 @@ export default function UserMenu() {
                   </Link>
                </MenuItem>
             ) : null}
+            <MenuItem>
+               <Link href="/panel" className={`${itemClass} text-navy-700 data-focus:bg-brand-50 dark:text-navy-200 dark:data-focus:bg-navy-800`}>
+                  {fa.nav.myPanel}
+               </Link>
+            </MenuItem>
 
             <MenuItem>
                <button

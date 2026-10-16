@@ -1,0 +1,98 @@
+"use client"
+
+import type { ReactNode } from "react"
+import Link from "next/link"
+import { motion, useReducedMotion } from "motion/react"
+import { ArrowLeftIcon } from "@heroicons/react/24/outline"
+import Reveal from "@/app/components/ui/Reveal"
+
+export interface CtaAction {
+   label: string
+   href: string
+   /**
+    * primary - brand gradient, the one action you want taken
+    * accent  - saffron outline, for a signed-in alternative
+    * ghost   - navy outline, the quietest of the three
+    */
+   tone?: "primary" | "accent" | "ghost"
+   icon?: ReactNode
+   /** Renders an <a> that opens in a new tab instead of a Next <Link>. */
+   external?: boolean
+}
+
+interface InfoCtaProps {
+   title: string
+   subtitle?: string
+   actions: readonly CtaAction[]
+   className?: string
+}
+
+/**
+ * Closing call-to-action band: deep navy, two ambient glows, centered copy.
+ *
+ * Same surface as the home page's final CTA, but driven by props so the info
+ * pages can close on their own message rather than repeating the home copy.
+ */
+const TONES: Record<NonNullable<CtaAction["tone"]>, string> = {
+   primary:
+      "group bg-linear-to-l from-brand-500 to-brand-400 text-navy-950 shadow-lg shadow-brand-500/25 hover:shadow-xl hover:shadow-brand-500/40 focus-visible:outline-brand-400",
+   accent:
+      "border border-accent-400/40 bg-accent-400/10 text-accent-300 hover:bg-accent-400/20 focus-visible:outline-accent-400",
+   ghost:
+      "border border-navy-600 text-navy-100 hover:border-brand-400 hover:text-brand-300 focus-visible:outline-brand-400",
+}
+
+const BASE =
+   "inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2"
+
+export default function InfoCta({ title, subtitle, actions, className = "" }: InfoCtaProps) {
+   const prefersReduced = useReducedMotion()
+
+   return (
+      <section className={`py-10 ${className}`}>
+         <Reveal>
+            <motion.div
+               whileHover={prefersReduced ? undefined : { scale: 1.01 }}
+               transition={{ type: "spring", stiffness: 260, damping: 26 }}
+               className="relative overflow-hidden rounded-3xl border border-brand-400/20 bg-linear-to-bl from-navy-900 via-navy-950 to-navy-900 px-8 py-14 text-center shadow-2xl shadow-navy-900/20"
+            >
+               <div className="pointer-events-none absolute -inset-e-20 -top-20 h-64 w-64 rounded-full bg-brand-500/25 blur-[90px]" />
+               <div className="pointer-events-none absolute -bottom-24 -inset-s-16 h-64 w-64 rounded-full bg-accent-500/20 blur-[90px]" />
+
+               <div className="relative z-10">
+                  <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">{title}</h2>
+                  {subtitle ? <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-navy-300">{subtitle}</p> : null}
+
+                  <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+                     {actions.map((action) => {
+                        const className = `${BASE} ${TONES[action.tone ?? "primary"]}`
+                        const inner = (
+                           <>
+                              {action.icon}
+                              {action.label}
+                              {action.tone === "primary" || !action.tone ? (
+                                 <ArrowLeftIcon
+                                    className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1 rtl:scale-x-[-1] rtl:group-hover:translate-x-1"
+                                    aria-hidden="true"
+                                 />
+                              ) : null}
+                           </>
+                        )
+
+                        return action.external ? (
+                           <a key={action.label} href={action.href} target="_blank" rel="noopener noreferrer" className={className}>
+                              {inner}
+                           </a>
+                        ) : (
+                           <Link key={action.label} href={action.href} className={className}>
+                              {inner}
+                           </Link>
+                        )
+                     })}
+                  </div>
+               </div>
+            </motion.div>
+         </Reveal>
+      </section>
+   )
+}

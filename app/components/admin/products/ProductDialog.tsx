@@ -20,6 +20,12 @@ export interface ProductFormValues {
     category: Category
     price: string
     image: string
+    /**
+     * How many copies exist. Optional on the way in so an older caller keeps
+     * compiling; the backend treats a missing figure as one rather than as
+     * unlimited, which is the safe direction to fail.
+     */
+    count?: number | null
 }
 
 interface ProductDialogProps {
@@ -94,6 +100,10 @@ function ProductForm({
     const [categoryValue, setCategoryValue] = useState(initial?.category?.value ?? "")
     const [price, setPrice] = useState(initial?.price ?? "")
     const [image, setImage] = useState(initial?.image ?? "")
+    // Stock. Seeded from the listing when editing, and from 1 when adding - a new
+    // listing with an empty stock field must not become unlimited the moment
+    // somebody saves it. Kept as a string so the box can be cleared and retyped.
+    const [count, setCount] = useState(String(initial?.count ?? 1))
     const [categories, setCategories] = useState<Category[]>([])
     const [error, setError] = useState<string | null>(null)
 
@@ -123,6 +133,9 @@ function ProductForm({
            category,
            price: price.trim(),
            image: image.trim(),
+            // Normalised here so an empty or nonsensical field lands as 1 rather
+            // than as NULL, which the backend would read as one anyway.
+            count: Math.max(1, Number.parseInt(String(count), 10) || 1),
         })
     }
 
@@ -201,6 +214,31 @@ return (
                    className={`${fieldClass} resize-none`}
                 />
                 <p className="mt-1 text-xs text-navy-500 dark:text-navy-400">{fa.admin.dialog.charCount.replace("{count}", String(desc.length))}</p>
+             </div>
+
+             {/* Stock. Present because without it `count` is written once by
+                 scripts/assign-stock.js and can never be adjusted again - a shop
+                 that sold out has no way to restock from the panel. */}
+             <div>
+                <label htmlFor="product-count" className={labelClass}>
+                   {fa.admin.dialog.count}
+                </label>
+                <input
+                   id="product-count"
+                   type="number"
+                   inputMode="numeric"
+                   min={1}
+                   max={9999}
+                   dir="ltr"
+                   value={count}
+                   onChange={(e) => setCount(e.target.value)}
+                   className={fieldClass}
+                />
+                <p className="mt-1 text-xs text-navy-500 dark:text-navy-400">
+                   {initial && typeof initial.sold_count === "number" && initial.sold_count > 0
+                      ? fa.admin.dialog.soldHint.replace("{count}", String(initial.sold_count))
+                      : fa.admin.dialog.countHint}
+                </p>
              </div>
 
              <div>

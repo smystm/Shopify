@@ -232,7 +232,7 @@ export default function HeroSection({ displayName, products, loading }: HeroSect
                   className="mt-6 inline-flex items-center gap-2 text-xs text-navy-500 dark:text-navy-500"
                >
                   <ShieldCheckIcon className="h-4 w-4 text-brand-500" aria-hidden="true" />
-                  {fa.home.features.items.authentic.title}
+                  {fa.features.items.authentic.title}
                </motion.p>
             </motion.div>
 

@@ -3,7 +3,6 @@ import Reveal from "@/app/components/ui/Reveal"
 
 interface PageHeroProps {
    /** Plain text, or a node when the heading needs client-side state. */
-   /** Plain text, or a node when the heading needs client-side state. */
    title: ReactNode
    description?: string
    /** Small chip above the title, e.g. a section label. */

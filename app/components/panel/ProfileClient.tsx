@@ -13,11 +13,13 @@ import {
    UserIcon,
    IdentificationIcon,
    ArrowPathIcon,
+   ArrowLeftOnRectangleIcon,
    PencilSquareIcon,
    XMarkIcon,
 } from "@heroicons/react/24/outline"
 import type { EditableProfile, PanelProfile } from "@/app/contracts/panel"
 import { getProfile, updateProfile, requestPhoneChange, confirmPhoneChange } from "@/app/helpers/panelApi"
+import { STEAM_LINK_URL } from "@/app/helpers/authApi"
 import { removeLoginAuth, storeLoginUser } from "@/app/helpers/auth"
 import { loginSuccess, logout } from "@/app/lib/store/authSlice"
 import Button from "@/app/components/ui/Button"
@@ -137,6 +139,9 @@ const applyProfile = (updated: PanelProfile) => {
          // line instead of silently falling back to the phone number.
          email: updated.email ?? undefined,
          phone: updated.phone ?? undefined,
+         // Carried so the header picks up a Steam picture the moment the profile
+         // knows about one, without waiting for the next revalidation.
+         avatar: updated.avatar ?? null,
          permission: updated.permission ?? null,
       }
 
@@ -442,6 +447,38 @@ const applyProfile = (updated: PanelProfile) => {
                   ) : null}
                </Box>
             </Reveal>
+
+            {/* ---------- Steam link ----------
+                The way an account that already exists - orders, balance, history -
+                reaches Steam sign-in without becoming a second customer.
+
+                It is only offered where it is both needed and possible: an account
+                that has a verified phone (that is what makes the link safe) and no
+                Steam identity yet. Once linked, the panel shows the result instead
+                of another button, so there is no state where somebody can press it
+                twice. */}
+            {profile?.phone && !profile?.steam_id ? (
+               <Reveal delay={0.2}>
+                  <div className="mt-5 rounded-2xl border border-border-strong bg-surface px-5 py-4 shadow-md shadow-navy-900/5">
+                     <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="min-w-0">
+                           <p className="text-sm font-bold text-navy-950 dark:text-white">{fa.panel.profileEdit.steamLinkTitle}</p>
+                           <p className="mt-1 max-w-xl text-xs leading-6 text-navy-600 dark:text-navy-300">
+                              {fa.panel.profileEdit.steamLinkBody}
+                           </p>
+                        </div>
+
+                        <a
+                           href={STEAM_LINK_URL}
+                           className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-[#1b2838] px-5 py-2.5 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#2a475e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+                        >
+                           <ArrowLeftOnRectangleIcon className="h-4 w-4" aria-hidden="true" />
+                           {fa.authPages.steam.linkCta}
+                        </a>
+                     </div>
+                  </div>
+               </Reveal>
+            ) : null}
          </div>
 
          {/* ---------- Account-level actions, not section saves ---------- */}

@@ -17,6 +17,59 @@
 import type { Permission } from "@/app/lib/permissions"
 import type { OrderStatus, TradeOfferStatus } from "@/app/contracts/panel"
 
+/**
+ * Category directory name -> the word users see, in both the singular form a
+ * filter chip needs ("چاقو") and nothing else.
+ *
+ * Keys are the directory names under public/images/weapons-real/skins, so they
+ * must stay in sync with GET /api/categories. This is a module-level const
+ * rather than a key inside `fa` so that the home page, the info pages and the
+ * footer can all reference one map - nesting it under `fa.home` forced every
+ * other surface to reach into the home namespace for a shared word.
+ */
+export const CATEGORY_LABELS: Record<string, string> = {
+   knife: "چاقو",
+   gloves: "دستکش",
+   pistol: "کلت",
+   rifle: "تفنگ",
+   sniper: "تیرانداز",
+   smg: "تفنگ کوتاه",
+   shotgun: "شاتگان",
+   machinegun: "مسلسل سنگین",
+   agent: "ایجنت",
+   case: "کیس",
+   music_kit: "کیت موزیک",
+   other: "سایر",
+}
+
+/**
+ * The four brand promises: authenticity, honest pricing, fast delivery, real
+ * support.
+ *
+ * Module-level for the same reason as CATEGORY_LABELS. These used to live only
+ * at `fa.home.features`, which meant any other page that wanted to state the
+ * same promises had to either reach into the home namespace or write a second
+ * copy of the paragraphs and let the two drift.
+ */
+const FEATURE_ITEMS = {
+   authentic: {
+      title: "اصالت تضمین‌شده",
+      body: "هر اسکین پیش از انتشار توسط کارشناسان بررسی و تأیید اصالت می‌شود.",
+   },
+   fairPrice: {
+      title: "قیمت منصفانه",
+      body: "نرخ‌ها شفاف و بدون کارمزد پنهان است؛ همان چیزی که در صفحه محصول می‌بینید.",
+   },
+   instantDelivery: {
+      title: "تحویل آنی",
+      body: "پس از پرداخت، اسکین در کمترین زمان به حساب شما منتقل می‌شود.",
+   },
+   support: {
+      title: "پشتیبانی ۲۴ ساعته",
+      body: "تیم پشتیبانی همیشه آماده پاسخ‌گویی به پرسش‌های شماست.",
+   },
+}
+
 export const fa = {
    /** 404 pages — rendered by not-found.tsx and global-not-found.tsx. */
    notFound: {
@@ -32,10 +85,14 @@ export const fa = {
    nav: {
       home: "صفحه اصلی",
       products: "محصولات",
+      Tf2Keys: "کلید TF2",
+      prime: "پرایم Cs2",
       panel: "پنل",
       myPanel: "پنل من",
       admin: "مدیریت",
       adminDashboard: "داشبورد مدیریت",
+      about: "درباره ما",
+      contact: "تماس با ما",
    },
    header: {
       brand: "شاپیفای",
@@ -43,6 +100,11 @@ export const fa = {
       closeMenu: "بستن منو",
       openUserMenu: "باز کردن منوی کاربر",
       fallbackUserName: "کاربر",
+      /** The cart badge in the header. */
+      openCart: "سبد خرید",
+      /** `{count}` is filled with how many units are in the cart. */
+      cartCount: "{count} قلم در سبد خرید",
+      cartEmpty: "سبد خرید خالی است",
    },
    /** Shared auth button labels used by the header and the user menu. */
    auth: {
@@ -50,7 +112,7 @@ export const fa = {
       signup: "ثبت‌نام",
       logout: "خروج",
    },
-   /** Links to routes that are not implemented yet. */
+   /** The header's two shop links. Both are real routes now. */
    links: {
       orders: "سفارش‌ها",
       cart: "سبد خرید",
@@ -61,6 +123,28 @@ export const fa = {
     * Mirrors the strings in app/(myPages)/(auth) and app/components/auth.
     */
    authPages: {
+      /**
+       * The Steam hand-off. Shown instead of the phone form once the backend
+       * reports AUTH_PROVIDER=steam.
+       *
+       * There is deliberately no error copy here: Steam reports its own
+       * refusals on its own screen, and this page only has two jobs - offer the
+       * button, and be honest about what happens when they press it.
+       */
+      steam: {
+         subtitle: "برای ورود، با حساب استیم خود ادامه دهید.",
+         signupSubtitle: "حساب شما در اولین ورود با استیم، خودکار ساخته می‌شود.",
+         signInCta: "ورود با استیم",
+         linkCta: "اتصال حساب استیم",
+         linkIntro: "حساب {name} به استیم متصل می‌شود و سفارش‌ها و موجودی شما دست‌نخورده می‌ماند.",
+         notReady: "ورود با استیم هنوز پیکربندی نشده است. لطفاً کمی بعد دوباره تلاش کنید.",
+         points: [
+            "هیچ رمز عبوری وارد نمی‌کنید؛ تأیید روی صفحه خود استیم انجام می‌شود.",
+            "اگر قبلاً اینجا عضو شده‌اید، همان حساب شما بازیابی می‌شود.",
+            "در اولین ورود، حساب شما به‌صورت خودکار ساخته می‌شود.",
+         ],
+      },
+
       // --- <title> / meta description ---
       loginMetaTitle: "ورود — شاپیفای",
       loginMetaDescription: "برای ادامه خرید وارد شوید.",
@@ -188,13 +272,13 @@ export const fa = {
          },
          cart: {
             title: "سبد خرید",
-            body: "سبد خرید در حال راه‌اندازی است و به‌زودی در دسترس قرار می‌گیرد.",
-            cta: "به‌زودی",
+            body: "اقلام انتخابی خود را ببینید و از کیف پول تومانی پرداخت کنید.",
+            cta: "مشاهده سبد خرید",
          },
          orders: {
             title: "سفارش‌ها",
-            body: "پیگیری و تاریخچه سفارش‌ها به‌زودی فعال می‌شود.",
-            cta: "به‌زودی",
+            body: "تاریخچه سفارش‌ها، وضعیت تحویل و اقلام هر سفارش.",
+            cta: "مشاهده سفارش‌ها",
          },
       },
 
@@ -252,6 +336,24 @@ export const fa = {
          itemsCount: "{count} قلم",
          allStatuses: "همه سفارش ها",
          status: "وضعیت",
+         view: "جزئیات سفارش",
+
+         // --- One order, on its own page ---
+         backToOrders: "بازگشت به سفارش‌ها",
+         notFoundTitle: "سفارش پیدا نشد",
+         notFoundBody: "این سفارش وجود ندارد یا به حساب شما تعلق ندارد.",
+         notFoundCta: "مرور سفارش‌ها",
+         loadingOrder: "در حال خواندن سفارش…",
+         summaryTitle: "خلاصه پرداخت",
+         paidFromWallet: "پرداخت از کیف پول",
+         deliveryTitle: "تحویل",
+         deliveryBody: "تحویل از طریق پیشنهاد معامله استیم انجام می‌شود. پس از ارسال پیشنهاد، وضعیت این سفارش به‌روز می‌شود و می‌توانید آن را در بخش پیشنهادهای معامله بپذیرید.",
+         /** `{quantity}` is filled with the multiplier on a service line. */
+         quantityBadge: "× {quantity}",
+         placedTitle: "سفارش شما ثبت شد",
+         placedBody: "مبلغ از کیف پول شما کم شد و سفارش در صف تحویل قرار گرفت. وضعیت را از همین صفحه پیگیری کنید.",
+         unitPriceEach: "قیمت واحد",
+         itemsTotal: "جمع اقلام",
       },
 
       offers: {
@@ -287,6 +389,17 @@ export const fa = {
             purchase: "خرید",
             refund: "بازگشت وجه",
          },
+
+         // --- Gateway state ---
+         gatewayTitle: "درگاه پرداخت",
+         gatewayPending: "درگاه پرداخت هنوز متصل نشده است",
+         gatewayPendingBody:
+            "کد اتصال درگاه نوشته شده اما کلیدهای آن خالی است، پس شارژ مستقیم از درگاه هنوز کار نمی‌کند. تا آن زمان از افزایش موجودی نمایشی استفاده کنید؛ پرداخت سفارش‌ها از کیف پول از همین حالا کار می‌کند.",
+         gatewayConnected: "درگاه پرداخت متصل است",
+         gatewaySandbox: "درگاه در حالت آزمایشی است",
+         gatewayCta: "شارژ از درگاه",
+         gatewayRedirecting: "در حال انتقال به درگاه…",
+         gatewayFailed: "انتقال به درگاه انجام نشد. لطفاً بعداً دوباره تلاش کنید.",
       },
 
       wishlist: {
@@ -318,6 +431,9 @@ export const fa = {
          identityTitle: "اطلاعات شخصی",
          steamTitle: "اطلاعات استیم",
          phoneTitle: "شماره موبایل",
+         /** The panel's "attach a Steam login to this account" action. */
+         steamLinkTitle: "اتصال حساب استیم",
+         steamLinkBody: "با اتصال استیم، می‌توانید از این پس با حساب استیم خود وارد شوید. سفارش‌ها و موجودی شما دست‌نخورده باقی می‌ماند.",
          name: "نام و نام خانوادگی",
          namePlaceholder: "نام شما",
          email: "ایمیل",
@@ -370,6 +486,104 @@ export const fa = {
          emptyTitle: "سیستم تیکت به‌زودی راه‌اندازی می‌شود",
          emptyBody: "توسعه سیستم تیکتینگ فعلا زوده، تا آن زمان می‌توانید از طریق پشتیبانی شبکه‌های اجتماعی فروشگاه با ما در تماس باشید.",
       },
+   },
+
+   /**
+    * /cart — the review-and-pay page.
+    *
+    * The cart is the mutable, unpaid half of buying: it carries no status and
+    * every price on it is read live from the catalogue. The frozen half is an
+    * order, which lives under `panel.orders`.
+    *
+    * A service line carries machine values only (`prime` + `argentina`), so its
+    * Persian label comes from `faServiceLabels` at the bottom of this file.
+    */
+   cart: {
+      metaTitle: "سبد خرید",
+      metaDescription: "اقلام سبد خرید خود را ببینید، تعداد را تغییر دهید و از کیف پول تومانی پرداخت کنید.",
+      title: "سبد خرید",
+      subtitle: "پیش از پرداخت، اقلام و مبلغ نهایی را بررسی کنید.",
+      loading: "در حال خواندن سبد خرید…",
+
+      emptyTitle: "سبد خرید شما خالی است",
+      emptyBody: "هر پوسته یا خدمتی که به سبد اضافه کنید، اینجا برای بررسی و پرداخت نمایش داده می‌شود.",
+      emptyCta: "مرور فروشگاه",
+
+      // --- One line ---
+      unitPrice: "قیمت واحد",
+      lineTotal: "جمع این قلم",
+      quantity: "تعداد",
+      quantityDecrease: "کاهش تعداد",
+      quantityIncrease: "افزایش تعداد",
+      quantityInput: "تعداد این قلم",
+      /** `{limit}` is filled with the service's own per-order cap. */
+      limitHint: "حداکثر {limit} عدد در هر سفارش",
+      skinSingleHint: "این پوسته تک‌نسخه است، پس در هر سفارش فقط یک عدد قابل خرید است.",
+      /** `{count}` is how many units of this line are still buyable. */
+      stockRemaining: "{count} عدد از این مورد باقی مانده",
+      remove: "حذف از سبد",
+      clearAll: "خالی کردن سبد",
+
+      // --- Counts ---
+      linesCount: "{count} قلم",
+      unitsSummary: "{count} عدد",
+
+      // --- A line that can no longer be bought ---
+      unavailable: {
+         sold: "به خریدار دیگری فروخته شد",
+         missing: "دیگر در فروشگاه نیست",
+         out_of_stock: "موجودی تمام شد",
+         hint: "این قلم در مبلغ قابل پرداخت حساب نشده است.",
+         /** `{count}` is filled with how many lines are affected. */
+         banner: "{count} قلم از سبد شما قابل خرید نیست. برای ادامه، آن‌ها را حذف کنید.",
+      },
+
+      // --- Summary ---
+      summaryTitle: "صورت‌حساب",
+      subtotal: "جمع اقلام",
+      payable: "مبلغ قابل پرداخت",
+      walletBalance: "موجودی کیف پول",
+      balanceAfter: "موجودی پس از پرداخت",
+      /** `{amount}` is filled with what is missing. */
+      balanceShortfall: "کمبود {amount}",
+      balanceInsufficient: "موجودی کافی نیست",
+
+      checkoutCta: "پرداخت از کیف پول",
+      checkoutProcessing: "در حال ثبت سفارش…",
+      topupCta: "شارژ کیف پول",
+
+      // --- Checkout answers, one per machine code the backend can return ---
+      noTradeUrlTitle: "لینک ترید استیم ثبت نشده است",
+      noTradeUrlBody: "برای تحویل پوسته و کلید، اول لینک ترید استیم خود را در پنل کاربری ذخیره کنید.",
+      noTradeUrlCta: "ثبت لینک ترید",
+      phoneRequiredTitle: "شماره موبایل تأیید نشده است",
+      phoneRequiredBody: "برای پرداخت، اول شماره موبایل خود را در پنل کاربری ثبت و تأیید کنید.",
+      phoneRequiredCta: "ثبت شماره موبایل",
+      loginTitle: "برای دیدن سبد خرید وارد شوید",
+      loginBody: "سبد خرید به حساب شما گره خورده است، پس بدون ورود قابل نمایش نیست.",
+      loginCta: "ورود به حساب",
+      /**
+       * The signed-out answer of the three add-to-cart buttons. Only the backend can
+       * tell whether a customer is signed in - the token sits in an HttpOnly cookie
+       * - so this is what a 403 turns into: an invitation, never a redirect. See
+       * helpers/cartIntent for the remembered pick these two describe.
+       */
+      signInToAddHint: "این مورد برای شما نگه داشته شد؛ بعد از ورود، خودکار به سبد خرید اضافه می‌شود.",
+      intentRestored: "موردی که انتخاب کرده بودید به سبد خرید اضافه شد.",
+      /** `{need}` and `{balance}` are Toman figures. */
+      insufficientTitle: "موجودی کیف پول کافی نیست",
+      insufficientBody: "برای این سفارش {need} تومان لازم است و موجودی شما {balance} تومان است.",
+      soldTitle: "یکی از اقلام فروخته شد",
+      soldBody: "یک پوسته از سبد شما به خریدار دیگری فروخته شد. آن را حذف کنید و پرداخت را دوباره انجام دهید.",
+      soldOutTitle: "یکی از خدمات تمام شد",
+      soldOutBody: "موجودی یکی از خدمات سبد شما در همین فاصله تمام شد. تعداد را کم کنید یا آن قلم را حذف کنید.",
+      failedTitle: "پرداخت انجام نشد",
+      failedBody: "سفارش ثبت نشد و مبلغی از کیف پول شما کم نشد. می‌توانید دوباره تلاش کنید.",
+      netError: "ارتباط با فروشگاه برقرار نشد. اتصال خود را بررسی کنید و دوباره تلاش کنید.",
+
+      /** Payment gateway state, shown beside the wallet balance. */
+      gatewayTitle: "درگاه پرداخت",
+      gatewayPendingBody: "درگاه پرداخت هنوز متصل نشده است؛ پرداخت سفارش‌ها از کیف پول انجام می‌شود و افزودن موجودی از مسیر آزمایشی فعال است.",
    },
 
    /**
@@ -429,13 +643,69 @@ export const fa = {
       quantityIncrease: "افزایش تعداد",
       addToCart: "افزودن به سبد خرید",
       addedToCart: "به سبد خرید اضافه شد!",
+      addingToCart: "در حال افزودن…",
+      cartCta: "مشاهده سبد خرید",
+      addFailed: "افزودن به سبد خرید انجام نشد. لطفاً دوباره تلاش کنید.",
+      soldOut: "این پوسته فروخته شده است",
+      /** A skin listing is one physical item, so there is no quantity to pick. */
+      singleCopy: "تک‌نسخه",
+      singleCopyHint: "این پوسته فقط یک نسخه دارد؛ در هر سفارش یک عدد قابل خرید است.",
+      /** `{count}` is how many copies of this listing are still buyable. */
+      stockRemaining: "{count} عدد موجود",
+      /** Shown under the stepper once more than one has been chosen. `{total}` is Toman. */
+      lineTotalHint: "جمع {count} عدد: {total} تومان",
       freeShipping: "ارسال رایگان برای سفارش‌های بالای ۵۰ دلار",
       returnPolicy: "سیاست بازگشت ۳۰ روزه",
+      /** Heading above the specification blocks on the product page. */
+      specsPanelTitle: "مشخصات کامل آیتم",
+      specsEyebrow: "برگه اطلاعات",
+
+      /**
+       * The specifications panel.
+       *
+       * Every label here is chosen by `lib/productSpecs.ts` from what the item
+       * actually has, so a case shows a collection and a release date and no
+       * float meter, while a weapon skin shows all of it. The strings therefore
+       * have to stand alone - none of them is written as part of a fixed block.
+       */
+      specs: {
+         identityTitle: "مشخصات آیتم",
+         wearTitle: "وضعیت ظاهری",
+         provenanceTitle: "نگهداری و منشأ",
+         availabilityTitle: "وضعیت فروش",
+         /** `{count}` is the figure itself, already Persian-digit by the caller's helper. */
+         stock: "موجودی",
+
+         itemNumber: "کد آیتم",
+         itemName: "نام آیتم",
+         category: "دسته‌بندی",
+         subcategory: "زیردسته",
+
+         exterior: "وضعیت",
+         floatRange: "بازه فلوت",
+         floatValue: "فلوت این نسخه",
+         floatHint: "هرچه فلوت کمترتر باشد، ظاهر آیتم نو‌تر است.",
+
+         rarity: "کمیابی",
+         collection: "کالکشن",
+         releaseDate: "تاریخ انتشار",
+
+         availability: "قابل خرید",
+         available: "موجود",
+         availableHint: "این نسخه هنوز فروخته نشده است.",
+         sold: "فروخته شده",
+         soldHint: "این نسخه به سفارش دیگری رسیده و دیگر قابل خرید نیست.",
+
+         stattrak: "استت‌ترک",
+         souvenir: "سوتیور",
+         stattrakHint: "با قابلیت شمارنده کشتن.",
+         souvenirHint: "همراه با مهر یادبود مسابقه.",
+      },
 
       // --- Detail tabs ---
       tabs: {
          description: "توضیحات",
-         details: "جزئیات",
+         specifications: "مشخصات",
          shipping: "ارسال",
       },
       descriptionBlurb:
@@ -490,54 +760,16 @@ export const fa = {
          label: "دسته‌بندی سلاح‌ها",
       },
 
-      /** Value propositions. */
-      features: {
-         title: "چرا فروشگاه ما؟",
-         subtitle: "هر چیزی که برای یک خرید امن و بی‌دردسر لازم دارید.",
-         items: {
-            authentic: {
-               title: "اصالت تضمین‌شده",
-               body: "هر اسکین پیش از انتشار توسط کارشناسان بررسی و تأیید اصالت می‌شود.",
-            },
-            fairPrice: {
-               title: "قیمت منصفانه",
-               body: "نرخ‌ها شفاف و بدون کارمزد پنهان است؛ همان چیزی که در صفحه محصول می‌بینید.",
-            },
-            instantDelivery: {
-               title: "تحویل آنی",
-               body: "پس از پرداخت، اسکین در کمترین زمان به حساب شما منتقل می‌شود.",
-            },
-            support: {
-               title: "پشتیبانی ۲۴ ساعته",
-               body: "تیم پشتیبانی همیشه آماده پاسخ‌گویی به پرسش‌های شماست.",
-            },
-         },
-      },
-
       /** Weapon-class showcase grid. */
       categories: {
          title: "مرور بر اساس دسته‌بندی",
          subtitle: "از تفنگ‌های سوزنی تا اسنایپر و کلت‌های کلاسیک، دسته مورد نظر خود را انتخاب کنید.",
          cta: "مشاهده همه محصولات",
          /**
-          * Keys are the category directory names under
-          * public/images/weapons-real/skins, so they must stay in sync with
-          * GET /api/categories. Values are what users see.
+          * Shared with the info pages and every other surface that names a
+          * category - see CATEGORY_LABELS at the top of this file.
           */
-         labels: {
-            knife: "چاقو",
-            gloves: "دستکش",
-            pistol: "کلت",
-            rifle: "تفنگ",
-            sniper: "تیرانداز",
-            smg: "تفنگ کوتاه",
-            shotgun: "شاتگان",
-            machinegun: "مسلسل سنگین",
-            agent: "ایجنت",
-            case: "کیس",
-            music_kit: "کیت موزیک",
-            other: "سایر",
-         } as Record<string, string>,
+         labels: CATEGORY_LABELS,
          empty: "هنوز محصولی در کاتالوگ ثبت نشده است.",
       },
 
@@ -762,6 +994,10 @@ export const fa = {
          },
          titleRequired: "عنوان الزامی است.",
          charCount: "{count}/200",
+         count: "موجودی انبار",
+         countHint: "چند نسخه از این آیتم موجود است. صفر یا خالی یعنی یک نسخه.",
+         /** `{count}` is how many have already been sold. */
+         soldHint: "{count} عدد از این آیتم فروخته شده است؛ موجودی قابل فروش برابر تعداد کل منهای آن است.",
          cancel: "انصراف",
          save: "ذخیره تغییرات",
          saving: "در حال ذخیره...",
@@ -823,7 +1059,7 @@ export const fa = {
       brand: {
          tagline: "بازار امن اسکین CS2",
          description:
-            "بازار ایرانی اسکین‌های CS2 و کلیدهای TF2؛ با کیف پل تومانی، قیمت‌گذاری لحظه‌ای و تحویل مستقیم به لینک ترید شما.",
+            "بازار ایرانی اسکین‌های CS2 و کلیدهای TF2؛ با کیف پول تومانی، قیمت‌گذاری لحظه‌ای و تحویل مستقیم به لینک ترید شما.",
       },
 
       /** Column headings. */
@@ -886,72 +1122,683 @@ export const fa = {
       copyrightYear: "۱۴۰۵",
    },
    /**
+    * The four brand promises, shared by the home page and the category landing
+    * pages. The items themselves live in FEATURE_ITEMS at the top of this file.
+    */
+   features: {
+      title: "چرا فروشگاه ما؟",
+      subtitle: "هر چیزی که برای یک خرید امن و بی‌دردسر لازم دارید.",
+      items: FEATURE_ITEMS,
+   },
+
+   /**
     * Placeholder copy for routes that the footer links to but that are not
     * built yet. Each one renders a real page rather than a 404, so the footer
     * never dead-ends.
+    *
+    * The nine pages that have graduated to real content - about, contact,
+    * rules, trade-link, verify, knives, gloves, prime and tf2-keys - now live
+    * under `info` below. These three are the ones still blocked on backend work.
     */
    comingSoon: {
       /** Heading on the placeholder panel. The page title is already in PageHero. */
       heading: "به‌زودی",
-      contact: {
-         title: "تماس با ما",
-         subtitle: "برای هر پرسشی درباره سفارش، تحویل یا حساب کاربری با ما در تماس باشید.",
-         body: "این صفحه در حال آماده‌سازی است. تا آن زمان می‌توانید از پشتیبانی تلگرام استفاده کنید.",
-      },
-      about: {
-         title: "درباره ما",
-         subtitle: "شاپیفای یک بازار ایرانی برای خرید و فروش اسکین‌های CS2 است.",
-         body: "داستان و تیم ما به‌زودی روی این صفحه منتشر می‌شود.",
-      },
       blog: {
          title: "بلاگ",
          subtitle: "راهنماها، اخبار و نکات دنیای CS2.",
          body: "اولین مطلب‌های بلاگ در حال آماده‌سازی است.",
-      },
-      rules: {
-         title: "قوانین و مقررات",
-         subtitle: "شرایط استفاده از بازار شاپیفای.",
-         body: "متن کامل قوانین به‌زودی منتشر می‌شود.",
-      },
-      verify: {
-         title: "چرا احراز هویت؟",
-         subtitle: "احراز هویت کمک می‌کند خرید و تحویل شما امن بماند.",
-         body: "راهنمای کامل احراز هویت به‌زودی در این صفحه قرار می‌گیرد.",
-      },
-      tradeLink: {
-         title: "لینک ترید چیست؟",
-         subtitle: "راهنمای ساخت و استفاده از لینک ترید استیم.",
-         body: "برای ثبت لینک ترید خود، به بخش پروفایل در پنل کاربری بروید. راهنمای کامل به‌زودی منتشر می‌شود.",
       },
       sell: {
          title: "فروش اسکین CS2",
          subtitle: "اسکین‌های خود را به ما بفروشید.",
          body: "فرم ثبت درخواست فروش به‌زودی راه‌اندازی می‌شود.",
       },
-      prime: {
-         title: "خرید پرایم CS2",
-         subtitle: "پرایم CS2 را با کیف پل تومانی بخرید.",
-         body: "این بخش در حال آماده‌سازی است.",
-      },
-      knives: {
-         title: "چاقوها",
-         subtitle: "خرید چاقوهای CS2.",
-         body: "دسته‌بندی چاقوها به‌زودی به فروشگاه اضافه می‌شود.",
-      },
-      gloves: {
-         title: "دستکش‌ها",
-         subtitle: "خرید دستکش‌های CS2.",
-         body: "دسته‌بندی دستکش‌ها به‌زودی به فروشگاه اضافه می‌شود.",
-      },
-      tf2Keys: {
-         title: "کلید TF2",
-         subtitle: "خرید کلید Team Fortress 2.",
-         body: "این بخش در حال آماده‌سازی است.",
-      },
       withdrawals: {
          title: "برداشت وجه",
          subtitle: "برداشت موجودی کیف پول.",
          body: "درخواست‌های برداشت به‌زودی فعال می‌شوند.",
+      },
+   },
+   /**
+    * Public info pages — app/(myPages)/(info). One sub-object per page.
+    *
+    * These replaced the `comingSoon` placeholders once each page had something
+    * real to say. Prime and TF2 keys joined them once their prices moved into the
+    * `service_prices` table; sell, blog and withdrawals are still in
+    * `comingSoon`.
+    */
+   info: {
+      /** /about */
+      about: {
+         metaTitle: "درباره ما",
+         metaDescription: "شاپیفای، بازار ایرانی خرید و فروش اسکین‌های CS2: داستان ما، ارزش‌ها و اعداد واقعی فروشگاه.",
+         badge: "درباره ما",
+         heroTitle: "بازار ایرانی اسکین‌های CS2",
+         heroSubtitle:
+            "از یک ایده ساده شروع کردیم: خریدن اسکین باید به سادگی خریدن از یک فروشگاه معتبر باشد — با قیمت شفاف، اصالت مشخص و تحویلی که پیگیری می‌شود.",
+         storyTitle: "داستان ما",
+         storyParagraphs: [
+            "شاپیفای از یک مشکل ساده متولد شد. پیدا کردن یک اسکین خاص کار سختی نبود؛ پیدا کردن کسی که مطمئن باشی سرش کلاه نمی‌رود، سخت بود.",
+            "بازار اسکین ایران پر از آگهی‌های پراکنده است: قیمت‌های نامعلوم، اصالت تأییدنشده و پرداخت‌هایی که هیچ سابقه‌ای از خود جا نمی‌گذارند. ما این پراکندگی را به یک فروشگاه واقعی تبدیل کردیم؛ با کاتالوگ، قیمت نوشته‌شده و سفارشی که تا آخر پیگیری می‌شود.",
+            "هر اسکین پیش از انتشار در فروشگاه بررسی می‌شود، قیمتش بدون کارمزد پنهان روی صفحه محصول نوشته شده است، و تحویل از طریق لینک ترید استیم انجام می‌شود — همان روشی که خود بازیکن‌ها به آن اعتماد دارند.",
+         ],
+         valuesTitle: "چیزی که ما را متفاوت می‌کند",
+         valuesSubtitle: "چهار اصلی که روی هر تصمیم فروشگاه اثر می‌گذارد.",
+         values: {
+            authenticity: {
+               title: "اصالت، پیش از هر چیز",
+               body: "هر اسکین با تصویر واقعی خودش نمایش داده می‌شود و پیش از انتشار بررسی می‌شود. آنچه می‌بینید همان چیزی است که تحویل می‌گیرید.",
+            },
+            transparency: {
+               title: "قیمت شفاف به تومان",
+               body: "قیمت نهایی روی صفحه محصول نوشته شده است؛ بدون کارمزد پنهان و بدون تبدیل ارز.",
+            },
+            speed: {
+               title: "تحویل سریع",
+               body: "پس از تأیید پرداخت، اسکین در کوتاه‌ترین زمان از طریق لینک ترید به حساب شما منتقل می‌شود.",
+            },
+            support: {
+               title: "پشتیبانی انسانی",
+               body: "پشت هر سفارش یک نفر پاسخگو است. اگر جایی گیر کردید، پشتیبانی تلگرام تا رسیدن به نتیجه همراهتان می‌ماند.",
+            },
+         },
+         statsTitle: "شاپیفای در یک نگاه",
+         statsSubtitle: "اعداد زیر مستقیم از کاتالوگ زنده فروشگاه خوانده می‌شوند، نه از یک تخمین تبلیغاتی.",
+         statProducts: "اسکین موجود",
+         statCategories: "دسته‌بندی",
+         statSubcategories: "زیردسته",
+         faqTitle: "پرسش‌هایی که زیاد می‌پرسند",
+         faqSubtitle: "اگر پاسخ پرسش شما اینجا نبود، پشتیبانی تلگرام در دسترس است.",
+         faq: {
+            who: {
+               q: "شاپیفای چه تفاوتی با خرید از آگهی‌های پراکنده دارد؟",
+               a: "در شاپیفای هر اسکین بخشی از یک کاتالوگ ثبت‌شده است: قیمت مشخص، تصویر واقعی و سفارشی که در پنل کاربری قابل پیگیری است. هیچ‌کدام از این‌ها در یک آگهی تلگرامی وجود ندارد.",
+            },
+            catalog: {
+               q: "کاتالوگ چقدر به‌روز است؟",
+               a: "قیمت‌ها و موجودی مستقیماً از کاتالوگ خوانده می‌شوند، پس آنچه روی صفحه محصول می‌بینید همان وضعیت لحظه‌ای فروشگاه است.",
+            },
+            team: {
+               q: "چه کسی پشت شاپیفای است؟",
+               a: "یک تیم کوچک از بازیکن‌های CS2 که هم اسکین جمع کرده‌اند و هم از بازار آن آسیب دیده‌اند. همین باعث شد فروشگاه را طوری بسازیم که خودمان دوست داشتیم با آن خرید کنیم.",
+            },
+         },
+         ctaTitle: "کاتالوگ را ببینید",
+         ctaSubtitle: "بیش از هشتاد اسکین در دوازده دسته‌بندی، با قیمت تومانی و تصویر واقعی.",
+         ctaPrimary: "مشاهده محصولات",
+         ctaSecondary: "تماس با ما",
+      },
+
+      /** /contact */
+      contact: {
+         metaTitle: "تماس با ما",
+         metaDescription: "راه‌های ارتباط با پشتیبانی شاپیفای: تلگرام، ایمیل و ساعات پاسخ‌گویی.",
+         badge: "پشتیبانی",
+         heroTitle: "تماس با ما",
+         heroSubtitle: "پشتیبانی شاپیفای از طریق تلگرام پاسخ می‌دهد. برای پیگیری سریع‌تر، شماره سفارش خود را همراه داشته باشید.",
+         channelsTitle: "راه‌های ارتباطی",
+         channelsSubtitle: "سریع‌ترین راه، تلگرام است.",
+         channels: {
+            telegram: {
+               title: "پشتیبانی تلگرام",
+               body: "پاسخ‌گویی سریع برای پیگیری سفارش، مشکلات تحویل و پرسش‌های پرداخت. تلگرام تنها راهی است که در تمام ساعات شبانه‌روز پیام می‌گیرد.",
+               action: "گفت‌وگو در تلگرام",
+            },
+            email: {
+               title: "ایمیل",
+               body: "برای موضوع‌های رسمی مثل همکاری، گزارش تخلف یا اسناد سفارش، ایمیل مناسب‌تر است. پاسخ در همان روز کاری داده می‌شود.",
+               action: "ارسال ایمیل",
+            },
+            panel: {
+               title: "پنل کاربری",
+               body: "وضعیت سفارش‌ها، کیف پول و اطلاعات حساب شما در پنل کاربری قابل مشاهده و ویرایش است؛ شاید پاسخ پرسشتان همان‌جا باشد.",
+               action: "ورود به پنل",
+            },
+            faq: {
+               title: "سوالات متداول",
+               body: "بسیاری از پرسش‌های خرید، پرداخت و تحویل پاسخ آماده دارند. پیش از ارسال پیام، یک نگاه به آن‌ها بیندازید.",
+               action: "مشاهده پاسخ‌ها",
+            },
+         },
+         hoursTitle: "ساعات پاسخ‌گویی",
+         hoursSubtitle: "بیرون از این ساعات هم می‌توانید پیام بگذارید؛ پیام شما در اولین فرصت پاسخ می‌گیرد.",
+         /**
+          * Deliberately the same figure as `fa.footer.trust.supportHours` — the
+          * two are read on the same page, and two different sets of support
+          * hours side by side is worse than a vague one.
+          */
+         hours: {
+            days: "همه روزه، از جمله تعطیلات",
+            time: "۸:۰۰ تا ۲۲:۰۰",
+            telegram: "پیام تلگرام در تمام ساعات شبانه‌روز ثبت می‌شود.",
+            note: "پیگیری سفارش‌های در جریان، خارج از این ساعات هم انجام می‌شود.",
+         },
+         beforeTitle: "پیش از ارسال پیام",
+         beforeSubtitle: "این سه مورد باعث می‌شود مشکل شما در همان اولین پیام حل شود.",
+         before: [
+            "شماره سفارش را از پنل کاربری کپی کنید و همراه پیام بفرستید.",
+            "اگر مشکل تحویل است، لینک ترید خود را بررسی کنید؛ بیشتر تأخیرها از همین‌جا می‌آید.",
+            "تصویر صفحه‌ای که مشکل را نشان می‌دهد، از هر توضیحی مفیدتر است.",
+         ],
+         faqTitle: "پرسش‌های پرتکرار درباره پشتیبانی",
+         faqSubtitle: "پیش از ارسال پیام، این‌ها را یک بار ببینید.",
+         faq: {
+            responseTime: {
+               q: "پاسخ چقدر طول می‌کشد؟",
+               a: "در ساعات کاری معمولاً زیر چند دقیقه. اگر پشتیبانی شلوغ باشد، پاسخ ممکن است کمی طول بکشد؛ پیام شما از دست نمی‌رود.",
+            },
+            orderStatus: {
+               q: "وضعیت سفارشم را از کجا ببینم؟",
+               a: "در پنل کاربری، بخش سفارش‌ها. وضعیت هر سفارش همراه با مرحله‌ای که در آن قرار دارد نمایش داده می‌شود.",
+            },
+            refund: {
+               q: "برای بازگشت وجه به کجا پیام بدهم؟",
+               a: "از همان گفت‌وگوی تلگرام، همراه با شماره سفارش. درخواست شما بررسی می‌شود و نتیجه اعلام می‌شود.",
+            },
+         },
+         ctaTitle: "پاسخ پرسشتان را اینجا نگرفتید؟",
+         ctaSubtitle: "پشتیبانی تلگرام سریع‌ترین راه است؛ معمولاً در چند دقیقه پاسخ می‌گیرید.",
+         ctaPrimary: "گفت‌وگو در تلگرام",
+         ctaSecondary: "مشاهده محصولات",
+      },
+
+      /** /rules */
+      rules: {
+         metaTitle: "قوانین و مقررات",
+         metaDescription: "شرایط استفاده از بازار شاپیفای: حساب کاربری، پرداخت، تحویل، بازگشت وجه و موارد ممنوعه.",
+         badge: "قوانین",
+         heroTitle: "قوانین و مقررات",
+         heroSubtitle: "این قوانین شرایط استفاده از شاپیفای را مشخص می‌کنند. با ساخت حساب کاربری یا ثبت سفارش، آن‌ها را پذیرفته‌اید.",
+         updatedLabel: "آخرین به‌روزرسانی",
+         updatedValue: "مهر ۱۴۰۵",
+         sections: {
+            account: {
+               title: "حساب کاربری",
+               items: [
+                  "هر شماره موبایل تنها می‌تواند به یک حساب کاربری متصل باشد.",
+                  "مسئولیت حفظ دسترسی به شماره موبایل و اطلاعات حساب بر عهده صاحب حساب است.",
+                  "ثبت اطلاعات نادرست — از جمله شماره موبایل متعلق به شخص دیگر — باعث مسدود شدن حساب می‌شود.",
+                  "در صورت مشاهده ورود غیرمجاز، بلافاصله از طریق پشتیبانی اطلاع دهید.",
+               ],
+            },
+            payment: {
+               title: "پرداخت",
+               items: [
+                  "تمام مبالغ به تومان و از طریق درگاه بانکی امن پرداخت می‌شوند.",
+                  "قیمت نهایی همان مبلغی است که روی صفحه محصول نوشته شده؛ کارمزد پنهانی وجود ندارد.",
+                  "سفارش تنها پس از تأیید پرداخت وارد مرحله تحویل می‌شود.",
+                  "استفاده از کیف پول اختیاری است و پرداخت از درگاه بانکی همیشه در دسترس است.",
+               ],
+            },
+            delivery: {
+               title: "تحویل",
+               items: [
+                  "تحویل اسکین‌ها از طریق لینک ترید استیم انجام می‌شود.",
+                  "ثبت لینک ترید صحیح و به‌روز شرط امکان تحویل است؛ لینک نادرست روند را متوقف می‌کند.",
+                  "اگر محدودیت استیم یا تعلیق ترید باعث شود تحویل ممکن نباشد، سفارش در حالت انتظار می‌ماند و با شما تماس گرفته می‌شود.",
+                  "زمان تحویل پس از تأیید پرداخت معمولاً چند دقیقه است، اما در ساعات اوج ممکن است بیشتر طول بکشد.",
+               ],
+            },
+            refund: {
+               title: "بازگشت وجه",
+               items: [
+                  "درخواست بازگشت وجه پیش از تحویل اسکین پذیرفته می‌شود.",
+                  "پس از تحویل، اسکین تنها در صورتی مرجوع می‌شود که با توضیحات صفحه محصول تفاوت داشته باشد.",
+                  "بازگشت وجه به همان حساب یا کیف پولی انجام می‌شود که پرداخت از آن صورت گرفته است.",
+                  "بررسی درخواست‌های بازگشت وجه معمولاً یک روز کاری زمان می‌برد.",
+               ],
+            },
+            prohibited: {
+               title: "موارد ممنوعه",
+               items: [
+                  "استفاده از کارت بانکی یا حساب متعلق به شخص دیگر.",
+                  "هرگونه تلاش برای سوءاستفاده از خطاهای سایت، قیمت‌گذاری یا فرآیند پرداخت.",
+                  "ثبت اسکین‌هایی با منبع نامشخص، دزدی یا حاصل از کلاهبرداری.",
+                  "توهین، تهدید یا رفتار نامناسب با تیم پشتیبانی.",
+               ],
+            },
+            changes: {
+               title: "تغییر قوانین",
+               items: [
+                  "این قوانین ممکن است همراه با تغییر فرآیندهای فروشگاه به‌روزرسانی شود.",
+                  "تغییرات مهم پیش از اعمال، در همین صفحه اعلام می‌شوند.",
+                  "ادامه استفاده از فروشگاه پس از انتشار نسخه جدید، به معنی پذیرش آن است.",
+               ],
+            },
+         },
+         faqTitle: "پرسش‌های پرتکرار درباره قوانین",
+         faqSubtitle: "کوتاه‌ترین پاسخ به رایج‌ترین ابهام‌ها.",
+         faq: {
+            agreement: {
+               q: "پذیرش قوانین از چه زمانی اتفاق می‌افتد؟",
+               a: "با ساخت حساب کاربری یا ثبت اولین سفارش. اگر با بخشی از این قوانین موافق نیستید، لطفاً پیش از خرید با پشتیبانی صحبت کنید.",
+            },
+            accountSharing: {
+               q: "می‌توانم حسابم را با کسی به اشتراک بگذارم؟",
+               a: "نه. هر حساب متعلق به یک شماره موبایل است و تحویل سفارش‌ها بر پایه همان حساب انجام می‌شود. اشتراک‌گذاری حساب باعث مسدود شدن آن می‌شود.",
+            },
+            banned: {
+               q: "اگر حسابم مسدود شود چه می‌شود؟",
+               a: "سفارش‌های در جریان تعیین تکلیف می‌شوند و موجودی کیف پول قابل برداشت می‌ماند. دلیل مسدود شدن از طریق پشتیبانی اعلام می‌شود.",
+            },
+         },
+         ctaTitle: "پرسشی درباره قوانین دارید؟",
+         ctaSubtitle: "اگر بخشی از این متن برایتان مبهم است، پیش از خرید بپرسید؛ پاسخ دادن به یک پرسش بهتر از حل یک مشکل است.",
+         ctaPrimary: "مشاهده محصولات",
+         ctaSecondary: "تماس با ما",
+      },
+
+      /** /trade-link */
+      tradeLink: {
+         metaTitle: "لینک ترید چیست؟",
+         metaDescription: "راهنمای ساخت و ثبت لینک ترید استیم برای دریافت اسکین از شاپیفای، همراه با ساختار لینک و اشتباه‌های رایج.",
+         badge: "راهنما",
+         heroTitle: "لینک ترید چیست؟",
+         heroSubtitle:
+            "لینک ترید آدرسی اختصاصی در استیم است که به فروشنده اجازه می‌دهد اسکین را بدون افزودن دوست به حساب شما منتقل کند.",
+         introTitle: "چرا به لینک ترید نیاز دارید؟",
+         introParagraphs: [
+            "استیم اجازه نمی‌دهد کسی بدون تأیید شما کالایی به حسابتان بفرستد. لینک ترید همان تأیید است، اما فقط در یک جهت: اجازه ارسال کالا به شما، نه برداشت آن از حساب‌تان.",
+            "بدون لینک ترید، تحویل اسکین فقط با افزودن دوست و انتظار برای تأیید دستی ممکن می‌شود؛ روشی که هم کند است و هم جای اشتباه دارد.",
+         ],
+         stepsTitle: "ساخت لینک ترید در چهار قدم",
+         stepsSubtitle: "کل مسیر کمتر از دو دقیقه طول می‌کشد و فقط یک بار لازم است.",
+         steps: [
+            { title: "ورود به استیم", body: "با حساب خود وارد استیم شوید و مطمئن شوید حساب محدودیت ترید ندارد." },
+            { title: "رفتن به پیشنهادهای ترید", body: "روی نام کاربری خود بزنید و از منو، Inventory و سپس Trade Offers را انتخاب کنید." },
+            { title: "ساخت لینک", body: "در بخش Who can send me Trade Offers? روی Create New Trade Link بزنید." },
+            { title: "کپی و ثبت", body: "لینک ساخته‌شده را کپی کنید و در پنل کاربری، بخش پروفایل، در فیلد لینک ترید ذخیره کنید." },
+         ],
+         anatomyTitle: "ساختار لینک ترید",
+         anatomySubtitle: "لینک شما از سه بخش ساخته شده است؛ شناختن آن‌ها کمک می‌کند خطا را سریع پیدا کنید.",
+         anatomy: [
+            { label: "آدرس پایه", value: "steamcommunity.com/tradeoffer/new/", note: "ثابت است و همیشه همین شکل را دارد." },
+            { label: "شناسه حساب", value: "partner=000000000", note: "شناسه عددی حساب استیم شما." },
+            { label: "توکن ترید", value: "token=XXXXXXXX", note: "کلید خصوصی لینک؛ اگر تغییرش دهید، لینک از کار می‌افتد." },
+         ],
+         mistakesTitle: "اشتباه‌های رایج",
+         mistakesSubtitle: "بیشتر تأخیرهای تحویل از این چهار مورد می‌آید.",
+         mistakes: [
+            "فرستادن آدرس پروفایل به‌جای لینک ترید؛ آدرس پروفایل برای تحویل کافی نیست.",
+            "استفاده از لینک قدیمی پس از ساخت لینک جدید؛ ساخت لینک تازه، لینک قبلی را باطل می‌کند.",
+            "پاک شدن بخش token هنگام کپی کردن لینک.",
+            "ثبت لینک روی حسابی که هنوز محدودیت ترید دارد.",
+         ],
+         panelTitle: "لینک ترید خود را ثبت کنید",
+         panelBody: "پس از ثبت در پنل کاربری، لینک شما ذخیره می‌شود و در تمام سفارش‌های بعدی از همان استفاده خواهد شد.",
+         panelAction: "ثبت در پنل کاربری",
+         faqTitle: "پرسش‌های پرتکرار درباره لینک ترید",
+         faqSubtitle: "اگر پاسخ پرسشتان اینجا نبود، پشتیبانی تلگرام در دسترس است.",
+         faq: {
+            safe: {
+               q: "آیا دادن لینک ترید امن است؟",
+               a: "بله. لینک ترید فقط اجازه ارسال کالا به حساب شما را می‌دهد و اجازه برداشت یا تغییر رمز را نمی‌دهد. با این حال آن را عمومی منتشر نکنید.",
+            },
+            change: {
+               q: "اگر لینکم را عوض کنم چه می‌شود؟",
+               a: "لینک قدیمی باطل می‌شود و سفارش‌های در جریان نمی‌توانند تحویل شوند. لینک جدید را در پنل کاربری به‌روز کنید تا روند ادامه پیدا کند.",
+            },
+            tradeBan: {
+               q: "حسابم محدودیت ترید دارد؛ می‌توانم خرید کنم؟",
+               a: "پرداخت و ثبت سفارش ممکن است، اما تحویل تا پایان محدودیت انجام نمی‌شود. سفارش در حالت انتظار می‌ماند و پس از رفع محدودیت تحویل می‌گردد.",
+            },
+         },
+         ctaTitle: "لینک ترید دارید؟",
+         ctaSubtitle: "کافی است یک بار در پنل کاربری ثبتش کنید تا در همه سفارش‌های بعدی آماده باشد.",
+         ctaPrimary: "ورود به پنل کاربری",
+         ctaSecondary: "مشاهده محصولات",
+      },
+
+      /** /verify */
+      verify: {
+         metaTitle: "چرا احراز هویت؟",
+         metaDescription: "دلیل اهمیت احراز هویت شماره موبایل در شاپیفای و نحوه انجام آن، در سه قدم.",
+         badge: "امنیت",
+         heroTitle: "چرا احراز هویت؟",
+         heroSubtitle:
+            "احراز هویت در شاپیفای فقط یک مرحله ورود نیست؛ همان چیزی است که تضمین می‌کند اسکین به دست صاحب واقعی حساب می‌رسد.",
+         whyTitle: "احراز هویت چه چیزی را تضمین می‌کند؟",
+         whySubtitle: "چهار دلیلی که این مرحله را برای هر دو طرف معامله ضروری می‌کند.",
+         why: {
+            ownership: {
+               title: "اسکین به صاحب حساب می‌رسد",
+               body: "تحویل به لینک تریدی انجام می‌شود که روی حساب تأییدشده ثبت شده است؛ نه به آدرسی که در متن پیام آمده.",
+            },
+            recovery: {
+               title: "بازیابی حساب ممکن است",
+               body: "اگر دسترسی به حساب را از دست بدهید، تأیید شماره موبایل تنها راه بازگرداندن آن است.",
+            },
+            fraud: {
+               title: "جلوگیری از جعل هویت",
+               body: "بدون تأیید شماره، هر کسی می‌توانست به نام شما حساب بسازد و به قیمت‌های فروشگاه دسترسی بگیرد.",
+            },
+            traceable: {
+               title: "پیگیری‌پذیری سفارش",
+               body: "هر سفارش به یک حساب تأییدشده گره خورده است، پس در صورت بروز مشکل، پیگیری و حل آن سریع‌تر انجام می‌شود.",
+            },
+         },
+         stepsTitle: "احراز هویت در سه قدم",
+         stepsSubtitle: "به یک شماره موبایل واقعی نیاز دارید؛ شماره مجازی پذیرفته نمی‌شود.",
+         steps: [
+            { title: "ثبت شماره موبایل", body: "شماره خود را در فرم ورود یا ثبت‌نام وارد کنید. شماره با فرمت‌های مختلف پذیرفته می‌شود." },
+            { title: "دریافت کد تأیید", body: "یک کد یک‌بار‌مصرف برای شما ارسال می‌شود. کد اعتبار زمانی محدود دارد و چند بار قابل استفاده نیست." },
+            { title: "ورود به حساب", body: "با وارد کردن کد، حساب شما تأیید می‌شود و از این پس با همان شماره وارد می‌شوید." },
+         ],
+         privacyTitle: "اطلاعات شما کجا ذخیره می‌شود؟",
+         privacyParagraphs: [
+            "تنها چیزی که از شما نگه داشته می‌شود شماره موبایل و اطلاعاتی است که خودتان در پروفایل تکمیل می‌کنید؛ مثل شناسه استیم و لینک ترید.",
+            "کد تأیید پس از استفاده باطل می‌شود و در هیچ پاسخی به مرورگر برگردانده نمی‌شود. ما به رمز استیم، آیتم‌های موجودی یا دسترسی به حساب استیم شما نیازی نداریم و هرگز آن را درخواست نمی‌کنیم.",
+         ],
+         faqTitle: "پرسش‌های پرتکرار درباره احراز هویت",
+         faqSubtitle: "پیش از شروع، این‌ها را یک بار ببینید.",
+         faq: {
+            code: {
+               q: "کد تأیید را دریافت نکردم؛ چه کنم؟",
+               a: "پس از کمی صبر دوباره درخواست کنید. با هر درخواست جدید، کد قبلی باطل می‌شود — پس همیشه آخرین کد را وارد کنید.",
+            },
+            change: {
+               q: "می‌توانم شماره موبایلم را عوض کنم؟",
+               a: "بله، از پنل کاربری. برای جلوگیری از سوءاستفاده، شماره جدید باید مالکیت خودش را اثبات کند و نمی‌تواند از قبل روی حساب دیگری ثبت شده باشد.",
+            },
+            shareCode: {
+               q: "کد را با پشتیبانی به اشتراک بگذارم؟",
+               a: "هرگز. هیچ‌کس در شاپیفای نباید کد تأیید شما را بخواهد. اگر کسی چنین درخواستی کرد، آن را گزارش دهید.",
+            },
+         },
+         ctaTitle: "هنوز احراز هویت نکرده‌اید؟",
+         ctaSubtitle: "با شماره موبایل خود وارد شوید؛ کل مسیر کمتر از یک دقیقه طول می‌کشد.",
+         ctaPrimary: "ورود به حساب",
+         ctaSecondary: "مشاهده محصولات",
+      },
+
+      /**
+       * Shared copy for the two category landing pages (knives, gloves). The
+       * per-page differences live in `knives` / `gloves` below.
+       */
+      categoryPage: {
+         inStock: "اسکین موجود",
+         families: "خانواده اسکین",
+         cheapest: "ارزان‌ترین",
+         priciest: "گران‌ترین",
+         subcategoriesTitle: "خانواده‌ها را مرور کنید",
+         subcategoriesSubtitle: "برای دیدن اسکین‌های یک خانواده مشخص، روی آن بزنید.",
+         productsTitle: "اسکین‌های این دسته",
+         productsSubtitle: "قیمت‌ها به تومان و مستقیم از کاتالوگ فروشگاه خوانده می‌شوند.",
+         productsCta: "مشاهده همه",
+         productsEmpty: "هنوز محصولی برای نمایش در این دسته ثبت نشده است.",
+         /** Shown in place of the product grid when the catalogue call fails. */
+         unavailable: "ارتباط با کاتالوگ برقرار نشد، پس فهرست اسکین‌ها فعلاً نمایش داده نمی‌شود. راهنمای پایین صفحه همچنان در دسترس است.",
+         ctaPrimary: "مشاهده محصولات",
+         ctaSecondary: "تماس با ما",
+      },
+
+      /** /knives */
+      knives: {
+         metaTitle: "خرید چاقوهای CS2",
+         metaDescription: "خرید چاقوی CS2 با قیمت تومانی و تصویر واقعی: بایونت، کارامبیت، باترفلای و دیگر خانواده‌ها.",
+         badge: "چاقو",
+         heroTitle: "چاقوهای CS2",
+         heroSubtitle:
+            "چاقو گران‌ترین و پرحاشیه‌ترین بخش هر اینونتوری است. اینجا همه چیز از ابتدا مشخص است: کدام خانواده، چه قیمتی و با چه تصویری.",
+         guideTitle: "پیش از خرید چاقو بدانید",
+         guideParagraphs: [
+            "قیمت چاقو بیش از هر چیز به خانواده و سپس به طرح آن بستگی دارد. یک کارامبیت با طرح ساده معمولاً از یک چاقوی ارزان‌تر با طرح کم‌یاب گران‌تر است.",
+            "وضعیت ظاهری (Float) هم روی قیمت اثر می‌گذارد. تصاویر این صفحه، تصویر واقعی همان اسکین موجود در کاتالوگ است، نه یک عکس نمونه.",
+            "چاقوها در همه دسته‌بندی‌ها بیشترین تعداد زیردسته را دارند، چون هر خانواده چاقو یک زیردسته جداگانه است. اگر دنبال یک مدل خاص هستید، از بخش خانواده‌ها شروع کنید.",
+         ],
+         faqTitle: "پرسش‌های پرتکرار درباره چاقوها",
+         faqSubtitle: "اگر پاسخ پرسشتان اینجا نبود، پشتیبانی تلگرام در دسترس است.",
+         faq: {
+            price: {
+               q: "قیمت چاقو به چه چیزی بستگی دارد؟",
+               a: "بیش از همه به خانواده چاقو، و بعد به طرح و وضعیت ظاهری آن. اختلاف قیمت دو چاقو از یک خانواده معمولاً از اختلاف طرح می‌آید.",
+            },
+            choose: {
+               q: "از کجا شروع کنم؟",
+               a: "اگر مدل خاصی در ذهن دارید، از بخش خانواده‌ها همان مدل را انتخاب کنید. اگر مطمئن نیستید، فهرست اسکین‌های پایین صفحه را بر اساس قیمت مرور کنید.",
+            },
+            delivery: {
+               q: "تحویل چاقو چقدر طول می‌کشد؟",
+               a: "پس از تأیید پرداخت معمولاً چند دقیقه. تحویل از طریق لینک ترید استیم انجام می‌شود، پس لینک خود را از قبل در پنل کاربری ثبت کنید.",
+            },
+         },
+         ctaTitle: "چاقوی مورد نظرتان را پیدا کنید",
+         ctaSubtitle: "از میان خانواده‌ها و طرح‌ها جستجو کنید و قیمت تومانی هر کدام را ببینید.",
+      },
+
+      /** /gloves */
+      gloves: {
+         metaTitle: "خرید دستکش‌های CS2",
+         metaDescription: "خرید دستکش CS2 با قیمت تومانی و تصویر واقعی: اسپرت، موتو، درایور و دیگر خانواده‌ها.",
+         badge: "دستکش",
+         heroTitle: "دستکش‌های CS2",
+         heroSubtitle:
+            "دستکش‌ها کنار چاقو، یک اینونتوری را کامل می‌کنند. قیمتشان بیشتر به خانواده و وضعیت ظاهری وابسته است تا طرح‌های تزئینی.",
+         guideTitle: "پیش از خرید دستکش بدانید",
+         guideParagraphs: [
+            "برخلاف چاقو، تفاوت قیمت دستکش‌ها بیشتر از خانواده می‌آید تا از طرح. یک دستکش اسپرت و یک دستکش موتو، حتی با ظاهر نزدیک، می‌توانند قیمت‌های بسیار متفاوتی داشته باشند.",
+            "وضعیت ظاهری روی دستکش بسیار بیشتر به چشم می‌آید، چون سطح آن یکدست است و خط‌وخش روی آن واضح دیده می‌شود. تصاویر این صفحه تصویر واقعی همان اسکین موجود در کاتالوگ است.",
+            "دستکش‌ها در همه دسته‌بندی‌ها کمترین تعداد زیردسته را دارند، چون هر خانواده یک زیردسته است و تعداد خانواده‌ها محدود است. همین کار انتخاب را ساده‌تر می‌کند: سریع می‌توانید همه گزینه‌ها را ببینید.",
+         ],
+         faqTitle: "پرسش‌های پرتکرار درباره دستکش‌ها",
+         faqSubtitle: "اگر پاسخ پرسشتان اینجا نبود، پشتیبانی تلگرام در دسترس است.",
+         faq: {
+            family: {
+               q: "کدام خانواده دستکش را انتخاب کنم؟",
+               a: "بستگی به ظاهر مورد علاقهتان دارد. موتو و اسپرت محبوب‌ترین‌ها هستند و انتخاب گسترده‌تری دارند؛ درایور و هند‌رپ ظاهر ساده‌تری دارند.",
+            },
+            float: {
+               q: "وضعیت ظاهری دستکش چقدر مهم است؟",
+               a: "روی دستکش بیشتر از چاقو به چشم می‌آید، چون سطح یکدست آن خط‌وخش را واضح‌تر نشان می‌دهد. اگر ظاهر یکدست برایتان مهم است، پیش از خرید تصویر محصول را با دقت ببینید.",
+            },
+            delivery: {
+               q: "تحویل دستکش چقدر طول می‌کشد؟",
+               a: "پس از تأیید پرداخت معمولاً چند دقیقه. تحویل از طریق لینک ترید استیم انجام می‌شود، پس لینک خود را از قبل در پنل کاربری ثبت کنید.",
+            },
+         },
+         ctaTitle: "دستکش مناسب خود را پیدا کنید",
+         ctaSubtitle: "خانواده‌ها را مقایسه کنید و قیمت تومانی هر کدام را در کاتالوگ ببینید.",
+      },
+
+      /**
+       * /prime — CS2 Prime, priced per Steam region.
+       *
+       * `regions` is keyed by the `variant` column in `service_prices`, so a
+       * region added to the database renders under its raw value until it is
+       * labelled here.
+       */
+      prime: {
+         metaTitle: "خرید پرایم CS2",
+         metaDescription: "خرید پرایم CS2 با قیمت تومانی و انتخاب ریجن استیم: آرژانتین، اروپا، اوکراین، ایالات متحده، ترکیه و هند.",
+         badge: "CS2 · پرایم",
+         heroTitle: "خرید پرایم CS2",
+         heroSubtitle:
+            "ریجن اکانت را انتخاب کنید و با کیف پول تومانی بخرید. تحویل را فروشنده انجام می‌دهد و وضعیت سفارش در پنل کاربری به‌روز می‌شود.",
+         pickerTitle: "ریجن اکانت را انتخاب کنید",
+         pickerSubtitle: "قیمت پرایم به ریجن استیم اکانت شما بستگی دارد؛ همان ریجنی را انتخاب کنید که اکانت‌تان روی آن است.",
+         selected: "انتخاب‌شده",
+         priceLabel: "قیمت",
+         /** Product header at the top of the buy card, above the region picker. */
+         productEyebrow: "ارتقای وضعیت اکانت",
+         productName: "CS2 Prime",
+         productTagline:
+            "پرایم روی همان اکانت استیم خودتان فعال می‌شود؛ بخش رقابتی و دراپ هفتگی آیتم باز می‌گردد و تحویل را فروشنده انجام می‌دهد.",
+         regions: {
+            argentina: "آرژانتین",
+            europe: "اروپا",
+            ukraine: "اوکراین",
+            usa: "ایالات متحده",
+            turkey: "ترکیه",
+            india: "هند",
+         },
+         trust: {
+            delivery: { title: "تحویل پس از تأیید فروشنده", body: "وضعیت سفارش در پنل کاربری به‌روز می‌شود." },
+            payment: { title: "پرداخت فقط از کیف پول تومانی", body: "بدون تبدیل ارز و بدون کارمزد پنهان." },
+            security: { title: "رمز استیم هرگز پرسیده نمی‌شود", body: "نه رمز، نه کد Steam Guard؛ ورود فقط در صفحه رسمی استیم." },
+         },
+         orderIntro: "سلام، می‌خواهم پرایم CS2 بخرم.",
+         orderRegionLabel: "ریجن:",
+         orderPriceLabel: "مبلغ:",
+         orderCta: "ثبت سفارش در تلگرام",
+         walletCta: "شارژ کیف پول",
+
+         // --- Add to cart ---
+         addToCart: "افزودن به سبد خرید",
+         addedToCart: "به سبد خرید اضافه شد",
+         adding: "در حال افزودن…",
+         viewCart: "مشاهده سبد خرید",
+         inCartHint: "این ریجن در سبد خرید شما است؛ با دکمه بالا تعدادش را ببینید.",
+         /** Telegram stays offered, but as the fallback rather than the way in. */
+         telegramFallback: "یا سفارش را در تلگرام ثبت کنید",
+
+         unavailable:
+            "ارتباط با کاتالوگ برقرار نشد، پس قیمت ریجن‌ها فعلاً نمایش داده نمی‌شود. راهنمای پایین صفحه همچنان در دسترس است و می‌توانید سفارش را از تلگرام ثبت کنید.",
+         facts: {
+            regions: "ریجن قابل انتخاب",
+            cheapest: "ارزان‌ترین ریجن (تومان)",
+            priciest: "گران‌ترین ریجن (تومان)",
+         },
+         stepsTitle: "خرید پرایم در چهار قدم",
+         stepsSubtitle: "پرایم یک آیتم نیست که در اینونتوری بنشیند؛ وضعیتی روی اکانت استیم شماست.",
+         steps: [
+            { title: "انتخاب ریجن", body: "ریجن استیم اکانت خود را انتخاب کنید. اگر مطمئن نیستید، پیش از پرداخت از پشتیبانی بپرسید." },
+            { title: "ورود به حساب", body: "با شماره موبایل خود وارد شوید تا سفارش به حساب شما گره بخورد و قابل پیگیری باشد." },
+            { title: "ثبت سفارش", body: "ریجن و مبلغ را از تلگرام ثبت کنید. پرداخت از کیف پول تومانی انجام می‌شود." },
+            { title: "تحویل پس از تأیید", body: "پس از انجام تحویل، وضعیت سفارش در پنل کاربری به‌روز می‌شود و تا آخر قابل پیگیری است." },
+         ],
+         aboutTitle: "پرایم CS2 چیست؟",
+         aboutParagraphs: [
+            "پرایم یک آیتم قابل حمل در اینونتوری نیست؛ وضعیت رسمی Counter-Strike 2 روی اکانت استیم شماست. با پرایم، بخش رقابتی و صف اختصاصی بازیکنان پرایم برایتان باز می‌شود و دراپ هفتگی آیتم فعال می‌گردد.",
+            "بدون پرایم، بخش رقابتی و بخشی از امکانات حساب قفل می‌ماند. به همین دلیل برای بازیکنی که جدی بازی می‌کند، پرایم اولین خرید است، نه یک ارتقای تزئینی.",
+            "چون پرایم روی اکانت می‌نشیند و نه در اینونتوری، تحویلش با اسکین فرق دارد: ریجن اکانت باید درست انتخاب شود و تحویل را فروشنده انجام می‌دهد. وضعیت هر سفارش در پنل کاربری قابل پیگیری است.",
+         ],
+         regionTitle: "ریجن یعنی چه؟",
+         regionParagraphs: [
+            "ریجن همان کشور یا منطقه‌ای است که روی اکانت استیم شما ثبت شده است. استیم قیمت خدماتش را بر اساس همین منطقه تعیین می‌کند، پس یک محصول یکسان در ریجن‌های مختلف قیمت‌های متفاوتی دارد.",
+            "همین تفاوت، دلیل اختلاف قیمت گزینه‌های بالاست. ریجنی را انتخاب کنید که با اکانت خودتان هم‌خوانی دارد؛ تحویل روی همان ریجنی انجام می‌شود که انتخاب کرده‌اید.",
+            "اگر ریجن اکانت‌تان را نمی‌دانید یا در فهرست نیست، پیش از ثبت سفارش از پشتیبانی تلگرام بپرسید تا سفارش روی ریجن اشتباه ثبت نشود.",
+         ],
+         faqTitle: "پرسش‌های پرتکرار درباره پرایم",
+         faqSubtitle: "اگر پاسخ پرسش شما اینجا نبود، پشتیبانی تلگرام در دسترس است.",
+         faq: {
+            credentials: {
+               q: "آیا برای خرید پرایم رمز استیم لازم است؟",
+               a: "خیر. ما هرگز رمز استیم یا کد Steam Guard را نمی‌پرسیم. ورود فقط در صفحه رسمی استیم انجام می‌شود و اگر جایی چنین چیزی از شما خواسته شد، آن را گزارش دهید.",
+            },
+            whichRegion: {
+               q: "ریجن اکانتم را از کجا ببینم؟",
+               a: "در تنظیمات اکانت استیم، بخش کشور یا منطقه. اگر مطمئن نیستید، پیش از پرداخت از پشتیبانی بپرسید؛ ریجن اشتباه یعنی تحویل انجام نمی‌شود.",
+            },
+            payment: {
+               q: "پرداخت از چه راهی انجام می‌شود؟",
+               a: "فقط از کیف پول تومانی. اگر موجودی کافی نیست، اول کیف پول را شارژ کنید. هیچ تبدیل ارزی و کارمزد پنهانی وجود ندارد.",
+            },
+            priceDiff: {
+               q: "چرا قیمت ریجن‌ها با هم فرق دارد؟",
+               a: "چون استیم قیمت‌گذاری منطقه‌ای دارد و پرایم در هر منطقه به یک قیمت عرضه می‌شود. این اختلاف از استیم می‌آید، نه از ما؛ به همین دلیل هم قابل چانه‌زنی نیست.",
+            },
+         },
+         ctaTitle: "ریجن خود را انتخاب کرده‌اید؟",
+         ctaSubtitle: "پس از انتخاب ریجن، سفارش را از تلگرام ثبت کنید تا موجودی کیف پول و زمان تحویل نهایی شود.",
+         ctaPrimary: "ثبت سفارش در تلگرام",
+         ctaSecondary: "شارژ کیف پول",
+      },
+
+      /**
+       * /tf2-keys — Mann Co. keys, priced per unit with a per-order cap.
+       */
+      tf2Keys: {
+         metaTitle: "خرید کلید TF2",
+         metaDescription: "خرید کلید TF2 با قیمت تومانی، موجودی لحظه‌ای و محاسبه‌گر تعداد تا سقف ۵۰ کلید در هر سفارش.",
+         badge: "TF2 · کلید",
+         heroTitle: "خرید کلید TF2",
+         heroSubtitle:
+            "کلید Mann Co. را با کیف پول تومانی بخرید؛ تعداد را انتخاب کنید و مبلغ قابل پرداخت را همان لحظه ببینید.",
+         pricePerKey: "قیمت هر کلید",
+         stockLabel: "موجودی",
+         stockUnit: "کلید",
+         /** Product header at the top of the calculator, above the numbers. */
+         productEyebrow: "آیتم Team Fortress 2",
+         productName: "کلید Mann Co.",
+         productTagline: "کلید طلایی Mann Co. برای باز کردن جعبه‌های TF2؛ پس از تأیید سفارش به لینک ترید شما تحویل داده می‌شود.",
+         quantityLabel: "تعداد کلید مورد نظر",
+         limitBefore: "حداکثر",
+         limitAfter: "کلید در هر سفارش",
+         quickPick: "انتخاب سریع",
+         decrease: "کاهش تعداد",
+         increase: "افزایش تعداد",
+         quantityInput: "تعداد کلید",
+         totalLabel: "مبلغ قابل پرداخت",
+         trust: {
+            payment: { title: "تراکنش ایمن", body: "پرداخت از کیف پول تومانی و ثبت سفارش در پنل کاربری." },
+            delivery: { title: "تحویل پس از تأیید", body: "کلید پس از تأیید سفارش به لینک ترید شما فرستاده می‌شود." },
+         },
+         orderIntro: "سلام، می‌خواهم کلید TF2 بخرم.",
+         orderQuantityLabel: "تعداد:",
+         orderPriceLabel: "مبلغ:",
+         orderCta: "ثبت سفارش در تلگرام",
+         walletCta: "شارژ کیف پول",
+
+         // --- Add to cart ---
+         addToCart: "افزودن به سبد خرید",
+         addedToCart: "به سبد خرید اضافه شد",
+         adding: "در حال افزودن…",
+         viewCart: "مشاهده سبد خرید",
+         telegramFallback: "یا سفارش را در تلگرام ثبت کنید",
+         unavailable:
+            "ارتباط با کاتالوگ برقرار نشد، پس قیمت و موجودی کلید فعلاً نمایش داده نمی‌شود. راهنمای پایین صفحه همچنان در دسترس است و می‌توانید سفارش را از تلگرام ثبت کنید.",
+         facts: {
+            stock: "کلید موجود",
+            price: "قیمت هر کلید (تومان)",
+            cap: "سقف هر سفارش (کلید)",
+         },
+         stepsTitle: "خرید کلید TF2 در چهار قدم",
+         stepsSubtitle: "کلید به اینونتوری Team Fortress 2 تحویل داده می‌شود، پس حساب باید تریدپذیر باشد.",
+         steps: [
+            { title: "احراز هویت", body: "با شماره موبایل خود وارد شوید؛ کلید فقط به حساب تأییدشده تحویل داده می‌شود." },
+            { title: "ثبت لینک ترید", body: "لینک ترید استیم خود را در پنل کاربری ذخیره کنید؛ بدون آن تحویل ممکن نیست." },
+            { title: "انتخاب تعداد و ثبت سفارش", body: "تعداد را انتخاب کنید، مبلغ قابل پرداخت را ببینید و سفارش را از تلگرام نهایی کنید." },
+            { title: "تحویل کلید", body: "پس از تأیید سفارش، کلید به لینک ترید شما فرستاده می‌شود و وضعیت در پنل به‌روز می‌گردد." },
+         ],
+         whatTitle: "کلید TF2 چیست؟",
+         whatParagraphs: [
+            "کلید Mann Co. آیتم رسمی بازی Team Fortress 2 است و برای باز کردن جعبه‌ها و کریت‌های همان بازی استفاده می‌شود. چون تقاضایش همیشه پایدار است، در بازار به‌عنوان یک واحد معامله شناخته می‌شود.",
+            "بسیاری از بازیکن‌های CS2 هم کلید TF2 می‌خرند، اما نه برای بازی کردن: با فروش کلید در بازار استیم می‌توان کیف پول استیم را با هزینه کمتر شارژ کرد. همین کاربرد است که کلید را از یک آیتم معمولی جدا می‌کند.",
+            "نکته‌ای که باید بدانید این است که کلید، اسکین نیست: به اینونتوری Team Fortress 2 شما می‌رود، نه به اینونتوری CS2.",
+         ],
+         limitsTitle: "سقف معامله و شرایط حساب",
+         limitsParagraphs: [
+            "استیم اجازه نگه داشتن بیش از ۵۰ کلید را در یک اکانت نمی‌دهد. به همین دلیل هر سفارش در فروشگاه هم به ۵۰ کلید محدود است؛ اگر تعداد بیشتری می‌خواهید، سفارش دوم را جدا ثبت کنید.",
+            "برای تحویل، اینونتوری حساب شما باید تریدپذیر باشد و Steam Guard موبایل روی آن فعال باشد. اگر حساب محدودیت ترید دارد، سفارش تا پایان محدودیت در حالت انتظار می‌ماند.",
+         ],
+         faqTitle: "پرسش‌های پرتکرار درباره کلید TF2",
+         faqSubtitle: "اگر پاسخ پرسش شما اینجا نبود، پشتیبانی تلگرام در دسترس است.",
+         faq: {
+            cs2Case: {
+               q: "آیا کلید TF2 کیس CS2 را باز می‌کند؟",
+               a: "خیر. کلید Mann Co. فقط جعبه و کریت Team Fortress 2 را باز می‌کند. کیس‌های سلاح CS2 کلید جداگانه خودشان را می‌خواهند.",
+            },
+            howToBuy: {
+               q: "چطور اینجا کلید TF2 بخرم؟",
+               a: "با شماره موبایل وارد شوید، لینک ترید را در پنل کاربری ذخیره کنید و اگر موجودی کم است کیف پول را شارژ کنید. تعداد را انتخاب کنید و سفارش را از تلگرام نهایی کنید.",
+            },
+            limits: {
+               q: "محدودیت تعداد چیست؟",
+               a: "هر سفارش حداکثر ۵۰ کلید است، چون استیم اجازه نگه داشتن بیش از این تعداد را در یک اکانت نمی‌دهد. خرید بیش از موجودی فروشگاه هم امکان‌پذیر نیست.",
+            },
+            requirements: {
+               q: "برای دریافت کلید چه چیزهایی لازم است؟",
+               a: "حساب تأییدشده با شماره موبایل، لینک ترید معتبر و Steam Guard موبایل روی حساب. اینونتوری هم باید تریدپذیر باشد.",
+            },
+            why: {
+               q: "چرا مردم کلید TF2 می‌خرند؟",
+               a: "بیشتر برای شارژ ارزان‌تر کیف پول استیم: کلید را می‌خرند و در بازار استیم می‌فروشند. بعضی هم برای باز کردن جعبه‌های TF2 یا معامله آیتم‌های همان بازی.",
+            },
+         },
+         ctaTitle: "تعداد کلید را مشخص کرده‌اید؟",
+         ctaSubtitle: "مبلغ را در محاسبه‌گر بالا ببینید و سفارش را از تلگرام ثبت کنید تا تحویل انجام شود.",
+         ctaPrimary: "ثبت سفارش در تلگرام",
+         ctaSecondary: "لینک ترید چیست؟",
       },
    },
    /**
@@ -967,11 +1814,29 @@ export interface NavLink {
    href: string
 }
 
-/** Placeholder destinations that already have labels in the dictionary. */
+/**
+ * The header's two shop links.
+ *
+ * Both are real routes: /cart is the review-and-pay page, and /orders forwards to
+ * /panel/orders, where an order actually lives alongside the rest of the account.
+ */
 export const faNavLinks: NavLink[] = [
-   { name: fa.links.orders, href: "/orders" },
    { name: fa.links.cart, href: "/cart" },
 ]
+
+/**
+ * Persian names for the two goods that are not products.
+ *
+ * A product carries its own title through the database, so nothing here is needed
+ * for skins. CS2 Prime and TF2 keys live in `service_prices`, which holds machine
+ * values only (`prime` + `argentina`) because the backend has no Persian copy -
+ * so the cart, the order history and the inventory all resolve their labels
+ * through here, via `orderItemLabel` in `app/lib/orderItems.ts`.
+ */
+export const faServiceLabels: Record<string, { name: string; variants: Record<string, string> }> = {
+   prime: { name: "پرایم CS2", variants: fa.info.prime.regions },
+   tf2_keys: { name: "کلید TF2", variants: { key: "مان کوفکتوری" } },
+}
 
 /**
  * Persian label for an admin sidebar entry, looked up by href.

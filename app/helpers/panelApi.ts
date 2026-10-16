@@ -4,6 +4,7 @@ import type {
    Order,
    OrdersSummary,
    PanelProfile,
+   PaymentConfig,
    PhoneChangeRequested,
    TradeOffer,
    TradeOfferStatus,
@@ -146,6 +147,40 @@ async function topUpWallet(amount: number, reference?: string): Promise<{ balanc
    }
 }
 
+/**
+ * Whether a payment gateway is actually connected, and the top-up bounds.
+ *
+ * While this says `configured: false` the wallet keeps using the demo top-up and
+ * the top-up button says so instead of sending anybody to a gateway that is not
+ * there. Connecting one is an `.env` change, not a code change.
+ */
+async function getPaymentConfig(): Promise<PaymentConfig> {
+   const res = await request("/payments/config")
+   const body = (await res.json()) as { payment?: PaymentConfig }
+   return body?.payment ?? { provider: "unconfigured", configured: false, sandbox: false, minTopup: 10000, maxTopup: 500000000 }
+}
+
+/**
+ * Open a top-up and get somewhere to send the customer.
+ *
+ * Answered with a 503 while no gateway is connected, which is a normal state here
+ * rather than a fault - so the caller shows the demo hint instead of an error.
+ */
+async function startTopUp(amount: number): Promise<{ redirectUrl: string } | null> {
+   const res = await fetch(`${API_BASE}/payments/intents`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      credentials: "include",
+      cache: "no-store",
+      body: JSON.stringify({ amount }),
+   })
+
+   if (!res.ok) return null
+
+   const body = (await res.json()) as { redirect_url?: string }
+   return body?.redirect_url ? { redirectUrl: body.redirect_url } : null
+}
+
 /* ------------------------------------------------------------------ wishlist */
 
 async function getWishlist(): Promise<{ items: WishlistItem[]; count: number }> {
@@ -191,6 +226,8 @@ export {
    respondToTradeOffer,
    getWallet,
    topUpWallet,
+   getPaymentConfig,
+   startTopUp,
    getWishlist,
    addToWishlist,
    removeFromWishlist,

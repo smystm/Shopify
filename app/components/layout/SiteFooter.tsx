@@ -5,6 +5,7 @@ import Image from "next/image"
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { ArrowUpLeftIcon, BanknotesIcon, BoltIcon, LifebuoyIcon, ShieldCheckIcon } from "@heroicons/react/24/outline"
 import { fa } from "@/app/lib/i18n/fa"
+import { SUPPORT_TELEGRAM_URL } from "@/app/lib/support"
 import BrandMark from "./BrandMark"
 import Reveal from "@/app/components/ui/Reveal"
 
@@ -96,7 +97,7 @@ const GROUPS: Array<{ title: string; links: FooterLink[] }> = [
          { label: fa.footer.links.contact, href: "/contact" },
          { label: fa.footer.links.faq, href: "/#faq" },
          { label: fa.footer.links.rules, href: "/rules" },
-         { label: fa.footer.links.telegram, href: "https://t.me/itemestoon_support", external: true },
+         { label: fa.footer.links.telegram, href: SUPPORT_TELEGRAM_URL, external: true },
          { label: fa.footer.links.whatIsTradeLink, href: "/trade-link" },
       ],
    },

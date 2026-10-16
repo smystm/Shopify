@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { motion, useReducedMotion } from "motion/react"
-import { WalletIcon, ArrowDownIcon, ArrowUpIcon, CreditCardIcon } from "@heroicons/react/24/outline"
-import type { WalletTransaction } from "@/app/contracts/panel"
-import { getWallet, topUpWallet } from "@/app/helpers/panelApi"
+import { WalletIcon, ArrowDownIcon, ArrowUpIcon, CreditCardIcon, InformationCircleIcon, CheckBadgeIcon } from "@heroicons/react/24/outline"
+import type { PaymentConfig, WalletTransaction } from "@/app/contracts/panel"
+import { getPaymentConfig, getWallet, startTopUp, topUpWallet } from "@/app/helpers/panelApi"
 import EmptyState from "@/app/components/ui/EmptyState"
 import Reveal from "@/app/components/ui/Reveal"
 import Button from "@/app/components/ui/Button"
@@ -25,6 +25,10 @@ export default function WalletClient() {
    const [transactions, setTransactions] = useState<WalletTransaction[]>([])
    const [loading, setLoading] = useState(true)
 
+   // The gateway's state, not the wallet's: null while unknown, so the card does
+   // not claim "not connected" before it has asked.
+   const [gateway, setGateway] = useState<PaymentConfig | null>(null)
+
    const [amount, setAmount] = useState("")
    const [busy, setBusy] = useState(false)
    const [hint, setHint] = useState<string | null>(null)
@@ -43,18 +47,53 @@ export default function WalletClient() {
             if (!cancelled) setLoading(false)
          })
 
+      getPaymentConfig()
+         .then((config) => {
+            if (!cancelled) setGateway(config)
+         })
+         .catch(() => {
+            // Unreachable config is the same situation as no gateway as far as the
+            // customer is concerned, and it keeps the demo path usable.
+            if (!cancelled) setGateway({ provider: "unconfigured", configured: false, sandbox: false, minTopup: 0, maxTopup: 0 })
+         })
+
       return () => {
          cancelled = true
       }
    }, [])
 
+   const configured = gateway?.configured === true
+
+   /**
+    * Add money to the wallet.
+    *
+    * With a gateway connected this opens an intent and follows the redirect: the
+    * gateway credits the wallet and sends the browser back. Nothing about an order
+    * goes through the gateway - it only ever tops the wallet up.
+    *
+    * With no gateway connected the demo top-up stays available, because otherwise
+    * there would be no way to fund a wallet at all and therefore no way to buy
+    * anything. That is the only reason it is still here.
+    */
    const handleTopUp = async () => {
       const value = Number(amount)
       if (!Number.isFinite(value) || value <= 0) return
 
       setBusy(true)
       setHint(null)
+
       try {
+         if (configured) {
+            const intent = await startTopUp(value)
+            if (!intent) {
+               setHint(fa.panel.wallet.gatewayFailed)
+               return
+            }
+            setHint(fa.panel.wallet.gatewayRedirecting)
+            window.location.href = intent.redirectUrl
+            return
+         }
+
          const res = await topUpWallet(value, "panel-demo")
          setBalance(res.balance)
          setTransactions(res.transactions)
@@ -102,8 +141,31 @@ export default function WalletClient() {
                </div>
 
                <div className="rounded-2xl border border-border-strong bg-surface p-6 shadow-md shadow-navy-900/5 lg:col-span-2">
-                  <h2 className="text-base font-bold text-navy-950 dark:text-white">{fa.panel.wallet.topup}</h2>
-                  <p className="mt-1 text-xs leading-5 text-navy-500 dark:text-navy-400">{fa.panel.wallet.topupDemoHint}</p>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                     <h2 className="text-base font-bold text-navy-950 dark:text-white">{fa.panel.wallet.topup}</h2>
+
+                     {gateway ? (
+                        <span
+                           className={[
+                              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold",
+                              configured
+                                 ? "bg-emerald-600/15 text-emerald-800 dark:text-emerald-300"
+                                 : "bg-navy-100 text-navy-600 dark:bg-navy-800 dark:text-navy-300",
+                           ].join(" ")}
+                        >
+                           <CheckBadgeIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                           {configured
+                              ? gateway.sandbox
+                                 ? fa.panel.wallet.gatewaySandbox
+                                 : fa.panel.wallet.gatewayConnected
+                              : fa.panel.wallet.gatewayTitle}
+                        </span>
+                     ) : null}
+                  </div>
+
+                  <p className="mt-1 text-xs leading-5 text-navy-500 dark:text-navy-400">
+                     {configured ? fa.panel.wallet.gatewayConnected : fa.panel.wallet.topupDemoHint}
+                  </p>
 
                   <label htmlFor="topup-amount" className="sr-only">
                      {fa.panel.wallet.topupAmount}
@@ -123,7 +185,7 @@ export default function WalletClient() {
 
                   <Button onClick={handleTopUp} disabled={busy || !amount} className="mt-3">
                      <CreditCardIcon className="h-4 w-4" aria-hidden="true" />
-                     {fa.panel.wallet.topupSubmit}
+                     {configured ? fa.panel.wallet.gatewayCta : fa.panel.wallet.topupSubmit}
                   </Button>
 
                   {hint ? (
@@ -134,6 +196,19 @@ export default function WalletClient() {
                      >
                         {hint}
                      </motion.p>
+                  ) : null}
+
+                  {/* The one honest statement of where the payment rail stands. */}
+                  {gateway && !configured ? (
+                     <p className="mt-4 flex items-start gap-2 rounded-xl border border-border-subtle bg-navy-50/60 px-3.5 py-3 text-[11px] leading-5 text-navy-600 dark:bg-navy-900/40 dark:text-navy-300">
+                        <InformationCircleIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        <span>
+                           <span className="block font-bold text-navy-800 dark:text-navy-100">
+                              {fa.panel.wallet.gatewayPending}
+                           </span>
+                           {fa.panel.wallet.gatewayPendingBody}
+                        </span>
+                     </p>
                   ) : null}
                </div>
             </div>

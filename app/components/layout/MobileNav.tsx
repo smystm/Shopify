@@ -38,7 +38,7 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
    }
 
    return (
-      <Dialog dir="rtl" open={open} onClose={onClose} className="relative z-50 lg:hidden">
+      <Dialog dir="rtl" open={open} onClose={onClose} className="relative z-50 xl:hidden">
          <DialogBackdrop
             transition
             className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm transition-opacity duration-300 ease-linear data-closed:opacity-0"
@@ -82,6 +82,16 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
                         {fa.nav.products}
                      </HeaderNavLink>
                   </motion.div>
+                  <motion.div variants={row}>
+                     <HeaderNavLink href="/prime" variant="drawer" onClick={onClose}>
+                        {fa.nav.prime}
+                     </HeaderNavLink>
+                  </motion.div>
+                  <motion.div variants={row}>
+                     <HeaderNavLink href="/tf2-keys" variant="drawer" onClick={onClose}>
+                        {fa.nav.Tf2Keys}
+                     </HeaderNavLink>
+                  </motion.div>
 
                   {signedIn && (
                      <>
@@ -99,6 +109,17 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
                         )}
                      </>
                   )}
+
+                  <motion.div variants={row}>
+                     <HeaderNavLink href="/about" variant="drawer" onClick={onClose}>
+                        {fa.nav.about}
+                     </HeaderNavLink>
+                  </motion.div>
+                  <motion.div variants={row}>
+                     <HeaderNavLink href="/contact" variant="drawer" onClick={onClose}>
+                        {fa.nav.contact}
+                     </HeaderNavLink>
+                  </motion.div>
 
                   <motion.div variants={row} className="my-2 border-t border-navy-100 dark:border-navy-800" />
 

@@ -36,9 +36,14 @@ export interface OrderItem {
    id: number
    order_id: number
    product_id: number | null
-   /** Snapshot — survives the product being edited or deleted. */
-   title: string
+   /** Snapshot for a skin; null for a service line. */
+   title: string | null
    price: number
+   /** 1 for a skin (a unique item); higher for a service line. */
+   quantity: number
+   /** Service lines only: machine values, labelled via app/lib/orderItems.ts. */
+   service: string | null
+   variant: string | null
    image: string | null
    created_at: number | null
 }
@@ -97,8 +102,14 @@ export interface WishlistItem {
 export interface InventoryItem {
    id: number
    product_id: number | null
-   title: string
+   /** Snapshot for a skin; null for a service line. */
+   title: string | null
    price: number
+   /** 1 for a skin; higher for a service line. */
+   quantity: number
+   /** Service lines only: machine values, labelled via app/lib/orderItems.ts. */
+   service: string | null
+   variant: string | null
    image: string | null
    order_id: number
    acquired_at: number | null
@@ -111,6 +122,8 @@ export interface PanelProfile {
    phone: string | null
    email: string | null
    steam_id: string | null
+   /** Steam persona picture. Null until the account has a Steam login. */
+   avatar: string | null
    trade_url: string | null
    permission: Permission | null
    created_at: number | null
@@ -118,12 +131,38 @@ export interface PanelProfile {
    balance: number
 }
 
-/** The only fields PATCH /user accepts. `phone` is deliberately NOT here. */
+/**
+ * The only fields PATCH /user accepts.
+ *
+ * `phone` is deliberately absent: it changes only through a verified code.
+ *
+ * `name`, `steam_id` and `avatar` are accepted only while the shop is signing
+ * people in with a phone number - they are dropped from the server's allow-list
+ * automatically once AUTH_PROVIDER=steam, because Steam then owns the identity.
+ * They stay here so the form compiles either way.
+ */
 export interface EditableProfile {
    name?: string
    email?: string
    steam_id?: string
    trade_url?: string
+}
+
+/**
+ * State of the payment rail, from `GET /payments/config`.
+ *
+ * The gateway can only ever credit the wallet - it never pays for an order - so
+ * this says whether topping up through it is possible yet, not whether orders can
+ * be paid for. Orders are paid from the balance either way.
+ */
+export interface PaymentConfig {
+   /** `zarinpal` once connected; `unconfigured` while nothing is plugged in. */
+   provider: string
+   configured: boolean
+   sandbox: boolean
+   /** Toman bounds for a single top-up. */
+   minTopup: number
+   maxTopup: number
 }
 
 /**

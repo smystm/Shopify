@@ -26,6 +26,7 @@ import OrderStatusBadge, { TradeOfferStatusBadge } from "@/app/components/ui/Ord
 import { AvatarTile, IdentityTitle, usePersianGreeting } from "@/app/components/panel/PanelIdentity"
 import ProfileCard from "@/app/components/panel/ProfileCard"
 import { fa } from "@/app/lib/i18n/fa"
+import { orderItemImage, orderItemLabel } from "@/app/lib/orderItems"
 
 interface PanelDashboardProps {
    /** Read from the `shopy-user` cookie on the server, so there is no empty flash. */
@@ -173,37 +174,45 @@ export default function PanelDashboard({ user }: PanelDashboardProps) {
                      </Reveal>
                   ) : (
                      <div className="mt-4 space-y-3">
-                        {activeOrders.slice(0, 3).map((order) => (
-                           <Link
-                              key={order.id}
-                              href="/panel/orders"
-                              className="group flex items-center gap-4 rounded-2xl border border-border-strong bg-surface p-4 shadow-md shadow-navy-900/5 transition-all duration-300 hover:border-brand-400 hover:shadow-lg hover:shadow-brand-500/10"
-                           >
-                              <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-muted">
-                                 {order.items[0]?.image ? (
-                                    <Image
-                                       src={order.items[0].image}
-                                       alt={order.items[0].title}
-                                       fill
-                                       sizes="56px"
-                                       className="object-contain p-2"
-                                       unoptimized
-                                    />
-                                 ) : (
-                                    <ShoppingBagIcon className="h-6 w-6 text-navy-400" aria-hidden="true" />
-                                 )}
-                              </span>
-                              <span className="min-w-0 flex-1">
-                                 <span className="block truncate text-sm font-bold text-navy-950 dark:text-white">
-                                    {order.items[0]?.title ?? `#${order.id}`}
+                        {activeOrders.slice(0, 3).map((order) => {
+                           // A service line has no product title, so the preview reads
+                           // through the same resolver the order's own page uses.
+                           const first = order.items[0]
+                           const label = first ? orderItemLabel(first) : `#${order.id}`
+                           const image = first ? orderItemImage(first) : null
+
+                           return (
+                              <Link
+                                 key={order.id}
+                                 href={`/panel/orders/${order.id}`}
+                                 className="group flex items-center gap-4 rounded-2xl border border-border-strong bg-surface p-4 shadow-md shadow-navy-900/5 transition-all duration-300 hover:border-brand-400 hover:shadow-lg hover:shadow-brand-500/10"
+                              >
+                                 <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-subtle bg-surface-muted">
+                                    {image ? (
+                                       <Image
+                                          src={image}
+                                          alt=""
+                                          fill
+                                          sizes="56px"
+                                          className={`p-2 ${first?.service ? "object-cover" : "object-contain"}`}
+                                          unoptimized
+                                       />
+                                    ) : (
+                                       <ShoppingBagIcon className="h-6 w-6 text-navy-400" aria-hidden="true" />
+                                    )}
                                  </span>
-                                 <span className="mt-0.5 block text-xs text-navy-500 dark:text-navy-400">
-                                    {formatDate(order.created_at)}
+                                 <span className="min-w-0 flex-1">
+                                    <span className="block truncate text-sm font-bold text-navy-950 dark:text-white">
+                                       {label || `#${order.id}`}
+                                    </span>
+                                    <span className="mt-0.5 block text-xs text-navy-500 dark:text-navy-400">
+                                       {formatDate(order.created_at)}
+                                    </span>
                                  </span>
-                              </span>
-                              <OrderStatusBadge status={order.status} className="shrink-0" />
-                           </Link>
-                        ))}
+                                 <OrderStatusBadge status={order.status} className="shrink-0" />
+                              </Link>
+                           )
+                        })}
                      </div>
                   )}
                </div>
@@ -289,8 +298,7 @@ export default function PanelDashboard({ user }: PanelDashboardProps) {
                      title={fa.panel.actions.cart.title}
                      body={fa.panel.actions.cart.body}
                      cta={fa.panel.actions.cart.cta}
-                     disabled
-                     badge={fa.panel.actions.comingSoonBadge}
+                     href="/cart"
                   />
                </Reveal>
 
@@ -300,8 +308,7 @@ export default function PanelDashboard({ user }: PanelDashboardProps) {
                      title={fa.panel.actions.orders.title}
                      body={fa.panel.actions.orders.body}
                      cta={fa.panel.actions.orders.cta}
-                     disabled
-                     badge={fa.panel.actions.comingSoonBadge}
+                     href="/panel/orders"
                   />
                </Reveal>
             </div>
