@@ -1,7 +1,6 @@
 import type { ServiceName, ServicePrice } from "@/app/contracts/services"
 import { getLoginToken } from "./auth"
-
-const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
+import { API_BASE } from "@/app/lib/apiBase"
 
 // Always send the raw JWT header expected by the backend when available.
 function authHeaders(token?: string): Record<string, string> {

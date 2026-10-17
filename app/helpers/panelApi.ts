@@ -12,8 +12,7 @@ import type {
    WishlistItem,
 } from "@/app/contracts/panel"
 import { getLoginToken } from "./auth"
-
-const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
+import { API_BASE } from "@/app/lib/apiBase"
 
 // Always send the raw JWT header the backend expects, when we have one.
 function authHeaders(): Record<string, string> {

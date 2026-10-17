@@ -1,7 +1,6 @@
 import type { AdminProduct, Category, ProductSort } from "@/app/contracts/products"
 import { getLoginToken } from "./auth"
-
-const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
+import { API_BASE } from "@/app/lib/apiBase"
 
 // getCategories — fetch the list of all categories.
 async function getCategories(): Promise<Category[]> {

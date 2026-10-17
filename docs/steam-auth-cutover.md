@@ -14,10 +14,10 @@ Valve issues those to you.
 
 | Piece | Where | State |
 |---|---|---|
-| OpenID 2.0 protocol, nonce, RSA-SHA1 verification, live re-check | `back-authWithPhone/app/services/steam.js` | done, unit-tested |
+| OpenID 2.0 protocol, nonce, RSA-SHA1 verification, live re-check | `shopify-back/app/services/steam.js` | done, unit-tested |
 | Persona name + avatar from `GetPlayerSummaries` | same | done |
-| Sign-in endpoints (`/auth/mode`, `/auth/steam/login`, `/auth/steam/exchange`) | `back-authWithPhone/routes/steam.js` | done |
-| Link Steam onto an account that already exists | `back-authWithPhone/routes/steamLink.js` | done |
+| Sign-in endpoints (`/auth/mode`, `/auth/steam/login`, `/auth/steam/exchange`) | `shopify-back/routes/steam.js` | done |
+| Link Steam onto an account that already exists | `shopify-back/routes/steamLink.js` | done |
 | `avatar` column + unique index on `steam_id` | `app/db/createDatabase.js` | migrated on boot |
 | Storefront pages that ask the backend which sign-in it is serving | `app/(myPages)/(auth)/login`, `.../register` | done |
 | Callback that turns Steam's reply into a session cookie | `app/auth/steam/callback/route.ts` | done |
@@ -51,7 +51,7 @@ it the sign-in still works, the customer just has no Steam name or picture.
 *Website* → add your frontend origin (e.g. `https://your-domain`). Take the
 exact origin; Steam compares it character for character.
 
-**2. Fill in `back-authWithPhone/.env`.** The block is already written and
+**2. Fill in `shopify-back/.env`.** The block is already written and
 commented:
 
 ```
@@ -116,7 +116,7 @@ account already has, because a phone was how they signed in.
 
 ## Rolling back
 
-Change one line in `back-authWithPhone/.env`:
+Change one line in `shopify-back/.env`:
 
 ```
 AUTH_PROVIDER=phone
@@ -155,7 +155,7 @@ rather than the cutover itself.
 
 | Symptom | Cause |
 |---|---|
-| `/api/auth/mode` still says `phone` | `.env` was not loaded. `dotenv` reads the file at `back-authWithPhone/.env` by absolute path, independent of the working directory. |
+| `/api/auth/mode` still says `phone` | `.env` was not loaded. `dotenv` reads the file at `shopify-back/.env` by absolute path, independent of the working directory. |
 | `/auth/steam/login` returns 503 | `STEAM_OPENID_PUBLIC_KEY` or `STEAM_RETURN_URL` is missing or unparseable. The backend log says which. |
 | Steam rejects the return URL | It is not registered under *Website* on the partner site, or does not match character for character. |
 | Every signature fails | The public key is wrong, not the user. Re-copy it from Valve's documentation. |

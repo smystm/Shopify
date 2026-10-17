@@ -28,7 +28,7 @@ export default async function AdminProductsPage() {
       }
    } catch (err) {
       const reason = err instanceof Error ? err.message : String(err)
-      loadError = `Could not load products from the API (${reason}). Make sure the phone-auth backend (back-authWithPhone) is running on :5000 with the protected GET /api/products endpoint, and that you are logged in with a fresh phone-verified token.`
+      loadError = `Could not load products from the API (${reason}). Make sure the API backend (shopify-back) is running on :5000 with the protected GET /api/products endpoint, and that you are logged in with a fresh phone-verified token.`
    }
 
    if (loadError) {

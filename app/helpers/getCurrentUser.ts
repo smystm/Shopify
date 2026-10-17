@@ -1,6 +1,5 @@
 import type { AuthUser } from "@/app/lib/store/authSlice"
-
-const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
+import { API_BASE } from "@/app/lib/apiBase"
 
 // Fetches the logged-in user's id and permission from the backend.
 export async function getCurrentUser(token: string): Promise<AuthUser | null> {

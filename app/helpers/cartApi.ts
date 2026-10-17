@@ -1,6 +1,7 @@
 import type { Cart, CartCount, CartIssue, CartLine } from "@/app/contracts/cart"
 import type { Order } from "@/app/contracts/panel"
 import { getLoginToken } from "./auth"
+import { API_BASE } from "@/app/lib/apiBase"
 
 /**
  * The cart and its checkout, talked to from the browser.
@@ -12,8 +13,6 @@ import { getLoginToken } from "./auth"
  * backend's machine `code` is carried through on the error object and the UI
  * branches on it - never on the message, which is English and not shown.
  */
-
-const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
 
 /**
  * Fired on `window` whenever a cart-changing call succeeds.

@@ -8,7 +8,7 @@
  * This is also what lets both providers ship at once. Nothing in the storefront
  * assumes Steam exists, and nothing has to be rebuilt to switch providers.
  */
-const API_BASE = process.env.BACKEND_API_URL ?? "http://localhost:5000/api"
+import { API_BASE } from "@/app/lib/apiBase"
 
 export type AuthProvider = "steam" | "phone"
 
@@ -39,8 +39,15 @@ export async function getAuthMode(): Promise<AuthMode> {
  * A plain navigation, not fetch: the whole point is to leave for Steam, and doing
  * it client-side would only add a step that can fail. `STEAM_RETURN_URL` points
  * back at this app, so Steam lands on /auth/steam/callback.
+ *
+ * Spelled out as a relative path rather than built from `API_BASE`, and that is
+ * not laziness. `API_BASE` is the absolute backend URL on the server and `/api` in
+ * the browser, so an href built from it would be rendered one way and hydrated the
+ * other - a mismatch React reports and the browser then overwrites. These two are
+ * only ever used as an `href`, always in the browser, so they take the same value
+ * in both places. The catch-all handler relays the redirect Steam sends back.
  */
-export const STEAM_LOGIN_URL = `${API_BASE}/auth/steam/login`
+export const STEAM_LOGIN_URL = "/api/auth/steam/login"
 
 /** Same, for the "link Steam to my existing account" flow in the panel. */
-export const STEAM_LINK_URL = `${API_BASE}/auth/link`
+export const STEAM_LINK_URL = "/api/auth/link"

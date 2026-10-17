@@ -9,7 +9,6 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-/public/images/weapons-real/skins
 
 # testing
 /coverage
@@ -33,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...but the template is not a secret, and `backend/.env.example` is the only
+# record of what the API needs in order to run in production. Without this it
+# would be ignored along with the real ones and quietly never committed.
+!.env.example
 
 # vercel
 .vercel
