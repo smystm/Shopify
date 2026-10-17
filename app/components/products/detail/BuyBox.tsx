@@ -14,7 +14,7 @@ import {
    TruckIcon,
 } from "@heroicons/react/24/outline"
 import type { AdminProduct } from "@/app/contracts/products"
-import { CartApiError, addProductToCart } from "@/app/helpers/cartApi"
+import { CartApiError, addProductToCart, isSignedOut } from "@/app/helpers/cartApi"
 import { rememberCartIntent } from "@/app/helpers/cartIntent"
 import { fa } from "@/app/lib/i18n/fa"
 import { formatToman } from "@/app/lib/formatPrice"
@@ -80,7 +80,7 @@ export default function BuyBox({ product }: { product: AdminProduct }) {
          setAdded(true)
          setTimeout(() => setAdded(false), 2600)
       } catch (error) {
-         if (error instanceof CartApiError && error.status === 403) {
+         if (isSignedOut(error)) {
             rememberCartIntent({ kind: "product", productId: product.id })
             setProblem({ text: fa.cart.signInToAddHint, signIn: true })
             return

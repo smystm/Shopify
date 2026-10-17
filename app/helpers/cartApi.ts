@@ -48,6 +48,25 @@ export class CartApiError extends Error {
    }
 }
 
+/**
+ * Did this call fail because there is no usable session?
+ *
+ * One question, one answer, in one place. Every caller that wants to offer a
+ * sign-in link rather than an error message used to ask for `status === 403` by
+ * hand, which quietly coupled five components to one particular status code - and
+ * to the *old* one. The backend answers 401 when a token is missing, expired or
+ * forged and 403 when a valid session may not do this particular thing, which is
+ * the distinction that actually matters: the first is worth asking someone to log
+ * in again, the second is not.
+ *
+ * Accepting both keeps every caller correct whichever one the backend chooses to
+ * send, so neither a future status-code change nor an older deployed backend can
+ * quietly turn "please sign in" into "something went wrong".
+ */
+export function isSignedOut(error: unknown): boolean {
+   return error instanceof CartApiError && (error.status === 401 || error.status === 403)
+}
+
 async function request(path: string, init?: RequestInit): Promise<unknown> {
    const token = getLoginToken()
 

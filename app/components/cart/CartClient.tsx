@@ -17,7 +17,7 @@ import {
    XCircleIcon,
 } from "@heroicons/react/24/outline"
 import type { Cart, CartLine } from "@/app/contracts/cart"
-import { CartApiError, checkout, clearCart, getCart, removeCartLine, setCartQuantity } from "@/app/helpers/cartApi"
+import { CartApiError, checkout, clearCart, getCart, isSignedOut, removeCartLine, setCartQuantity } from "@/app/helpers/cartApi"
 import { getPaymentConfig, getProfile } from "@/app/helpers/panelApi"
 import EmptyState from "@/app/components/ui/EmptyState"
 import Reveal from "@/app/components/ui/Reveal"
@@ -291,9 +291,9 @@ export default function CartClient() {
          setCart(await getCart())
          setSignedOut(false)
       } catch (error) {
-         // 403 is the auth middleware, not a fault: the cart is account-backed, so
-         // a signed-out visitor gets an invitation rather than an error.
-         if (error instanceof CartApiError && error.status === 403) {
+         // No usable session is not a fault: the cart is account-backed, so a
+         // signed-out visitor gets an invitation rather than an error.
+         if (isSignedOut(error)) {
             setSignedOut(true)
          } else {
             setIssue(describeIssue(error))

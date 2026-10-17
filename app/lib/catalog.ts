@@ -1,10 +1,17 @@
 /**
  * Shared catalogue vocabulary.
  *
- * Categories and subcategories are directory names under
- * `public/images/weapons-real/skins/<category>/<subcategory>/product.png`, so
- * the values here are those directory names verbatim. Copy (labels) lives in
- * `fa.ts`; only non-translatable data belongs in this file.
+ * Categories and subcategories are the `value` and `subcategory` the API reports
+ * for each product, so these names match whatever is actually in stock. Copy
+ * (labels) lives in `fa.ts`; only non-translatable data belongs in this file.
+ *
+ * This used to say the values were "directory names under
+ * public/images/weapons-real/skins". That was true once, and then stopped being
+ * true in a way that cost an afternoon: the backend derived its categories from a
+ * folder of images in this repository, so moving the two projects apart emptied
+ * the category list without changing a line of frontend code. The catalogue is
+ * now read from the products themselves, and nothing here should be read as a
+ * statement about the filesystem again.
  */
 
 import type { AdminProduct } from "@/app/contracts/products"
@@ -12,10 +19,15 @@ import type { AdminProduct } from "@/app/contracts/products"
 /**
  * Browse order for the category strip.
  *
- * Categories arrive from the backend as an alphabetical directory listing,
- * which is an arbitrary order for a browse strip: the highest-volume
- * categories end up scattered and the catch-all bucket sits in the middle.
- * This pins a deliberate order instead and leaves `other` last.
+ * A presentation choice, nothing more: the API returns categories in the
+ * catalogue's own numbering, which is alphabetical by construction - an arbitrary
+ * order for a browse strip, since the highest-volume categories end up scattered
+ * and the catch-all bucket sits in the middle.
+ *
+ * This pins a deliberate order instead and leaves `other` last. It sorts rather
+ * than filters: anything absent from this list is ranked after everything in it
+ * and sorted alphabetically among its peers, so a category added to the catalogue
+ * tomorrow still appears on the strip.
  */
 export const CATEGORY_ORDER: readonly string[] = ["knife", "gloves", "pistol", "rifle", "sniper", "smg", "shotgun", "machinegun", "agent", "case", "music_kit", "other"]
 

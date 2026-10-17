@@ -16,7 +16,7 @@ import {
 } from "@heroicons/react/24/outline"
 import Reveal from "@/app/components/ui/Reveal"
 import type { ServicePrice } from "@/app/contracts/services"
-import { CartApiError, addServiceToCart } from "@/app/helpers/cartApi"
+import { CartApiError, addServiceToCart, isSignedOut } from "@/app/helpers/cartApi"
 import { rememberCartIntent } from "@/app/helpers/cartIntent"
 import { formatToman } from "@/app/lib/formatPrice"
 import { PRIME_ARTWORK, REGION_FLAGS, REGION_LABELS } from "@/app/lib/regionAssets"
@@ -98,7 +98,7 @@ export default function PrimeBuyCard({ regions }: PrimeBuyCardProps) {
          setAddedVariant(selected.variant)
          setTimeout(() => setAddedVariant(null), 3500)
       } catch (error) {
-         if (error instanceof CartApiError && error.status === 403) {
+         if (isSignedOut(error)) {
             rememberCartIntent({ kind: "service", service: selected.service, variant: selected.variant, quantity: 1 })
             setProblem({ text: fa.cart.signInToAddHint, signIn: true })
             return

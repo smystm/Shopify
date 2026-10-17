@@ -16,7 +16,7 @@ import {
    TruckIcon,
 } from "@heroicons/react/24/outline"
 import Reveal from "@/app/components/ui/Reveal"
-import { CartApiError, addServiceToCart } from "@/app/helpers/cartApi"
+import { CartApiError, addServiceToCart, isSignedOut } from "@/app/helpers/cartApi"
 import { rememberCartIntent } from "@/app/helpers/cartIntent"
 import { formatToman } from "@/app/lib/formatPrice"
 import { TF2_KEY_ARTWORK } from "@/app/lib/regionAssets"
@@ -124,7 +124,7 @@ export default function KeysCalculator({ service, variant, price, stock, maxQuan
          setAdded(true)
          setTimeout(() => setAdded(false), 3500)
       } catch (error) {
-         if (error instanceof CartApiError && error.status === 403) {
+         if (isSignedOut(error)) {
             rememberCartIntent({ kind: "service", service, variant, quantity })
             setProblem({ text: fa.cart.signInToAddHint, signIn: true })
             return

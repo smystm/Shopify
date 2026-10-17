@@ -21,9 +21,14 @@ interface Tile {
 }
 
 /**
- * A real product from each category doubles as that category's thumbnail — the
- * category directories hold no image of their own, only their subcategories do.
- * Categories with nothing in stock fall back to the glyph.
+ * A real product from each category doubles as that category's thumbnail, since
+ * the API reports no image for a category itself - only the products in it have
+ * one. Categories with nothing in stock fall back to the glyph.
+ *
+ * Note what is *not* happening here: the tiles come from the categories the API
+ * returns, and the images from the products it returns. Neither is looked up in
+ * the image folders on disk, which is why this still works though the backend no
+ * longer reads them.
  */
 function buildTiles(categories: Category[], products: AdminProduct[]): Tile[] {
    const firstImage = new Map<string, string>()

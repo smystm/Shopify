@@ -1,4 +1,4 @@
-import { CartApiError, addProductToCart, addServiceToCart } from "./cartApi"
+import { CartApiError, addProductToCart, addServiceToCart, isSignedOut } from "./cartApi"
 
 /**
  * The one thing a signed-out customer's click leaves behind.
@@ -96,7 +96,7 @@ export async function replayCartIntent(): Promise<ReplayResult> {
       forgetCartIntent()
       return { status: "added", intent }
    } catch (error) {
-      if (error instanceof CartApiError && error.status === 403) {
+      if (isSignedOut(error)) {
          return { status: "waiting" }
       }
 

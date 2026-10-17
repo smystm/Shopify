@@ -770,7 +770,15 @@ export const fa = {
           * category - see CATEGORY_LABELS at the top of this file.
           */
          labels: CATEGORY_LABELS,
-         empty: "هنوز محصولی در کاتالوگ ثبت نشده است.",
+          /**
+           * Shown when there are no *categories* to browse, which is what this
+           * section tiles. It used to say "no products in the catalogue yet",
+           * which is wrong for this section and actively misleading when it does
+           * appear: a shop with 82 products and a broken category list rendered
+           * exactly this sentence, and it read as though the whole catalogue were
+           * empty. It pointed the search at the wrong table entirely.
+           */
+          empty: "هنوز دسته‌بندی‌ای برای نمایش وجود ندارد.",
       },
 
       /** Newest arrivals, straight from the live catalogue. */
