@@ -407,7 +407,7 @@ body {
 }
 
 .dark .scrollbar-polished {
-   scrollbar-color: var(--brand-400) transparent;
+   scrollbar-color: var(--brand-800) transparent;
 }
 
 .dark .scrollbar-polished::-webkit-scrollbar-thumb {
