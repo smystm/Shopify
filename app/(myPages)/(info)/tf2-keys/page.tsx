@@ -6,6 +6,7 @@ import FaqAccordion from "@/app/components/ui/FaqAccordion"
 import InfoCta from "@/app/components/ui/InfoCta"
 import Reveal from "@/app/components/ui/Reveal"
 import KeysCalculator from "@/app/components/info/tf2-keys/KeysCalculator"
+import KeysSellCard from "@/app/components/info/tf2-keys/KeysSellCard"
 import KeysFacts from "@/app/components/info/tf2-keys/KeysFacts"
 import KeysHowTo from "@/app/components/info/tf2-keys/KeysHowTo"
 import KeysGuide from "@/app/components/info/tf2-keys/KeysGuide"
@@ -60,7 +61,14 @@ export default async function Tf2KeysPage() {
 
          {price !== null ? (
             <>
-               <KeysCalculator service={service} variant={variant} price={price} stock={stock} maxQuantity={maxQuantity} />
+               {/* The two sides of the same market sit side by side on wide
+                   screens: the buy calculator carries the store as a seller, and
+                   the sell card carries it as a buyer. Each component owns its
+                   section padding, so the pairing is purely a page-level grid. */}
+               <div className="mx-auto grid max-w-6xl items-stretch gap-0 lg:grid-cols-[minmax(0,1.7fr)_minmax(300px,1fr)] lg:gap-8">
+                  <KeysCalculator service={service} variant={variant} price={price} stock={stock} maxQuantity={maxQuantity} />
+                  <KeysSellCard />
+               </div>
                <KeysFacts price={price} stock={stock} maxQuantity={maxQuantity} />
             </>
          ) : (

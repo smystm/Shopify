@@ -9,6 +9,7 @@ import { ArrowRightIcon, CheckCircleIcon, ClipboardDocumentCheckIcon, ShoppingBa
 import type { Order } from "@/app/contracts/panel"
 import { getOrder } from "@/app/helpers/panelApi"
 import OrderStatusBadge from "@/app/components/ui/OrderStatusBadge"
+import OrderTimeline from "@/app/components/panel/OrderTimeline"
 import EmptyState from "@/app/components/ui/EmptyState"
 import Reveal from "@/app/components/ui/Reveal"
 import { fa } from "@/app/lib/i18n/fa"
@@ -260,6 +261,16 @@ export default function OrderDetailClient({ orderId, justPlaced }: OrderDetailCl
                      {fa.panel.orders.deliveryTitle}
                   </h2>
                   <p className="mt-2 text-xs leading-6 text-navy-600 dark:text-navy-300">{fa.panel.orders.deliveryBody}</p>
+
+                  {/* Where the order sits: placed -> trade request sent -> delivered.
+                      A pure service order skips the trade step, so its tracker has
+                      fewer stages than a skin's. */}
+                  <div className="mt-4">
+                     <OrderTimeline
+                        status={order.status}
+                        includesTradeStep={order.items.some((item) => item.product_id)}
+                     />
+                  </div>
 
                   <Link
                      href="/panel/offers"

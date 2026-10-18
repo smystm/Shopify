@@ -1,4 +1,4 @@
-import { ChartPieIcon, DocumentDuplicateIcon, FolderIcon, HomeIcon, UsersIcon } from "@heroicons/react/24/outline"
+import { ChartPieIcon, DocumentDuplicateIcon, FolderIcon, HomeIcon, UsersIcon, ClockIcon } from "@heroicons/react/24/outline"
 import type { ComponentType, SVGProps } from "react"
 
 export interface AdminNavItem {
@@ -9,6 +9,7 @@ export interface AdminNavItem {
 
 export const adminNavigation: AdminNavItem[] = [
     { name: "Dashboard", href: "/admin", icon: HomeIcon },
+    { name: "Orders", href: "/admin/orders", icon: ClockIcon },
     { name: "Users", href: "/admin/user", icon: UsersIcon },
     { name: "Products", href: "/admin/products", icon: FolderIcon },
     { name: "Documents", href: "/admin/documents", icon: DocumentDuplicateIcon },

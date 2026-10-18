@@ -12,6 +12,18 @@
 export const SUPPORT_TELEGRAM_URL = "https://t.me/itemestoon_support"
 
 /**
+ * The Telegram bot the store buys TF2 keys through.
+ *
+ * This is a store *buying*, not supporting: the keys page's "sell to us" card
+ * hands the customer to the bot, which walks them through pricing and the
+ * Steam trade. It stays separate from `SUPPORT_TELEGRAM_URL` because the two
+ * conversations disagree - one is a manned help desk, the other an automated
+ * counter-offer flow - and pointing hopeful sellers at a support inbox would
+ * strand them.
+ */
+export const SELL_TELEGRAM_BOT_URL = "https://t.me/biastore_bot"
+
+/**
  * Support mailbox.
  *
  * Deliberately empty: no mailbox has been provisioned for the store yet, and a

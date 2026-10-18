@@ -30,6 +30,8 @@ export default function ProductCreateDialog({ open, suggestedNumber, onClose, on
                 category: values.category,
                 price: values.price,
                 image: values.image,
+                count: values.count,
+                ...values.specs,
             })
             onCreated(created)
             toast.success(fa.admin.toast.added)

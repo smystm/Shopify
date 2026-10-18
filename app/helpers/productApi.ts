@@ -20,7 +20,28 @@ async function getCategories(): Promise<Category[]> {
    return []
 }
 
-interface ProductPayload {
+/**
+ * The product fields POST/PUT accept.
+ *
+ * `specs` carries the optional CS2 specification columns - exterior, float
+ * band, rarity and friends. Absent keys are left alone by the backend, so an
+ * older caller that skips them keeps today's behaviour; `undefined` values
+ * are dropped when the body is serialized, which reads as "not sent".
+ */
+export interface ProductSpecsPayload {
+    exterior?: string | null
+    float_min?: number | null
+    float_max?: number | null
+    stattrak?: number | null
+    souvenir?: number | null
+    rarity?: string | null
+    collection?: string | null
+    release_at?: number | null
+    pattern_index?: number | null
+    count?: number | null
+}
+
+interface ProductPayload extends ProductSpecsPayload {
    productNumber: string
    title: string
    desc: string

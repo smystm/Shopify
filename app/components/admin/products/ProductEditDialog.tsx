@@ -29,6 +29,8 @@ export default function ProductEditDialog({ product, onClose, onUpdated }: Produ
                 category: values.category,
                 price: values.price,
                 image: values.image,
+                count: values.count,
+                ...values.specs,
             })
             onUpdated(updated)
             toast.success(fa.admin.toast.updated)

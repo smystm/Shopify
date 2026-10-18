@@ -2,11 +2,14 @@
 
 import { useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "react-toastify"
 import Pagination from "@/app/components/ui/Pagination"
 import UsersTable from "./UsersTable"
 import UsersEmptyState from "./UsersEmptyState"
+import PermissionDialog from "./PermissionDialog"
 import AccessDenied from "@/app/components/admin/AccessDenied"
 import type { AdminUser } from "./UsersTable"
+import type { Permission } from "@/app/lib/permissions"
 import { USERS_PAGE_SIZE } from "@/app/lib/users"
 import { useAppSelector } from "@/app/lib/store/hooks"
 import { selectPermission } from "@/app/lib/store/authSlice"
@@ -19,9 +22,15 @@ interface UsersClientProps {
 export default function UsersClient({ initialUsers }: UsersClientProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const [users] = useState<AdminUser[]>(initialUsers)
+    // Mutable because a permission change edits its row in place; the panel
+    // holds the list rather than refetching, the same way the products panel does.
+    const [users, setUsers] = useState<AdminUser[]>(initialUsers)
+    const [editingPermission, setEditingPermission] = useState<AdminUser | null>(null)
     // Use the permission stored in Redux; useAuth refreshes it from /user.
     const permission = useAppSelector(selectPermission)
+    // Only FullAcc may change another user's permission - the same rule the
+    // backend enforces on PATCH /users/:id/permission.
+    const isFullAcc = permission === "FullAcc"
 
     const pageParam = searchParams.get("page")
     const rawPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1)
@@ -39,6 +48,13 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
        const params = new URLSearchParams(searchParams.toString())
        params.set("page", String(newPage))
        router.push(`?${params.toString()}`, { scroll: false })
+    }
+
+    const handlePermissionSaved = (_user: AdminUser, next: Permission) => {
+       const userId = editingPermission?.id
+       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, permission: next } : u)))
+       setEditingPermission(null)
+       toast.success(fa.admin.users.permissionSaved)
     }
 
     return (
@@ -63,7 +79,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
              ) : visibleUsers.length === 0 ? (
                 <UsersEmptyState variant="no-users" />
              ) : (
-                <UsersTable users={visibleUsers} />
+                <UsersTable users={visibleUsers} onEditPermission={isFullAcc ? setEditingPermission : undefined} />
              )}
           </div>
 
@@ -81,6 +97,14 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
             </>
           )}
 
+          {editingPermission
+             ? <PermissionDialog
+                  user={editingPermission}
+                  onClose={() => setEditingPermission(null)}
+                  onSaved={handlePermissionSaved}
+               />
+             : null}
+
       </>
     )
- }
+}

@@ -58,6 +58,18 @@ export interface Order {
    items: OrderItem[]
 }
 
+/**
+ * The back office's view of one order: the customer-side shape plus the buyer.
+ * The suffixes mirror the SQL aliases the backend's admin projections use.
+ */
+export interface AdminOrder extends Order {
+   user_name?: string | null
+   user_phone?: string | null
+   user_email?: string | null
+   user_steam_id?: string | null
+   user_trade_url?: string | null
+}
+
 export interface OrdersSummary {
    total: number
    byStatus: Partial<Record<OrderStatus, number>>

@@ -354,6 +354,37 @@ export const fa = {
          placedBody: "مبلغ از کیف پول شما کم شد و سفارش در صف تحویل قرار گرفت. وضعیت را از همین صفحه پیگیری کنید.",
          unitPriceEach: "قیمت واحد",
          itemsTotal: "جمع اقلام",
+
+         /**
+          * The customer-facing order tracker: placed -> trade request sent ->
+          * delivered. Exception states come as a banner, not a progress step.
+          */
+         timeline: {
+            placed: {
+               label: "ثبت سفارش",
+               hint: "سفارش شما ثبت شد و در صف تحویل قرار گرفت.",
+            },
+            tradeSent: {
+               label: "ارسال پیشنهاد معامله",
+               hint: "فروشگاه پیشنهاد معامله استیم را برای شما فرستاد؛ آن را در بخش «پیشنهادهای معامله» بپذیرید.",
+            },
+            delivered: {
+               label: "تحویل شد",
+               hint: "اقلام به حساب شما رسیدند و سفارش تکمیل شد.",
+            },
+            disputed: {
+               title: "سفارش در حال بررسی است",
+               body: "پیشنهاد معامله را رد کرده‌اید یا اختلافی ثبت شده است. کارشناسان فروشگاه سفارش شما را بررسی می‌کنند.",
+            },
+            refunded: {
+               title: "وجه سفارش بازگشت داده شد",
+               body: "مبلغ این سفارش به کیف پول شما برگشت خورد و سفارش بسته شد.",
+            },
+            cancelled: {
+               title: "سفارش لغو شد",
+               body: "این سفارش لغو شد؛ مبلغ پرداختی به کیف پول شما بازگشت و اقلام به فروشگاه بازگشتند.",
+            },
+         },
       },
 
       offers: {
@@ -884,6 +915,10 @@ export const fa = {
          quickActionsTitle: "دسترسی سریع",
          quickActionsSubtitle: "میانبر به پرکاربرد‌ترین بخش‌های پنل مدیریت.",
          quickActions: {
+            orders: {
+               title: "مدیریت سفارش‌ها",
+               body: "پیگیری پرداخت‌ها، ثبت پیشنهاد معامله و تحویل یا بازگشت سفارش‌ها.",
+            },
             users: {
                title: "مدیریت کاربران",
                body: "مشاهده کاربران ثبت‌نام‌شده و بررسی سطح دسترسی آن‌ها.",
@@ -897,6 +932,7 @@ export const fa = {
       /** Sidebar labels, keyed by href to match lib/adminNavigation.ts. */
       nav: {
          "/admin": "داشبورد",
+         "/admin/orders": "سفارش‌ها",
          "/admin/user": "کاربران",
          "/admin/products": "محصولات",
          "/admin/documents": "اسناد",
@@ -924,6 +960,7 @@ export const fa = {
       },
       /** Headings for the developer-facing "backend unreachable" errors. */
       usersLoadError: { title: "بارگذاری کاربران ناموفق بود" },
+      ordersLoadError: { title: "بارگذاری سفارش‌ها ناموفق بود" },
       productsLoadError: { title: "بارگذاری محصولات ناموفق بود" },
 
       // --- Users ---
@@ -936,10 +973,30 @@ export const fa = {
          headers: {
             user: "کاربر",
             contact: "تماس",
+            steam: "استیم",
+            tradeLink: "لینک معامله",
             joined: "تاریخ عضویت",
+            lastLogin: "آخرین ورود",
+            balance: "موجودی (تومان)",
             permission: "سطح دسترسی",
          },
          idLabel: "شناسه",
+         tradeUrlPresent: "ثبت شده",
+         tradeUrlMissing: "ثبت نشده",
+         editPermissionAria: "تغییر سطح دسترسی {name}",
+         permissionDialogTitle: "سطح دسترسی کاربر",
+         permissionDialogFor: "سطح دسترسی {name} را تعیین کنید. تغییر بلافاصله اعمال می‌شود.",
+         /** What each level may do, keyed by the machine value. */
+         permissionDescriptions: {
+            NoAccess: "بدون دسترسی به بخش مدیریت",
+            ReadOnly: "مشاهده کاربران و محصولات، بدون تغییر",
+            WriteDeleteEditSelfAdds: "افزودن محصول و ویرایش/حذف مواردی که خودش ساخته است",
+            FullAcc: "دسترسی کامل؛ مدیریت دسترسی بقیه و مدیریت سفارش‌ها",
+         },
+         permissionSave: "ثبت سطح دسترسی",
+         permissionSaving: "در حال ثبت…",
+         permissionSaved: "سطح دسترسی به‌روزرسانی شد.",
+         permissionSaveFailed: "ثبت سطح دسترسی ناموفق بود: {reason}",
       },
       usersEmpty: {
          outOfRangeTitle: "در این صفحه کاربری وجود ندارد",
@@ -947,6 +1004,114 @@ export const fa = {
          goToFirstPage: "رفتن به صفحه ۱",
          noUsersTitle: "هنوز کاربری وجود ندارد",
          noUsersBody: "کاربران جدید پس از ثبت‌نام، اینجا نمایش داده می‌شوند.",
+      },
+
+      // --- Orders (back office) ---
+      orders: {
+         metaTitle: "سفارش‌ها — Shopify Admin",
+         metaDescription: "مدیریت سفارش‌ها — پیگیری پرداخت، ارسال پیشنهاد معامله و ثبت تحویل یا بازگشت وجه.",
+         title: "سفارش‌ها",
+         subtitle: "همه سفارش‌های ثبت‌شده در فروشگاه، به همراه خریدار و وضعیت هر سفارش.",
+         total: "{count} سفارش",
+         loadingTitle: "در حال بارگذاری سفارش‌ها…",
+         emptyTitle: "هنوز سفارشی ثبت نشده است",
+         emptyBody: "به‌محض نخستین خرید، سفارش‌ها با خریدار و وضعیت تحویل اینجا نمایش داده می‌شوند.",
+         filteredTitle: "سفارشی با این وضعیت پیدا نشد",
+         filteredBody: "فیلتر وضعیت را عوض کنید یا «همه سفارش‌ها» را انتخاب کنید.",
+
+         headers: {
+            order: "سفارش",
+            customer: "خریدار",
+            items: "اقلام",
+            total: "مبلغ کل (تومان)",
+            placedAt: "تاریخ ثبت",
+            status: "وضعیت",
+            details: "جزئیات",
+         },
+         detailsAria: "جزئیات سفارش {id}",
+
+         summary: {
+            awaiting: "در انتظار اقدام",
+            awaitingHint: "پرداخت‌شده یا در امانت؛ تحویل باید ثبت شود.",
+            tradeSent: "پیشنهاد ارسال‌شده",
+            tradeSentHint: "پیشنهاد معامله استیم فرستاده شده و منتظر پاسخ خریدار است.",
+            delivered: "تکمیل‌شده",
+            deliveredHint: "اقلام تحویل داده شدند.",
+            disputed: "در حال بررسی",
+            disputedHint: "اختلاف ثبت شده و باید بررسی شود.",
+         },
+
+         // -- Detail dialog --
+         detail: {
+            orderLabel: "سفارش",
+            placedLabel: "تاریخ ثبت",
+            updatedLabel: "آخرین به‌روزرسانی",
+            statusLabel: "وضعیت",
+            totalLabel: "مبلغ کل",
+            customerTitle: "خریدار",
+            customerName: "نام",
+            customerPhone: "شماره تماس",
+            customerEmail: "ایمیل",
+            steamId: "شناسه استیم",
+            tradeUrl: "لینک معامله استیم",
+            tradeUrlOpen: "باز کردن لینک",
+            tradeUrlMissing: "خریدار هنوز لینک معامله ثبت نکرده است.",
+            itemsTitle: "اقلام سفارش",
+            terminalNote: "این سفارش در وضعیت نهایی است و دیگر قابل تغییر نیست.",
+            noTradeStepNote: "این سفارش کالای غیر اسکین دارد؛ بدون پیشنهاد معامله، تحویل را ثبت کنید.",
+         },
+
+         actions: {
+            sendTradeOffer: "ثبت پیشنهاد معامله",
+            markDelivered: "ثبت تحویل",
+            refund: "بازگشت وجه",
+            cancel: "لغو سفارش",
+            working: "در حال انجام…",
+         },
+
+         tradeOffer: {
+            title: "ثبت پیشنهاد معامله استیم",
+            body: "پیشنهاد را از حساب استیم خود برای خریدار بفرستید، سپس لینک اشتراک‌گذاری پیشنهاد را اینجا ثبت کنید تا خریدار آن را در پنل خود ببیند.",
+            urlLabel: "لینک پیشنهاد",
+            urlPlaceholder: "https://steamcommunity.com/tradeoffer/1234567890/",
+            urlHint: "لینک اشتراکی پیشنهاد، مثل https://steamcommunity.com/tradeoffer/1234567890/ — لینک «Make an Offer» حساب کاربری این نیست.",
+            submit: "ثبت پیشنهاد",
+            submitting: "در حال ثبت…",
+         },
+
+         confirm: {
+            delivered: {
+               title: "ثبت تحویل",
+               body: "سفارش #{id} تکمیل شود؟ این تغییر برگشت‌پذیر نیست.",
+            },
+            refund: {
+               title: "بازگشت وجه",
+               body: "برای سفارش #{id}، مبلغ به کیف پول خریدار برگشت می‌خورد و اقلام به انبار بازگشت داده می‌شوند. این عمل یک‌بار انجام می‌شود.",
+            },
+            cancel: {
+               title: "لغو سفارش",
+               body: "سفارش #{id} لغو شود؟ مبلغ به کیف پول خریدار برگشت می‌خورد و موجودی آزاد می‌شود.",
+            },
+            yes: "بله، ادامه",
+         },
+
+         toast: {
+            statusUpdated: "وضعیت سفارش به‌روزرسانی شد.",
+            statusFailed: "تغییر وضعیت ناموفق بود: {reason}",
+            tradeOfferSent: "پیشنهاد معامله ثبت شد و سفارش به «پیشنهاد معامله ارسال شد» تغییر کرد.",
+            tradeOfferFailed: "ثبت پیشنهاد معامله ناموفق بود: {reason}",
+            loadFailed: "بارگذاری سفارش‌ها ناموفق بود.",
+         },
+
+         /** The backend's OrderAdminError codes, in Persian the operator can act on. */
+         errors: {
+            ALREADY_REFUNDED: "این سفارش قبلاً بازگشت وجه شده است؛ یک سفارش فقط یک‌بار بازگشت می‌خورد.",
+            ORDER_TERMINAL: "این سفارش در وضعیت نهایی است و دیگر قابل تغییر نیست.",
+            ILLEGAL_TRANSITION: "این تغییر وضعیت برای سفارش مجاز نیست؛ صفحه را به‌روزرسانی کنید و دوباره تلاش کنید.",
+            TRADE_ALREADY_PENDING: "برای این سفارش پیشنهاد معامله‌ای در انتظار پاسخ خریدار وجود دارد.",
+            INVALID_OFFER_URL: "لینک واردشده لینک اشتراک پیشنهاد استیم نیست.",
+            UNKNOWN: "خطای غیرمنتظره؛ دوباره تلاش کنید.",
+         },
       },
 
       // --- Products ---
@@ -964,6 +1129,9 @@ export const fa = {
             description: "توضیحات",
             category: "دسته‌بندی",
             image: "تصویر",
+            price: "قیمت (تومان)",
+            stock: "موجودی",
+            specs: "مشخصات",
             edit: "ویرایش",
             delete: "حذف",
          },
@@ -1003,9 +1171,32 @@ export const fa = {
          titleRequired: "عنوان الزامی است.",
          charCount: "{count}/200",
          count: "موجودی انبار",
-         countHint: "چند نسخه از این آیتم موجود است. صفر یا خالی یعنی یک نسخه.",
+         countHint: "چند نسخه از این آیتم موجود است. خالی یعنی یک نسخه.",
+         imageHint: "خالی بگذارید تا تصویر بر اساس دسته‌بندی و عنوان انتخاب شود؛ آدرس واردشده همیشه ارجح است.",
          /** `{count}` is how many have already been sold. */
          soldHint: "{count} عدد از این آیتم فروخته شده است؛ موجودی قابل فروش برابر تعداد کل منهای آن است.",
+
+         /** The optional CS2 specification columns, collapsed by default. */
+         specs: {
+            title: "مشخصات (بخش CS2)",
+            noValue: "بدون مقدار",
+            exterior: "میزان فرسودگی",
+            pattern: "شماره الگوی نقش",
+            patternPlaceholder: "مثلاً ۶۶۱",
+            floatRange: "بازه شناوری (Float)",
+            floatMin: "مثلاً 0.07",
+            floatMax: "مثلاً 0.15",
+            /** `{min}`/`{max}` are the band Valve ties to the chosen exterior. */
+            floatHint: "بازه استاندارد این میزان فرسودگی: از {min} تا {max}.",
+            floatHintGeneric: "مقدار بین 0 و 1؛ کمترین تا بیشترین شناوری این نسخه.",
+            rarity: "سطح کمیابی",
+            collection: "مجموعه",
+            collectionPlaceholder: "مثلاً The Fever Collection",
+            release: "تاریخ عرضه",
+            stattrak: "StatTrak™",
+            souvenir: "نسخه سوغاتی (Souvenir)",
+         },
+
          cancel: "انصراف",
          save: "ذخیره تغییرات",
          saving: "در حال ذخیره...",
@@ -1719,6 +1910,21 @@ export const fa = {
          metaTitle: "خرید کلید TF2",
          metaDescription: "خرید کلید TF2 با قیمت تومانی، موجودی لحظه‌ای و محاسبه‌گر تعداد تا سقف ۵۰ کلید در هر سفارش.",
          badge: "TF2 · کلید",
+
+         /** The "sell your keys to us" card beside the buy calculator. */
+         sell: {
+            badge: "فروش کلید",
+            title: "کلیدهای خود را به ما بفروشید",
+            body: "کلید Mann Co. مازاد دارید؟ فروشگاه به‌عنوان خریدار همیشه بی‌کار نمی‌شود؛ از طریق ربات تلگرام، تعداد کلیدها را اعلام کنید و با یک پیشنهاد تومانی قطعی مواجه شوید.",
+            points: {
+               price: { title: "قیمت منصفانه و قطعی", body: "بر اساس نرخ روز بازار؛ قیمت پیشنهادی پیش از تأیید معامله معلوم می‌شود." },
+               wallet: { title: "تسویه با کیف پول", body: "مبلغ پس از تأیید معامله استیم، بدون واسطه به کیف پول تومانی شما واریز می‌شود." },
+               speed: { title: "معامله سریع", body: "پیشنهاد معامله در استیم همان جلسه فرستاده می‌شود و معامله چند دقیقه بیشتر نمی‌گیرد." },
+            },
+            cta: "شروع فروش در تلگرام",
+            hint: "پس از کلیک، ربات فروش کلید باز می‌شود؛ مراحل و قیمت‌دهی همان‌جا انجام می‌شود.",
+         },
+
          heroTitle: "خرید کلید TF2",
          heroSubtitle:
             "کلید Mann Co. را با کیف پول تومانی بخرید؛ تعداد را انتخاب کنید و مبلغ قابل پرداخت را همان لحظه ببینید.",

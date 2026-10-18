@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { FolderIcon, UsersIcon } from "@heroicons/react/24/outline"
+import { FolderIcon, UsersIcon, ClockIcon } from "@heroicons/react/24/outline"
 import { fa } from "@/app/lib/i18n/fa"
 import PageHero from "@/app/components/ui/PageHero"
 import QuickActionTile from "@/app/components/ui/QuickActionTile"
@@ -11,6 +11,12 @@ export const metadata: Metadata = {
 }
 
 const QUICK_ACTIONS = [
+   {
+      key: "orders" as const,
+      href: "/admin/orders",
+      Icon: ClockIcon,
+      hrefLabel: fa.admin.nav["/admin/orders"],
+   },
    {
       key: "users" as const,
       href: "/admin/user",
