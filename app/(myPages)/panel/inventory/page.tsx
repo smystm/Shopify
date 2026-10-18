@@ -4,7 +4,7 @@ import PanelComingSoon from "@/app/components/panel/PanelComingSoon"
 import { fa } from "@/app/lib/i18n/fa"
 
 export const metadata: Metadata = {
-   title: `${fa.panel.inventory.title} — Shopify`,
+   title: fa.panel.inventory.title,
    description: fa.panel.inventory.subtitle,
 }
 

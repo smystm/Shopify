@@ -59,23 +59,28 @@ async function proxy(request: NextRequest, ctx: { params: Promise<{ path?: strin
    request.headers.forEach((value, key) => {
       if (!HOP_BY_HOP.has(key.toLowerCase())) headers.set(key, value)
    })
+   // A Pinggy free tunnel reviews browser-like traffic with an interstitial
+   // screening page, which would be returned to callers instead of JSON. Every
+   // request through this handler is API traffic, so mark it as such wherever
+   // the backend happens to sit behind such a tunnel; the header is ignored by
+   // every other host, including the eventual production one.
+   headers.set("x-pinggy-no-screen", "1")
 
    const hasBody = request.method !== "GET" && request.method !== "HEAD"
    const body = hasBody ? await request.arrayBuffer() : undefined
 
-   let upstream: Response
-   try {
-      upstream = await fetch(target, {
-         method: request.method,
-         headers,
-         body,
-         // The backend answers 302 for Steam sign-in and for a finished top-up,
-         // both of which must send the *browser* onwards. Following them here
-         // would return Steam's HTML as our own 200.
-         redirect: "manual",
-         cache: "no-store",
-      })
-   } catch {
+   const upstreamInit: RequestInit = {
+      method: request.method,
+      headers,
+      body,
+      // The backend answers 302 for Steam sign-in and for a finished top-up,
+      // both of which must send the *browser* onwards. Following them here
+      // would return Steam's HTML as our own 200.
+      redirect: "manual",
+      cache: "no-store",
+   }
+
+   function unreachable() {
       // The backend being down or unreachable is a gateway problem, not a shop
       // error, and it is worth saying so: the callers branch on `code`, and
       // anything they do not recognise falls back to a generic message.
@@ -86,6 +91,24 @@ async function proxy(request: NextRequest, ctx: { params: Promise<{ path?: strin
          },
          { status: 502 },
       )
+   }
+
+   let upstream: Response
+   try {
+      upstream = await fetch(target, upstreamInit)
+   } catch {
+      // The tunnel grade of connectivity (docs/tunnel-testing.md) drops the odd
+      // connection - about one request in ten from a datacenter client. GET and
+      // HEAD are idempotent, so one retry makes the tunnel usable; mutating
+      // verbs are never retried, because a lost reply does not prove the
+      // backend never saw the call, and resubmitting it could double-charge.
+      if (request.method !== "GET" && request.method !== "HEAD") return unreachable()
+
+      try {
+         upstream = await fetch(target, upstreamInit)
+      } catch {
+         return unreachable()
+      }
    }
 
    const responseHeaders = new Headers()

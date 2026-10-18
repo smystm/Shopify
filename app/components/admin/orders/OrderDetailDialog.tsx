@@ -38,8 +38,13 @@ const ALLOWED_NEXT: Record<OrderStatus, OrderStatus[]> = {
    cancelled: [],
 }
 
-/** The share-link shape Steam produces for one specific sent offer. */
-const OFFER_URL_PATTERN = /^https:\/\/steamcommunity\.com\/tradeoffer\/[0-9]+\/?$/
+/**
+ * Steam's own shapes for one sent offer: the share link
+ * (/tradeoffer/<id>/) or the direct trade URL (/tradeoffer/new/?partner=…&token=…).
+ * Mirrors the backend's validation in services/orderAdmin.js.
+ */
+const OFFER_URL_PATTERN =
+   /^https:\/\/steamcommunity\.com\/tradeoffer\/([0-9]+\/?|new\/?\?partner=\d{5,12}&token=[A-Za-z0-9_-]{4,32}\/?)$/i
 
 function describeError(err: unknown): string {
    if (err instanceof OrderAdminError) {

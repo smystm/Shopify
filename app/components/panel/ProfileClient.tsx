@@ -46,6 +46,11 @@ function phoneErrorText(message: string): string {
    if (m.includes("already registered")) return fa.panel.profileEdit.phoneInUse
    if (m.includes("already your phone")) return fa.panel.profileEdit.phoneSame
    if (m.includes("not valid")) return fa.panel.profileEdit.phoneInvalid
+   // A dropped connection is not a wrong code. Without this branch any 5xx or
+   // network error fell through to "code is wrong", which sent people hunting
+   // for a new code that was never the problem.
+   if (m.includes("upstream_unreachable") || /failed with 5\d\d/.test(m) || m.includes("failed to fetch"))
+      return fa.panel.profileEdit.networkError
    return fa.panel.profileEdit.phoneCodeWrong
 }
 
@@ -108,7 +113,10 @@ export default function ProfileClient() {
    // Mirrors the server's rules so the button is disabled rather than 422ing.
    const nameValid = name.trim().length >= 2
    const emailValid = email.trim() === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-   const tradeUrlValid = tradeUrl.trim() === "" || /^https:\/\/steamcommunity\.com\/tradeoffer\/[A-Za-z0-9]+\/?$/i.test(tradeUrl.trim())
+   // Mirrors the server's pattern: the real link is /tradeoffer/new/?partner=…&token=…
+   const tradeUrlValid =
+      tradeUrl.trim() === "" ||
+      /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d{5,12}&token=[A-Za-z0-9_-]{4,32}\/?$/i.test(tradeUrl.trim())
    const steamIdValid = steamId.trim().length <= 40
 
    /**

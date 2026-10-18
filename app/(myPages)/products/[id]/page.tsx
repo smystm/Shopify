@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     const { id } = await params
     const product = await getSingleProduct(parseInt(id, 10))
     return {
-        title: product ? `${product.title} — Shopify` : fa.products.detailMetaTitle,
+        title: product ? product.title : fa.products.detailMetaTitle,
         description: product?.desc ?? fa.products.detailMetaDescription,
     }
 }

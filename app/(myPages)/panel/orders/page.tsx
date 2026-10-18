@@ -3,7 +3,7 @@ import OrdersClient from "@/app/components/panel/OrdersClient"
 import { fa } from "@/app/lib/i18n/fa"
 
 export const metadata: Metadata = {
-   title: `${fa.panel.orders.title} — Shopify`,
+   title: fa.panel.orders.title,
    description: fa.panel.orders.subtitle,
 }
 

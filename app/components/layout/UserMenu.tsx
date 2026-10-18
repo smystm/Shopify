@@ -97,11 +97,6 @@ export default function UserMenu() {
                   </Link>
                </MenuItem>
             ) : null}
-            <MenuItem>
-               <Link href="/panel" className={`${itemClass} text-navy-700 data-focus:bg-brand-50 dark:text-navy-200 dark:data-focus:bg-navy-800`}>
-                  {fa.nav.myPanel}
-               </Link>
-            </MenuItem>
 
             <MenuItem>
                <button

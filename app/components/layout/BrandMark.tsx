@@ -7,7 +7,7 @@ import { fa } from "@/app/lib/i18n/fa"
 interface BrandMarkProps {
    /** Extra classes for the wrapping link. */
    className?: string
-   /** Show the "Shopify" wordmark next to the tile. */
+   /** Show the "BiaStore" wordmark next to the tile. */
    showWordmark?: boolean
    /** Closes the mobile drawer when the brand link is tapped. */
    onClick?: () => void

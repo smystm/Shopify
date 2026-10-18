@@ -3,7 +3,7 @@ import WalletClient from "@/app/components/panel/WalletClient"
 import { fa } from "@/app/lib/i18n/fa"
 
 export const metadata: Metadata = {
-   title: `${fa.panel.wallet.title} — Shopify`,
+   title: fa.panel.wallet.title,
    description: fa.panel.wallet.subtitle,
 }
 

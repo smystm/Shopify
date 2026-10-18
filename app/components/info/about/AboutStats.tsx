@@ -5,7 +5,7 @@ import { getCategories, getProducts } from "@/app/helpers/productApi"
 import { fa } from "@/app/lib/i18n/fa"
 
 /**
- * "شاپیفای در یک نگاه" - the counts behind the claims made above it.
+ * "بیااستور در یک نگاه" - the counts behind the claims made above it.
  *
  * Fetched on the server and rendered as counted-from-data figures rather than
  * typed-in marketing numbers. If the catalogue cannot be reached the section is

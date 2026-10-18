@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Shopify Starter",
-    short_name: "Shopify",
-    description: "Your e-commerce starter",
+    name: "BiaStore",
+    short_name: "BiaStore",
+    description: "بازار ایرانی خرید اسکین CS2 و کلید TF2",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
