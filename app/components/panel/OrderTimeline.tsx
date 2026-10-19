@@ -63,7 +63,7 @@ export default function OrderTimeline({ status, includesTradeStep = true }: Orde
             const tone = step.done
                ? "border-brand-500/40 bg-brand-500/8 text-brand-800 dark:border-brand-400/30 dark:text-brand-200"
                : isCurrent
-                  ? "border-accent-500/40 bg-accent-500/8 text-accent-800 dark:text-accent-300"
+                  ? "border-accent-500/40 bg-accent-500/8 text-accent-800 dark:text-accent-300 blur-[2px]"
                   : "border-border-subtle bg-surface text-navy-400 dark:text-navy-500"
 
             return (
@@ -104,7 +104,7 @@ export default function OrderTimeline({ status, includesTradeStep = true }: Orde
                      </span>
                      <div className="min-w-0">
                         <p className="text-sm font-bold leading-5">{step.label}</p>
-                        <p className="mt-0.5 text-[11px] leading-5 opacity-80">{step.hint}</p>
+                        <p className="mt- text-[11px] leading-5 opacity-80">{step.hint}</p>
                      </div>
                   </div>
                </motion.li>
